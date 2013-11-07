@@ -1,2 +1,0 @@
-﻿	"https://*.trello.com/*",
-	"https://*.timecamp.com/*"
