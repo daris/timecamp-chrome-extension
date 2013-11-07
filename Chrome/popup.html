@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+    <style type="text/css">
+        body {
+            margin:0;
+            padding:0;
+            background-color: transparent;
+            height:300px;
+            width:500px;
+            margin: 25px;
+
+            font-family: Helvetica Neue,Helvetica,'Segoe UI',Arial,Verdana,Trebuchet,Sans-Serif; 
+            -webkit-font-smoothing: antialiased; 
+            line-height: 1.6em;
+        }
+
+        iframe {
+            height: 320px;
+            width: 100%;
+            border: none;
+            overflow: hidden;
+            background: white;
+            z-index: 1; 
+            position: absolute;
+            top: 10px;
+        }
+
+        #tc-button {
+            
+            width: 100px;
+            display: inline-block;
+            background-color: rgba(79,181,65,1);
+            color: white;
+            border: 1px solid rgba(50,160,50,0.6);
+            font-weight: normal;
+            letter-spacing: 1px;
+            box-shadow: none;
+            text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
+            font-weight: bold;
+            font-size: 14px;
+            padding: 8px 14px 9px;
+            line-height: 1;
+            border-radius: 4px;
+            cursor: pointer;
+            top: -1px;
+
+            text-decoration: none;
+
+            background-image: url(images/36px-blended.png);
+            background-origin: padding-box;
+            background-position: 0 0;
+        }
+
+        #status {
+            color: #468847;
+            background-color: #dff0d8;
+            border: 1px solid #d6e9c6;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.5);
+
+            margin-bottom: 1em;
+            padding: 8px 0;
+            border-radius: 4px;
+            font-size: 14px;
+            line-height: 20px;
+
+            position: absolute;
+            left: calc(50% - 65px);
+            width: 130px;
+
+            text-align: center;
+        }
+    </style>
+    <script src="scripts/jquery-2.0.3.js"></script>
+    <script src="scripts/content/common.js"></script>
+    <script src="scripts/content/popup.js"></script>
+</head>
+<body>
+    <div id="status" style="display:none">
+        blabla
+    </div>
+    <div style="padding-top: 25px;">
+        <img src="images/logo-transparent.png" style="height: 50px;" />
+        <p>
+            This plugin allows you track time within popular project management software, like 
+            Trello, Basecamp, Asaana.
+        </p>	
+        <div style="text-align:center;">
+            <a href="javascript:void(0);" id="tc-button">LogIn</a>
+        </div>	
+        <p style="color: #aaa;" id="tc-signup">
+            Or if you don't have account? <a href="http://www.timecamp.com" target="_blank" style="color: #aaa; font-weight: bold;">Sign up</a>.
+        </p>
+    </div>
+</body>
+</html>
