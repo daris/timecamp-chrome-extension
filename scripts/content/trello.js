@@ -93,7 +93,7 @@
                 $this.buttonInsertionInProgress = false;
             });
         button.click(function () {
-            $this.buttonClick(button);
+            $this.buttonClick();
         });
         var buttonList = $('.window-module.other-actions.clearfix .clearfix');
         buttonList.prepend(button);
