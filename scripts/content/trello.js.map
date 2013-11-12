@@ -1,1 +1,0 @@
-{"version":3,"file":"trello.js","sources":["trello.ts"],"names":["TimeTrackingButton","TimeTrackingButton.constructor","onDomModified"],"mappings":"AAAA,2CAA2C;AAC3C,+CAA+C;AAE/C;IACIA,SADEA,kBAAkBA;IACJC,CAACA;IAErBD;AAACA,CAAAA,IAAA;AAED,IAAI,aAAa,GAAG;IAEhBE,0BAA0BA;IAC1BA,6BAA6BA;IAC7BA,GAAGA;IACPA,CAACA,CAAA;AAED,QAAQ,CAAC,gBAAgB,CAAC,iBAAiB,EAAE,aAAa,CAAC"}
