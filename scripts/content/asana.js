@@ -1,13 +1,10 @@
-console.debug = console.debug || function (txt, obj) { };
 function AsanaTimer() {
 
     this.service = 'asana';
-    console.debug(this.messages.synchronizing);
     this.messages.set('synchronizing', 'SYNCING');
     this.messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
     this.messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
     this.messages.set('buttonTimerStarted', '');
-    console.debug(this.messages.synchronizing);
     this.infoInsertingInProgress = false;
     var $this = this;
 
@@ -27,7 +24,7 @@ function AsanaTimer() {
     }
 
     this.insertButtonIntoPage = function () {
-        console.debug('Inserting button into page...');
+        console.log('Inserting button into page...');
 
         var dueDate = $(".property.due_date.flyout-owner").eq(0);
         if (dueDate.css('margin-right') == '7px')
@@ -66,11 +63,8 @@ function AsanaTimer() {
         });
         var buttonList = $('#right_pane').find('.toolbar-section.left').children().eq(1);
         div1.insertAfter(buttonList);
-
-        //#center_pane__contents
-        //grid-row-selected
-
     }
+
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
             this.trackedTaskId = response.external_task_id;
@@ -98,25 +92,37 @@ function AsanaTimer() {
         }
     }
 
-    this.updateTopMessage = function (startDate) {
-        if (startDate) {
-            var duration = moment().from(startDate, true);
-            $('#timecamp-track-info').html('<b>You</b> spent ' + duration + ' doing this task');
-        }
+    this.updateTopMessage = function () {
+        var timecampTrackInfo = $('#timecamp-track-info');
+        var taskDuration = $this.taskDuration[$this.currentTaskId()];
+        if (!taskDuration)
+            taskDuration = 0;
+
+        var duration = 0;
+        if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
+            duration = moment().diff($this.startDate, 'seconds');
+
+        duration += taskDuration;
+
+        if (duration == 0)
+            timecampTrackInfo.html('');
         else
-        {
-            $('#timecamp-track-info').html('');
-        }
+            timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task');
     }
 
     this.isInfoInserted = function () {
-        console.log($("#timecamp-track-info").length > 0);
         return this.infoInsertingInProgress || $("#timecamp-track-info").length > 0;
     }
 
     this.insertInfoIntoPage = function () {
-        console.log('inserting info');
         this.infoInsertingInProgress = true;
+        this.taskDuration[$this.currentTaskId()] = 0;
+        $.when($this.getTrackedTime())
+            .then(function (sum) {
+                $this.taskDuration[$this.currentTaskId()] = sum;
+                $this.updateTopMessage();
+            });
+
         var infoTop = $('#right_pane').find('.small-feed-story-group');
         var info = $('<span/>', { 'id': 'timecamp-track-info' });
         infoTop.prepend(info);

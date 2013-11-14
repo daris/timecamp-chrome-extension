@@ -6,6 +6,11 @@ function checkForValidUrl(tabId, changeInfo, tab) {
     if (/asana\.com/.test(tab.url)) {
         chrome.pageAction.show(tabId);
     }
+
+    console.log(tab.url);
+    if (/manageprojects\.com/.test(tab.url)) {
+        chrome.pageAction.show(tabId);
+    }
 };
 
 // Listen for any changes to the URL of any tab.

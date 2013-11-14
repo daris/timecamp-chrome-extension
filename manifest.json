@@ -1,6 +1,6 @@
 {
     "name": "__MSG_NAME__",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "manifest_version": 2,
     "description": "__MSG_DESCRIPTION__",
     "icons": {
@@ -28,6 +28,13 @@
         },
         {
             "matches": [
+                "*://*.manageprojects.com/*"
+            ],
+            "css": ["styles/style.css"],
+            "js": ["scripts/jquery-2.0.3.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/activecollab.js"]
+        },
+        {
+            "matches": [
                 "*://*.asana.com/*"
             ],
             "css": ["styles/style.css"],
@@ -42,9 +49,10 @@
         "storage",
         "https://*.trello.com/*",
         "https://*.asana.com/*",
-        "https://timecamp.com/*",
+        "https://*.manageprojects.com/*",
+        "https://*.timecamp.com/*",
         "https://test.timecamp.pl/*",
-        "https://riv-asus/*",
+        "https://localhost/*",
         "*://*/*"
     ],
     "background": {

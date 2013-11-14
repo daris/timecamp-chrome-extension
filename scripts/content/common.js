@@ -1,6 +1,7 @@
 ﻿//var serverUrl = 'https://riv-asus/timecamp/';
-var serverUrl = 'https://timecamp.com/';
+var serverUrl = 'https://localhost/timecamp/';
 
+var restUrl = serverUrl + 'third_party/api/';
 var apiUrl = serverUrl + 'third_party/api/timer/format/json';
 var tokenUrl = serverUrl + 'auth/token';
 var signInUrl = serverUrl + 'auth/login';
@@ -103,11 +104,14 @@ function TimerBase() {
     this.service = '';
     this.oneSecondIntervalId = null;
     this.buttonInsertionInProgress = false;
+    this.infoInsertingInProgress = false;
     this.pushInterval = 5000;
     this.isTimerRunning = false;
     this.trackedTaskId = "";
     this.button = null;
     this.syncing = false;
+    this.startDate = null;
+    this.taskDuration = [];
     var $this = this;
 
     this.messages = {
@@ -133,17 +137,14 @@ function TimerBase() {
     {
         if(this.button)
             this.button.children('.text').html(text);
-
-        console.log(this.button.children('.text'));
     }
     this.currentTaskId = function () { return ''; }
-    this.onSyncSuccess = function () { }
-    this.onSyncFailure = function () { }
-    this.insertButtonIntoPage = function () {console.log('Pure virtual function call :P'); }
+    this.onSyncSuccess = function (response) { }
+    this.onSyncFailure = function (reason) { }
+    this.insertButtonIntoPage = function () { }
     this.insertInfoIntoPage = function () { }
     this.updateTopMessage = function (startDate) {}
     this.isButtonInserted = function () {
-        console.log('Pure virtual function call :P');
         return true;
     }
     this.isInfoInserted = function () {
@@ -229,19 +230,20 @@ function TimerBase() {
                     if($this.button)
                         $this.button.children('.time').show();
                     var startDate = new Date(new Date().valueOf() - response.elapsed * 1000);
-
+                    $this.startDate = startDate;
                     if ($this.oneSecondIntervalId) {
                         clearInterval($this.oneSecondIntervalId);
                     }
 
-                    $this.updateTopMessage(startDate);
+                    $this.updateTopMessage();
                     $this.oneSecondIntervalId = setInterval(function () {
                         var diff = Math.abs((new Date().valueOf() - startDate.valueOf()));
                         var minutes = Math.floor(diff / 1000 / 60);
                         var seconds = Math.floor((diff - minutes * 1000 * 60 ) / 1000);
                         if ($this.button)
                             $this.button.children('.time').html(zeroFill(minutes, 2) + ':' + zeroFill(seconds, 2));
-                        $this.updateTopMessage(startDate);
+                        if ($this.trackedTaskId == $this.currentTaskId())
+                            $this.updateTopMessage();
                     }, 1000);
                 }
                 else {
@@ -250,7 +252,7 @@ function TimerBase() {
 
                     $this.setButtonText($this.messages.buttonTimerStopped);
                     clearInterval($this.oneSecondIntervalId);
-                    $this.updateTopMessage(null);
+                        $this.updateTopMessage();
                 }
             }).fail(function (reason) {
                 $this.onSyncFailure(reason);
@@ -258,14 +260,59 @@ function TimerBase() {
                 getLoggedOutFlag().done(function(loggedOut){
                     if (loggedOut) {
                         $this.setButtonText($this.messages.buttonLogIn);
-                        $this.updateTopMessage(null);
+                        $this.updateTopMessage();
                     } else {
                         $this.setButtonText($this.messages.buttonConnectionError);
-                        $this.updateTopMessage(null);
+                        $this.updateTopMessage();
                     }
                 });
 
             });
+    };
+
+    this.getTrackedTime = function()
+    {
+        return $.Deferred(function (dfd) {
+            $.when(getToken())
+                .then(function (token) {
+                    $.ajax({
+                        url: restUrl+'entries/format/json',
+                        data: {
+                            api_token: token,
+                            service: $this.service,
+                            from: moment().format('YYYY-MM-DD'),
+                            to: moment().format('YYYY-MM-DD'),
+                            user_ids: 'me',
+                            external_task_id: $this.currentTaskId()
+                        },
+                        type: 'GET'
+                    }).done(function (response) {
+                        var sum = 0;
+                        if (response.length > 0)
+                        {
+                            for (var i in response)
+                            {
+                                sum += parseInt(response[i]['duration'])
+                            }
+                        }
+                        dfd.resolve(sum);
+                    }).fail(function () {dfd.reject();});
+                });
+        });
+    };
+
+    this.getElapsedTime = function (timeInSeconds)
+    {
+        var time = {
+            hours : Math.round(moment.duration(timeInSeconds, 'seconds').hours()),
+            minutes : Math.round(moment.duration(timeInSeconds, 'seconds').minutes()),
+            seconds : Math.round(moment.duration(timeInSeconds, 'seconds').seconds())
+        };
+
+        if(time.hours   > 0){   return time.hours   + ' hour'+(time.hours == 1 ? '' : 's')+' and '     + time.minutes  + ' minute'+(time.minutes == 1 ? '' : 's');}
+        if(time.minutes > 0){   return time.minutes + ' minute'+(time.minutes == 1 ? '' : 's');}
+
+        return 'seconds';
     }
 
     this.bindEvents = function ($that) {
