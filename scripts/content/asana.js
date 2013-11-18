@@ -42,7 +42,7 @@ function AsanaTimer() {
         div2.append(div3);
         div3.append(div4);
         div4.append(button);
-        button.append($('<img src="' + chrome.extension.getURL('images/icon-14.png') + '" style="position: absolute; margin-left:10px; margin-top:-8px; top: 50%;"/>'));
+        button.append($('<img src="' + chrome.extension.getURL('images/icon-14.png') + '" style="position: absolute; margin-left:7px; margin-top:-8px; top: 50%;"/>'));
         button.append($('<span/>', { 'class': 'text', 'style': 'display: inline-block; padding-left: 30px; padding-right:10px;' }).text(this.messages.synchronizing));
         button.append($('<span/>', { 'class': 'time' }).text("00:00").css({
             "font-size": "12px",
@@ -51,14 +51,14 @@ function AsanaTimer() {
             "background-color": "green",
             color: "white",
             'margin-right': '5px',
-            'margin-left': '-8px',
+            'margin-left': '-13px',
             'text-shadow': 'none'
         }).hide());
 
         $.when(this.updateFreshButton()).always(function () {
                 $this.buttonInsertionInProgress = false;
         });
-        div1.click(function () {
+        button.click(function () {
             $this.buttonClick(null, function () { $this.button.children('.time').hide() });
         });
         var buttonList = $('#right_pane').find('.toolbar-section.left').children().eq(1);

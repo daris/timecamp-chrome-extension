@@ -1,5 +1,5 @@
 ﻿//var serverUrl = 'https://riv-asus/timecamp/';
-var serverUrl = 'https://localhost/timecamp/';
+var serverUrl = 'https://timecamp.com/';
 
 var restUrl = serverUrl + 'third_party/api/';
 var apiUrl = serverUrl + 'third_party/api/timer/format/json';

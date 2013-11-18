@@ -46,14 +46,24 @@
             badge.remove();
     }
 
-    this.updateTopMessage = function (startDate) {
-        if (startDate) {
-            var duration = moment().from(startDate, true);
-            $('#timecamp-track-info').text('(You spent ' + duration + ' doing this task)');
+    this.updateTopMessage = function () {
+        var timecampTrackInfo = $('#timecamp-track-info');
+        var taskDuration = $this.taskDuration[$this.currentTaskId()];
+        if (!taskDuration)
+            taskDuration = 0;
+
+        var duration = 0;
+        if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
+            duration = moment().diff($this.startDate, 'seconds');
+
+        duration += taskDuration;
+
+        if (duration > 0) {
+            timecampTrackInfo.text('(You spent ' + $this.getElapsedTime(duration) + ' doing this task)');
         }
         else
         {
-            $('#timecamp-track-info').text('');
+            timecampTrackInfo.text('');
         }
     }
 
@@ -62,17 +72,27 @@
     }
 
     this.isInfoInserted = function () {
-        return $("#timecamp-track-info").length > 0;
+        return this.infoInsertingInProgress || $("#timecamp-track-info").length > 0;
     }
 
     this.insertInfoIntoPage = function () {
+        console.log('Inserting Info into page...');
+        this.infoInsertingInProgress = true;
+
+        $.when($this.getTrackedTime())
+            .then(function (sum) {
+                $this.taskDuration[$this.currentTaskId()] = sum;
+                $this.updateTopMessage();
+            });
+
         var infoTop = $('.quiet.hide-on-edit.window-header-inline-content.js-current-list');
         var info = $('<span/>', { 'id': 'timecamp-track-info' });
         infoTop.append(info);
+        this.infoInsertingInProgress = false;
     }
 
     this.insertButtonIntoPage = function () {
-        console.log('Inserting button into page...')
+        console.log('Inserting button into page...');
 
         this.buttonInsertionInProgress = true;
         var button = $('<a/>', { 'class': 'button-link', 'id': 'timecamp-track-button', 'status': 'unknown' });
