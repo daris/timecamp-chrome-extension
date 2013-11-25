@@ -7,8 +7,11 @@ function checkForValidUrl(tabId, changeInfo, tab) {
         chrome.pageAction.show(tabId);
     }
 
-    console.log(tab.url);
     if (/manageprojects\.com/.test(tab.url)) {
+        chrome.pageAction.show(tabId);
+    }
+
+    if (/podio\.com/.test(tab.url)) {
         chrome.pageAction.show(tabId);
     }
 };
