@@ -39,13 +39,6 @@
             ],
             "css": ["styles/style.css"],
             "js": ["scripts/jquery-2.0.3.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/asana.js"]
-        },
-        {
-            "matches": [
-                "*://*.podio.com/*"
-            ],
-            "css": ["styles/style.css"],
-            "js": ["scripts/jquery-2.0.3.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/podio.js"]
         }
     ],
     "homepage_url": "http://www.timecamp.com/",
@@ -57,7 +50,6 @@
         "https://*.trello.com/*",
         "https://*.asana.com/*",
         "https://*.manageprojects.com/*",
-        "https://*.podio.com/*",
         "https://*.timecamp.com/*",
         "https://test.timecamp.pl/*",
         "https://localhost/*",
