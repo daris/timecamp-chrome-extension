@@ -4,7 +4,8 @@
 function PodioTimer() {
     this.service = 'podio';
     var $this = this;
-
+    this.messages.set('buttonTimerStarted', '');
+    this.messages.set('buttonTimerStopping', '');
 
     this.currentTaskId = function () {
         var $html = $('html');
@@ -33,10 +34,15 @@ function PodioTimer() {
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
             this.trackedTaskId = response.external_task_id;
-            var permalink = '/tasks/'+this.trackedTaskId;
+
             var badges;
-            badges = $('.task-summary').find('a[href$="'+permalink+'"]');
-            if (badges.find("#tc-badge").length == 0) {
+            if (this.trackedTaskId.charAt(0) != 'i')
+            {
+                var permalink = '/tasks/'+this.trackedTaskId;
+                badges = $('.task-summary').find('a[href$="'+permalink+'"]');
+            }
+
+            if (badges && badges.find("#tc-badge").length == 0) {
                 var badge = $("#tc-badge");
 
                 if (badge.length > 0)
