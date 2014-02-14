@@ -1,0 +1,30 @@
+<?xml-stylesheet href="chrome://timecamp-timer/skin/hostapp.css" type="text/css"?>
+<overlay id="tc-timerbutton-overlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+    <script type="application/javascript" src="chrome://timecamp-timer/content/firefox.js" />
+
+    <stringbundleset id="stringbundleset">
+        <stringbundle id="tc-timerbutton-strings" src="chrome://timecamp-timer/locale/timerbutton.properties"/>
+    </stringbundleset>
+    <toolbarpallete id="BrowserToolbarPalette">
+        <toolbarbutton id="tc-timerbutton-toolbarbutton"
+                       class="toolbarbutton-1 tc-timerbutton-default"
+                       label="ttttttt"
+                       orient="horizontal" type="menu">
+            <panel id="toolbarPanel"
+                   type="arrow"
+                   noautofocus="true"
+                   consumeoutsideclicks="true"
+                   noautohide="false"
+                   onpopupshowing="window.extensions.timecamp.timer.handleOnLoad();"
+                   level="after_start">
+
+                <vbox id="iframeContainerContainer" align="top">
+                    <iframe id="tcLoginFrame" width="550" height="350"/>
+                </vbox>
+            </panel>
+        </toolbarbutton>
+    </toolbarpallete>
+
+</overlay>

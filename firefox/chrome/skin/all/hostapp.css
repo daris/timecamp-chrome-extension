@@ -1,0 +1,209 @@
+/* ***** BEGIN LICENSE BLOCK *****
+ * Version: MPL 1.1
+ *
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ * http://www.mozilla.org/MPL/
+ *
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
+ *
+ * The Original Code is Panic Button.
+ *
+ * The Initial Developer of the Original Code is 
+ * Alex Eng <ateng@users.sourceforge.net>.
+ * Portions created by the Initial Developer are Copyright (C) 2007-2013
+ * the Initial Developer. All Rights Reserved.
+ *
+ * Contributor(s):
+ *
+ * ***** END LICENSE BLOCK ***** */
+
+
+/* 
+ * Integration with host application
+ */
+
+
+#tc-timerbutton-toolbarbutton {
+  list-style-image:  url("chrome://timecamp-timer/skin/Toolbar.png");
+}
+
+
+/*** Normal-sized icons: 24x24 pixels ***/
+
+.tc-timerbutton-default {
+  -moz-image-region: rect(40px, 48px, 64px, 24px);
+}
+
+.tc-timerbutton-exclamation-in-ball {
+  -moz-image-region: rect(40px, 24px, 64px, 0px);
+}
+
+.tc-timerbutton-window-with-exclamation {
+  -moz-image-region: rect(40px, 72px, 64px, 48px);
+}
+
+.tc-timerbutton-window-with-cross {
+  -moz-image-region: rect(40px, 96px, 64px, 72px);
+}
+
+.tc-timerbutton-window-minimize {
+  -moz-image-region: rect(40px, 120px, 64px, 96px);
+}
+
+.tc-timerbutton-quit {
+  -moz-image-region: rect(40px, 144px, 64px, 120px);
+}
+
+.tc-timerbutton-exit-door {
+  -moz-image-region: rect(40px, 192px, 64px, 168px);
+}
+
+.tc-timerbutton-window-with-check {
+  -moz-image-region: rect(40px, 168px, 64px, 144px);
+}
+
+.tc-timerbutton-window-with-exclamation-ball {
+  -moz-image-region: rect(40px, 216px, 64px, 192px);
+}
+
+.tc-timerbutton-plain-window {
+  -moz-image-region: rect(40px, 240px, 64px, 216px);
+}
+
+.tc-timerbutton-dotted-window {
+  -moz-image-region: rect(40px, 264px, 64px, 240px);
+}
+
+.tc-timerbutton-window-with-globe {
+  -moz-image-region: rect(40px, 288px, 64px, 264px);
+}
+
+.tc-timerbutton-web-page {
+  -moz-image-region: rect(40px, 312px, 64px, 288px);
+}
+
+.tc-timerbutton-web-page-with-globe {
+  -moz-image-region: rect(40px, 336px, 64px, 312px);
+}
+
+.tc-timerbutton-web-document {
+  -moz-image-region: rect(40px, 360px, 64px, 336px);
+}
+
+.tc-timerbutton-smiley {
+  -moz-image-region: rect(40px, 384px, 64px, 360px);
+}
+
+.tc-timerbutton-picture {
+  -moz-image-region: rect(40px, 408px, 64px, 384px);
+}
+
+.tc-timerbutton-desktop {
+  -moz-image-region: rect(40px, 432px, 64px, 408px);
+}
+
+.tc-timerbutton-computer {
+  -moz-image-region: rect(40px, 456px, 64px, 432px);
+}
+
+.tc-timerbutton-letter-a {
+  -moz-image-region: rect(40px, 480px, 64px, 456px);
+}
+
+
+/*** Small-sized icons: 16x16 pixels ***/
+
+toolbar[iconsize="small"] .tc-timerbutton-default {
+  -moz-image-region: rect(64px, 32px, 80px, 16px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-exclamation-in-ball {
+  -moz-image-region: rect(64px, 16px, 80px, 0px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-window-with-exclamation {
+  -moz-image-region: rect(64px, 48px, 80px, 32px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-window-with-cross {
+  -moz-image-region: rect(64px, 64px, 80px, 48px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-window-minimize {
+  -moz-image-region: rect(64px, 80px, 80px, 64px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-quit {
+  -moz-image-region: rect(64px, 96px, 80px, 80px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-exit-door {
+  -moz-image-region: rect(64px, 128px, 80px, 112px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-window-with-check {
+  -moz-image-region: rect(64px, 112px, 80px, 96px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-window-with-exclamation-ball {
+  -moz-image-region: rect(64px, 144px, 80px, 128px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-plain-window {
+  -moz-image-region: rect(64px, 160px, 80px, 144px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-dotted-window {
+  -moz-image-region: rect(64px, 176px, 80px, 160px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-window-with-globe {
+  -moz-image-region: rect(64px, 192px, 80px, 176px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-web-page {
+  -moz-image-region: rect(64px, 208px, 80px, 192px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-web-page-with-globe {
+  -moz-image-region: rect(64px, 224px, 80px, 208px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-web-document {
+  -moz-image-region: rect(64px, 240px, 80px, 224px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-smiley {
+  -moz-image-region: rect(64px, 256px, 80px, 240px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-picture {
+  -moz-image-region: rect(64px, 272px, 80px, 256px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-desktop {
+  -moz-image-region: rect(64px, 288px, 80px, 272px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-computer {
+  -moz-image-region: rect(64px, 304px, 80px, 288px);
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-letter-a {
+  -moz-image-region: rect(64px, 320px, 80px, 304px);
+}
+
+.tc-timerbutton-custom-icon image {
+  /* 24x24 px */
+  height: 24px;
+}
+
+toolbar[iconsize="small"] .tc-timerbutton-custom-icon image {
+  /* 16x16 px */
+  height: 16px;
+}

@@ -10,7 +10,10 @@ Browser = new Browser();
 Locale = new Locale();
 
 var getAccessurl = function (redirect_url) {
-    var internalUrl = encodeURIComponent(chrome.runtime.getURL(redirect_url));
+    if (Browser.isChrome)
+        var internalUrl = encodeURIComponent(chrome.runtime.getURL(redirect_url));
+    else
+        var internalUrl = '';
     return accessUrl + '?redirect_url=' + internalUrl;
 }
 
