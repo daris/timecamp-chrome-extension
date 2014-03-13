@@ -1,0 +1,9 @@
+.git
+.idea
+.gitignore
+zipit.cmd
+zip.vbs
+zipexclude.txt
+README.md
+package.zip
+atlassian-ide-plugin.xml
