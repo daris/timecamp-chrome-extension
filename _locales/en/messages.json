@@ -67,6 +67,10 @@
 	{
 		"message": "Stopping..."
 	},
+	"BUTTON_TIMER_STOPPING_SHORT":
+	{
+		"message": "..."
+	},
 	"BUTTON_TIMER_STOP_TRACKING_ANOTHER_TASK":
 	{
 		"message": "Start new timer"

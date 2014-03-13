@@ -3,6 +3,11 @@
     this.service = 'trello';
     var $this = this;
 
+	this.messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
+    this.messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
+    this.messages.set('synchronizing', 'SYNCING');
+    this.messages.set('buttonTimerStopping', 'BUTTON_TIMER_STOPPING_SHORT');
+	
     this.currentTaskId = function () {
         var url = document.URL;
         var MatchRes = url.match(/\/c\/([a-zA-Z0-9]*)/);

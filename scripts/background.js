@@ -2,11 +2,7 @@ function checkForValidUrl(tabId, changeInfo, tab) {
     if (/trello\.com/.test(tab.url)) {
         chrome.pageAction.show(tabId);
     }
-
-    if (/asana\.com/.test(tab.url)) {
-        chrome.pageAction.show(tabId);
-    }
-
+	
     if (/manageprojects\.com/.test(tab.url)) {
         chrome.pageAction.show(tabId);
     }
