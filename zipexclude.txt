@@ -1,0 +1,8 @@
+.git
+.idea
+.gitignore
+zip.cmd
+zip.vbs
+zipexclude.txt
+README.md
+package.zip
