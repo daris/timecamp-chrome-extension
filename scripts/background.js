@@ -3,9 +3,9 @@ function checkForValidUrl(tabId, changeInfo, tab) {
         chrome.pageAction.show(tabId);
     }
 
-    if (/asana\.com/.test(tab.url)) {
-        chrome.pageAction.show(tabId);
-    }
+//    if (/asana\.com/.test(tab.url)) {
+//        chrome.pageAction.show(tabId);
+//    }
 
     if (/manageprojects\.com/.test(tab.url)) {
         chrome.pageAction.show(tabId);

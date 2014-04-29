@@ -3,25 +3,24 @@
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
     <script type="application/javascript" src="chrome://timecamp-timer/content/firefox.js" />
-
     <stringbundleset id="stringbundleset">
-        <stringbundle id="tc-timerbutton-strings" src="chrome://timecamp-timer/locale/timerbutton.properties"/>
+        <stringbundle src="chrome://timecamp-timer/content/locale/en/timerbutton.properties" id="timecamp-timer-bundle" />
     </stringbundleset>
     <toolbarpallete id="BrowserToolbarPalette">
         <toolbarbutton id="tc-timerbutton-toolbarbutton"
                        class="toolbarbutton-1 tc-timerbutton-default"
-                       label="ttttttt"
+                       label="TimeCamp Timer"
                        orient="horizontal" type="menu">
             <panel id="toolbarPanel"
                    type="arrow"
                    noautofocus="true"
                    consumeoutsideclicks="true"
                    noautohide="false"
-                   onpopupshowing="window.extensions.timecamp.timer.handleOnLoad();"
+                   onpopupshowing="window.extensions.timecamp.timer.handleOnLoading();"
                    level="after_start">
 
-                <vbox id="iframeContainerContainer" align="top">
-                    <iframe id="tcLoginFrame" width="550" height="350"/>
+                <vbox id="iframeContainerContainer" align="top" allowevents="true">
+                    <iframe id="tcLoginFrame" name="tcLoginFrame" width="550" height="350" allowevents="true"/>
                 </vbox>
             </panel>
         </toolbarbutton>

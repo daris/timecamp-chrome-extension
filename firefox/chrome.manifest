@@ -1,10 +1,9 @@
-content     timecamp-timer    chrome/content/
+content     timecamp-timer    chrome/content/ contentAccessible=yes
 
 overlay chrome://browser/content/browser.xul chrome://timecamp-timer/content/xuls/main.xul
 
-skin	  timecamp-timer	classic	    chrome/skin/
-skin	  timecamp-timer	classic	chrome/skin/all/
+skin	  timecamp-timer	classic	chrome/skin/
 
-resource	timecamp-timer	./
+resource timecamp-timer chrome/
 
 style	chrome://global/content/customizeToolbar.xul	chrome://timecamp-timer/skin/hostapp.css

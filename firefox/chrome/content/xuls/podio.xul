@@ -1,12 +1,11 @@
 <overlay id="timecampTimerPodio"
          xmlns:html="http://www.w3.org/1999/xhtml"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-    <script src="../jquery-2.0.3.min.js"/>
-    <script src="../moment.min.js"/>
-    <script src="../scripts/Browser.js"/>
-    <script src="../scripts/TimerBase.js"/>
-    <script src="../scripts/Locale.js"/>
-    <script src="../scripts/common.js"/>
-    <script src="../scripts/podio.js"/>
-
+    <script src="../scripts/lib/jquery-2.0.3.min.js"/>
+    <script src="../scripts/lib/moment.min.js"/>
+    <script src="../scripts/commons/Browser.js"/>
+    <script src="../scripts/commons/Locale.js"/>
+    <script src="../scripts/commons/Main.js"/>
+    <script src="../scripts/commons/TimerBase.js"/>
+    <script src="../scripts/sites/podio.js"/>
 </overlay>
