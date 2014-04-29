@@ -202,8 +202,6 @@ function TimerBase() {
             });
     }
     this.updateButtonState = function () {
-
-
         $.when(getToken())
             .then(function (token) {
                 var cardId = $this.currentTaskId();

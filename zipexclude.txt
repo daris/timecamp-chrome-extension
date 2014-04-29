@@ -7,3 +7,4 @@ zipexclude.txt
 README.md
 package.zip
 atlassian-ide-plugin.xml
+firefox
