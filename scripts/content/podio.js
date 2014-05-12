@@ -26,6 +26,12 @@ function PodioTimer() {
         {
             return 'i' + parent.data('item-id');
         }
+
+        var share = $('.share');
+        if (share.length > 0)
+        {
+            return  'i'+ parent.data('item-id');
+        }
         return null;
     };
 
@@ -109,15 +115,16 @@ function PodioTimer() {
     };
 
     this.insertInfoIntoPage = function () {
+        var taskId = $this.currentTaskId();
+        if (!taskId)
+            return;
+
         this.infoInsertingInProgress = true;
-
-        console.log('$this.currentTaskId()',$this.currentTaskId());
-
         console.log('Inserting info...');
-        this.taskDuration[$this.currentTaskId()] = 0;
+        this.taskDuration[taskId] = 0;
         $.when($this.getTrackedTime())
             .then(function (sum) {
-                $this.taskDuration[$this.currentTaskId()] = sum;
+                $this.taskDuration[taskId] = sum;
                 $this.updateTopMessage();
             });
 
@@ -162,6 +169,10 @@ function PodioTimer() {
     };
 
     this.insertButtonIntoPage = function () {
+        var taskId = $this.currentTaskId();
+        if (!taskId)
+            return;
+
         this.buttonInsertionInProgress = true;
         console.log('Inserting button into page...');
         var button = $('<div/>', {'class': 'float-left tc button-new silver'}).width('auto');
