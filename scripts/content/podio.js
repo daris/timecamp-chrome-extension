@@ -30,7 +30,10 @@ function PodioTimer() {
         var share = $('.share');
         if (share.length > 0)
         {
-            return  'i'+ parent.data('item-id');
+            if (!share.data('id'))
+                return null;
+
+            return  'i'+ share.data('id');
         }
         return null;
     };
@@ -116,6 +119,7 @@ function PodioTimer() {
 
     this.insertInfoIntoPage = function () {
         var taskId = $this.currentTaskId();
+        console.log('taskId',taskId);
         if (!taskId)
             return;
 
