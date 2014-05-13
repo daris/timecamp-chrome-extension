@@ -1,10 +1,10 @@
 .git
 .idea
+firefox
 .gitignore
-zipit.cmd
 zip.vbs
+zipit.cmd
 zipexclude.txt
 README.md
 package.zip
 atlassian-ide-plugin.xml
-firefox
