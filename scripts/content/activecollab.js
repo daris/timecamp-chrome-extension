@@ -94,7 +94,11 @@
     }
 
     this.insertButtonIntoPage = function () {
-        console.log('Inserting button into page...')
+        console.log('Inserting button into page...');
+
+        var buttonObj = new TimerButton($this.currentTaskId());
+        this.buttons[$this.currentTaskId()] = buttonObj;
+        buttonObj.insertInProgress = true;
 
         this.buttonInsertionInProgress = true;
         var button = $('<li/>');
@@ -116,10 +120,13 @@
                 $this.buttonInsertionInProgress = false;
             });
         button.click(function () {
-            $this.buttonClick();
+            $this.buttonClick($this.currentTaskId());
         });
         var buttonList = $('.objects_list_details_single_wrapper').find('.actions');
         buttonList.append(button);
+
+        buttonObj.insertInProgress = false;
+        buttonObj.uiElement = a;
     }
 
     this.bindEvents(this);

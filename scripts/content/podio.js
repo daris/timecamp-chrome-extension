@@ -119,7 +119,6 @@ function PodioTimer() {
 
     this.insertInfoIntoPage = function () {
         var taskId = $this.currentTaskId();
-        console.log('taskId',taskId);
         if (!taskId)
             return;
 
@@ -177,6 +176,10 @@ function PodioTimer() {
         if (!taskId)
             return;
 
+        var buttonObj = new TimerButton(taskId);
+        this.buttons[taskId] = buttonObj;
+        buttonObj.insertInProgress = true;
+
         this.buttonInsertionInProgress = true;
         console.log('Inserting button into page...');
         var button = $('<div/>', {'class': 'float-left tc button-new silver'}).width('auto');
@@ -188,7 +191,7 @@ function PodioTimer() {
         a.append($('<span/>', { 'class': 'time' }).text("00:00").css({ padding: "0px 2px 2px", 'margin-left': '5px'}).hide());
 
         button.click(function () {
-            $this.buttonClick();
+            $this.buttonClick($this.currentTaskId());
         });
         var buttonList = $(".preview-panel").find('.action-bar').find('ul').eq(0);
         if (buttonList.length == 0)
@@ -201,6 +204,8 @@ function PodioTimer() {
             .always(function () {
                 $this.buttonInsertionInProgress = false;
             });
+        buttonObj.insertInProgress = false;
+        buttonObj.uiElement = a;
     };
 
     this.bindEvents(this);

@@ -9,7 +9,7 @@ var accessUrl = serverUrl + "auth/access";
 var getAccessurl = function (redirect_url) {
     var internalUrl = encodeURIComponent(chrome.runtime.getURL(redirect_url));
     return accessUrl + '?redirect_url=' + internalUrl;
-}
+};
 
 function zeroFill(number, width) {
     width -= number.toString().length;
@@ -34,7 +34,7 @@ var getLoggedOutFlag = function () {
             }
         });
     });
-}
+};
 
 var getStoredToken = function () {
     return $.Deferred(function (dfd) {
@@ -47,7 +47,7 @@ var getStoredToken = function () {
             }
         });
     });
-}
+};
 
 var storeToken = function (token) {
     chrome.storage.sync.set({ 'token': token , 'removed' : false}, function () {
@@ -55,7 +55,7 @@ var storeToken = function (token) {
             console.log(chrome.runtime.lastError.message);
         }
     });
-}
+};
 
 var removeStoredToken = function () {
     chrome.storage.sync.remove('token', function () {
@@ -68,7 +68,7 @@ var removeStoredToken = function () {
             console.log(chrome.runtime.lastError.message);
         }
     });
-}
+};
 
 var getToken = function (forceApiCall) {
     return $.Deferred(function (dfd) {
@@ -97,20 +97,23 @@ var getToken = function (forceApiCall) {
             });
         });
     });
-}
+};
 
 function TimerBase() {
     this.service = '';
     this.oneSecondIntervalId = null;
     this.buttonInsertionInProgress = false;
     this.infoInsertingInProgress = false;
-    this.pushInterval = 5000;
+    this.pushInterval = 10000;
     this.isTimerRunning = false;
     this.trackedTaskId = "";
     this.button = null;
     this.syncing = false;
     this.startDate = null;
+    this.multiButton = false;
     this.taskDuration = [];
+    this.buttons = {};
+
     var $this = this;
 
     this.messages = {
@@ -126,59 +129,84 @@ function TimerBase() {
         set: function (key, value) {
             $this.messages[key] = chrome.i18n.getMessage(value);
         }
-    }
+    };
 
     this.updateFreshButton = function () {
         this.updateButtonState();
-    }
+    };
 
-    this.setButtonText = function (text)
-    {
-        if(this.button)
-            this.button.children('.text').html(text);
-    }
-    this.currentTaskId = function () { return ''; }
-    this.onSyncSuccess = function (response) { }
-    this.onSyncFailure = function (reason) { }
-    this.insertButtonIntoPage = function () { }
-    this.insertInfoIntoPage = function () { }
-    this.updateTopMessage = function (startDate) {}
-    this.isButtonInserted = function () {
+
+    this.currentTaskId          = function () { return ''; };
+    this.onSyncSuccess          = function (response) {};
+    this.onSyncFailure          = function (reason) {};
+    this.insertButtonIntoPage   = function () {};
+    this.insertInfoIntoPage     = function () {};
+    this.updateTopMessage       = function (startDate) {};
+    this.getAvailableButtons    = function () {};
+    this.isButtonInserted       = function () {
         return true;
-    }
+    };
+
     this.isInfoInserted = function () {
         return true;
-    }
-    this.buttonClick = function (onStart, onStop) {
+    };
+
+    this.runTimer = function (startDate, button) {
+        return setInterval(function () {
+            var diff = Math.abs((new Date().valueOf() - startDate.valueOf()));
+            var minutes = Math.floor(diff / 1000 / 60);
+            var seconds = Math.floor((diff - minutes * 1000 * 60 ) / 1000);
+            if (button)
+                button.uiElement.children('.time').html(zeroFill(minutes, 2) + ':' + zeroFill(seconds, 2));
+            if ($this.trackedTaskId == $this.currentTaskId())
+                $this.updateTopMessage();
+        }, 1000);
+    };
+
+    this.buttonClick = function (taskId, onStart, onStop) {
         $.when(getToken())
             .then(function (token) {
                 var command;
-                if ($this.isTimerRunning && $this.trackedTaskId == $this.currentTaskId()) {
+                if ($this.isTimerRunning && $this.trackedTaskId == taskId) {
                     command = 'stop';
-                    $this.setButtonText($this.messages.buttonTimerStopping);
+                    $this.buttons[taskId].setButtonText($this.messages.buttonTimerStopping);
                     if (onStop)
                         onStop();
                 }
                 else {
                     command = 'start';
-                    $this.setButtonText($this.messages.buttonTimerStarting);
+                    $this.buttons[taskId].setButtonText($this.messages.buttonTimerStarting);
                     if (onStart)
                         onStart();
                 }
 
                 $this.syncing = false;
-                $this.apiCall(apiUrl, token, $this.currentTaskId(), command);
+                $this.apiCall(apiUrl, token, taskId, command);
                 $this.updateButtonState();
             })
-    }
+    };
+
+
 
     this.onDomModified = function () {
-        if (!$this.isButtonInserted())
-            $this.insertButtonIntoPage();
+        if ($this.multiButton)
+        {
+            var tasks = $this.getAvailableButtons();
+            for (i in tasks)
+            {
+                if (!$this.isButtonInserted(tasks[i].taskId))
+                    $this.insertButtonIntoPage(tasks[i]);
+            }
+        }
+        else
+        {
+            if (!$this.isButtonInserted())
+                $this.insertButtonIntoPage();
 
-        if (!$this.isInfoInserted())
-            $this.insertInfoIntoPage();
-    }
+            if (!$this.isInfoInserted())
+                $this.insertInfoIntoPage();
+        }
+    };
 
     this.apiCall = function (apiUrl, token, cardId, action) {
         if (this.syncing)
@@ -200,7 +228,8 @@ function TimerBase() {
         }).always(function () {
                 $this.syncing = false;
             });
-    }
+    };
+
     this.updateButtonState = function () {
         $.when(getToken())
             .then(function (token) {
@@ -214,56 +243,56 @@ function TimerBase() {
 
                 $this.onSyncSuccess(response);
 
-                if ($this.isTimerRunning) {
-
+                if ($this.isTimerRunning)
+                {
                     $this.trackedTaskId = response.external_task_id;
-                    if ($this.trackedTaskId != $this.currentTaskId())
+                    var startDate = new Date(new Date().valueOf() - response.elapsed * 1000);
+                    var button = $this.buttons[$this.trackedTaskId];
+                    $this.startDate = startDate;
+
+                    for (var i in $this.buttons)
                     {
-                        $this.setButtonText($this.messages.buttonTimerStopTrackingAnotherTask);
-                        return;
+                        if ($this.trackedTaskId != i)
+                        {
+                            $this.buttons[i].setButtonText($this.messages.buttonTimerStopTrackingAnotherTask);
+                            $this.buttons[i].uiElement.children('.time').hide();
+                        }
                     }
 
-                    $this.setButtonText($this.messages.buttonTimerStarted);
-                    if($this.button)
-                        $this.button.children('.time').show();
-                    var startDate = new Date(new Date().valueOf() - response.elapsed * 1000);
-                    $this.startDate = startDate;
                     if ($this.oneSecondIntervalId) {
                         clearInterval($this.oneSecondIntervalId);
                     }
 
+                    if(button)
+                    {
+                        button.setButtonText($this.messages.buttonTimerStarted);
+                        $this.oneSecondIntervalId = $this.runTimer(startDate, button);
+                        button.uiElement.children('.time').show();
+                    }
                     $this.updateTopMessage();
-                    $this.oneSecondIntervalId = setInterval(function () {
-                        var diff = Math.abs((new Date().valueOf() - startDate.valueOf()));
-                        var minutes = Math.floor(diff / 1000 / 60);
-                        var seconds = Math.floor((diff - minutes * 1000 * 60 ) / 1000);
-                        if ($this.button)
-                            $this.button.children('.time').html(zeroFill(minutes, 2) + ':' + zeroFill(seconds, 2));
-                        if ($this.trackedTaskId == $this.currentTaskId())
-                            $this.updateTopMessage();
-                    }, 1000);
                 }
                 else {
-                    if ($this.button)
-                        $this.button.children('.time').hide();
-
-                    $this.setButtonText($this.messages.buttonTimerStopped);
+                    for (var i in $this.buttons)
+                    {
+                        $this.buttons[i].uiElement.children('.time').hide();
+                        $this.buttons[i].setButtonText($this.messages.buttonTimerStopped);
+                    }
                     clearInterval($this.oneSecondIntervalId);
-                        $this.updateTopMessage();
+                    $this.updateTopMessage();
                 }
             }).fail(function (reason) {
                 $this.onSyncFailure(reason);
 
                 getLoggedOutFlag().done(function(loggedOut){
                     if (loggedOut) {
-                        $this.setButtonText($this.messages.buttonLogIn);
-                        $this.updateTopMessage();
+                        for (var i in $this.buttons)
+                            $this.buttons[i].setButtonText($this.messages.buttonLogIn);
                     } else {
-                        $this.setButtonText($this.messages.buttonConnectionError);
-                        $this.updateTopMessage();
+                        for (var i in $this.buttons)
+                            $this.buttons[i].setButtonText($this.messages.buttonConnectionError);
                     }
+                    $this.updateTopMessage();
                 });
-
             });
     };
 
@@ -310,7 +339,7 @@ function TimerBase() {
         if(time.minutes > 0){   return time.minutes + ' minute'+(time.minutes == 1 ? '' : 's');}
 
         return 'seconds';
-    }
+    };
 
     this.bindEvents = function ($that) {
         $this = $that;
@@ -322,3 +351,26 @@ function TimerBase() {
     }
 }
 
+function TimerButton(taskId) {
+    this.taskId     = taskId;
+    this.uiElement  = null;
+    this.insertInProgress = false;
+
+    var $this = this;
+
+    this.isRunning = function ()
+    {
+        return timer.trackedTaskId == $this.taskId;
+    };
+
+    this.isInserted = function ()
+    {
+        return $this.insertInProgress || $('#timecamp-track-button-'+$this.taskId).length > 0;
+    };
+
+    this.setButtonText = function (text)
+    {
+        if ($this.uiElement)
+            $this.uiElement.children('.text').html(text);
+    };
+}

@@ -30,6 +30,10 @@ function AsanaTimer() {
         if (dueDate.css('margin-right') == '7px')
             dueDate.css('margin-right','0px');
 
+        var buttonObj = new TimerButton($this.currentTaskId());
+        this.buttons[$this.currentTaskId()] = buttonObj;
+        buttonObj.insertInProgress = true;
+
         this.buttonInsertionInProgress = true;
         var div1 = $('<div/>', { 'class': 'loading-boundary hidden'});
         var div2 = $('<div/>', { 'class': 'redesign-timecamp-container'});
@@ -59,10 +63,12 @@ function AsanaTimer() {
                 $this.buttonInsertionInProgress = false;
         });
         button.click(function () {
-            $this.buttonClick(null, function () { $this.button.children('.time').hide() });
+            $this.buttonClick($this.currentTaskId(), null, function () { $this.button.children('.time').hide() });
         });
         var buttonList = $('#right_pane').find('.toolbar-section.left').children().eq(1);
         div1.insertAfter(buttonList);
+        buttonObj.insertInProgress = false;
+        buttonObj.uiElement = button;
     }
 
     this.onSyncSuccess = function (response) {

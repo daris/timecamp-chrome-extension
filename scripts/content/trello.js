@@ -99,6 +99,10 @@
     this.insertButtonIntoPage = function () {
         console.log('Inserting button into page...');
 
+        var buttonObj = new TimerButton($this.currentTaskId());
+        this.buttons[$this.currentTaskId()] = buttonObj;
+        buttonObj.insertInProgress = true;
+
         this.buttonInsertionInProgress = true;
         var button = $('<a/>', { 'class': 'button-link', 'id': 'timecamp-track-button', 'status': 'unknown' });
         this.button = button;
@@ -117,13 +121,16 @@
             .always(function () {
                 $this.buttonInsertionInProgress = false;
             });
+
+
         button.click(function () {
-            $this.buttonClick();
+            $this.buttonClick($this.currentTaskId());
         });
         var buttonList = $('.window-module.other-actions.clearfix .clearfix');
         buttonList.prepend(button);
         $('<hr />').insertAfter('#timecamp-track-button');
-
+        buttonObj.insertInProgress = false;
+        buttonObj.uiElement = button;
     }
 
     this.bindEvents(this);

@@ -74,5 +74,10 @@
 	"BUTTON_TIMER_STOP_TRACKING_ANOTHER_TASK":
 	{
 		"message": "Start new timer"
-	}
+	},
+    "EMPTY_MESSAGE":
+    {
+        "message": ""
+    }
+
 }

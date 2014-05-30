@@ -1,6 +1,6 @@
 {
     "name": "__MSG_NAME__",
-    "version": "1.0.9",
+    "version": "1.1.0",
     "manifest_version": 2,
     "description": "__MSG_DESCRIPTION__",
     "icons": {
@@ -39,6 +39,13 @@
             ],
             "css": ["styles/style.css"],
             "js": ["scripts/jquery-2.0.3.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/podio.js"]
+        },
+        {
+            "matches": [
+                "*://*.pivotaltracker.com/*"
+            ],
+            "css": ["styles/style.css"],
+            "js": ["scripts/jquery-2.0.3.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/pivotaltracker.js"]
         }
     ],
     "homepage_url": "http://www.timecamp.com/",
@@ -47,9 +54,6 @@
     "permissions": [
         "tabs",
         "storage",
-        "https://*.trello.com/*",
-        "https://*.asana.com/*",
-        "https://*.manageprojects.com/*",
         "https://*.timecamp.com/*",
         "https://test.timecamp.pl/*",
         "https://localhost/*",
