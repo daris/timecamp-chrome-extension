@@ -97,6 +97,8 @@
     }
 
     this.insertButtonIntoPage = function () {
+        if (!$this.currentTaskId())
+            return;
         console.log('Inserting button into page...');
 
         var buttonObj = new TimerButton($this.currentTaskId());
