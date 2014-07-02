@@ -20,26 +20,43 @@ function AsanaTimer() {
     }
 
     this.isButtonInserted = function () {
-        return !(!this.buttonInsertionInProgress && $('#timecamp-track-button').length == 0 && $('#right_pane').length > 0);
+        if (this.buttonInsertionInProgress)
+            return true;
+
+        var button = $('#timecamp-track-button');
+
+        if (button.length > 0)
+        {
+            if (button.attr('data-taskId') != $this.currentTaskId())
+            {
+                button.remove();
+                return false;
+            }
+            return true;
+        }
+
+        return $('#right_pane').length == 0;
     }
 
     this.insertButtonIntoPage = function () {
+        this.buttonInsertionInProgress = true;
         console.log('Inserting button into page...');
+        var currentTaskId = $this.currentTaskId();
 
         var dueDate = $(".property.due_date.flyout-owner").eq(0);
         if (dueDate.css('margin-right') == '7px')
             dueDate.css('margin-right','0px');
 
-        var buttonObj = new TimerButton($this.currentTaskId());
-        this.buttons[$this.currentTaskId()] = buttonObj;
+
+        var buttonObj = new TimerButton(currentTaskId);
+        this.buttons[currentTaskId] = buttonObj;
         buttonObj.insertInProgress = true;
 
-        this.buttonInsertionInProgress = true;
         var div1 = $('<div/>', { 'class': 'loading-boundary hidden'});
         var div2 = $('<div/>', { 'class': 'redesign-timecamp-container'});
         var div3 = $('<div/>', { 'class': 'property tc flyout-owner'});
         var div4 = $('<div/>', { 'class': 'property-name', 'id':'lunaTC' });
-        var button = $('<span/>', { 'id': 'timecamp-track-button', 'status': 'unknown', 'style':'position:relative' });
+        var button = $('<span/>', { 'id': 'timecamp-track-button', 'data-taskId': currentTaskId, 'status': 'unknown', 'style':'position:relative' });
 
         this.button = button;
         div1.append(div2);
@@ -59,9 +76,7 @@ function AsanaTimer() {
             'text-shadow': 'none'
         }).hide());
 
-        $.when(this.updateFreshButton()).always(function () {
-                $this.buttonInsertionInProgress = false;
-        });
+
         button.click(function () {
             $this.buttonClick($this.currentTaskId(), null, function () { $this.button.children('.time').hide() });
         });
@@ -69,6 +84,10 @@ function AsanaTimer() {
         div1.insertAfter(buttonList);
         buttonObj.insertInProgress = false;
         buttonObj.uiElement = button;
+
+        $.when(this.updateFreshButton()).always(function () {
+            $this.buttonInsertionInProgress = false;
+        });
     }
 
     this.onSyncSuccess = function (response) {

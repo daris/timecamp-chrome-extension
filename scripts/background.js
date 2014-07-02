@@ -14,6 +14,10 @@ function checkForValidUrl(tabId, changeInfo, tab) {
     if (/pivotaltracker\.com/.test(tab.url)) {
         chrome.pageAction.show(tabId);
     }
+
+    if (/asana\.com/.test(tab.url)) {
+        chrome.pageAction.show(tabId);
+    }
 };
 
 // Listen for any changes to the URL of any tab.
