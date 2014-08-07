@@ -301,6 +301,11 @@ function TimerBase() {
         return $.Deferred(function (dfd) {
             $.when(getToken())
                 .then(function (token) {
+                    if (!$this.currentTaskId())
+                    {
+                        dfd.reject();
+                        return;
+                    }
                     $.ajax({
                         url: restUrl+'entries/format/json',
                         data: {

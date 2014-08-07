@@ -73,20 +73,38 @@
     }
 
     this.isButtonInserted = function () {
-        return !(!this.buttonInsertionInProgress && $('#timecamp-track-button').length == 0 && $('.window .window-main-col').length > 0);
+        if (this.buttonInsertionInProgress)
+            return true;
+
+        if ($('#timecamp-track-button').length > 0)
+            return true;
+
+        return $('.window .window-main-col').length == 0;
     }
 
     this.isInfoInserted = function () {
-        return this.infoInsertingInProgress || $("#timecamp-track-info").length > 0;
+        if (this.infoInsertingInProgress)
+            return true;
+
+        if ($('#timecamp-track-info').length > 0)
+            return true;
+
+        if ($('.window-header-inline-content.js-current-list').length == 0)
+            return true;
+
+        return false;
     }
 
     this.insertInfoIntoPage = function () {
+        var taskId = $this.currentTaskId();
+        if (!taskId)
+            return;
         console.log('Inserting Info into page...');
         this.infoInsertingInProgress = true;
 
         $.when($this.getTrackedTime())
             .then(function (sum) {
-                $this.taskDuration[$this.currentTaskId()] = sum;
+                $this.taskDuration[taskId] = sum;
                 $this.updateTopMessage();
             });
 
