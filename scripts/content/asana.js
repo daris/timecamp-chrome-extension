@@ -85,7 +85,7 @@ function AsanaTimer() {
         buttonObj.insertInProgress = false;
         buttonObj.uiElement = button;
 
-        $.when(this.updateFreshButton()).always(function () {
+        $.when(this.updateButtonState()).always(function () {
             $this.buttonInsertionInProgress = false;
         });
     }
@@ -93,7 +93,7 @@ function AsanaTimer() {
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
             this.trackedTaskId = response.external_task_id;
-            var badges = $("#center_pane").find("textarea[id$='"+ this.trackedTaskId +"']").siblings('div')
+            var badges = $("#center_pane").find("textarea[id$='"+ this.trackedTaskId +"']").siblings('div');
             if (badges.find("#tc-badge").length == 0) {
                 var badge = $("#tc-badge");
 

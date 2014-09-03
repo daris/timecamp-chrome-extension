@@ -1,4 +1,4 @@
-﻿var serverUrl = 'https://timecamp.com/';
+﻿var serverUrl = 'https://www.timecamp.com/';
 
 var restUrl = serverUrl + 'third_party/api/';
 var apiUrl = serverUrl + 'third_party/api/timer/format/json';
@@ -104,7 +104,7 @@ function TimerBase() {
     this.oneSecondIntervalId = null;
     this.buttonInsertionInProgress = false;
     this.infoInsertingInProgress = false;
-    this.pushInterval = 10000;
+    this.pushInterval = 30000;
     this.isTimerRunning = false;
     this.trackedTaskId = "";
     this.button = null;
@@ -130,11 +130,6 @@ function TimerBase() {
             $this.messages[key] = chrome.i18n.getMessage(value);
         }
     };
-
-    this.updateFreshButton = function () {
-        this.updateButtonState();
-    };
-
 
     this.currentTaskId          = function () { return ''; };
     this.onSyncSuccess          = function (response) {};
@@ -164,25 +159,38 @@ function TimerBase() {
     };
 
     this.buttonClick = function (taskId, onStart, onStop) {
+        if (!taskId)
+            return;
+        if (!$this.buttons[taskId].isEnabled())
+            return;
+
         $.when(getToken())
             .then(function (token) {
                 var command;
                 if ($this.isTimerRunning && $this.trackedTaskId == taskId) {
                     command = 'stop';
                     $this.buttons[taskId].setButtonText($this.messages.buttonTimerStopping);
+                    $this.buttons[taskId].enabled = false;
+                    $this.buttons[taskId].uiElement.children('.time').hide();
                     if (onStop)
                         onStop();
+
+                    if ($this.oneSecondIntervalId) {
+                        clearInterval($this.oneSecondIntervalId);
+                    }
                 }
                 else {
                     command = 'start';
                     $this.buttons[taskId].setButtonText($this.messages.buttonTimerStarting);
+                    $this.buttons[taskId].enabled = false;
                     if (onStart)
                         onStart();
                 }
 
                 $this.syncing = false;
-                $this.apiCall(apiUrl, token, taskId, command);
-                $this.updateButtonState();
+                $this.apiCall(apiUrl, token, taskId, command).done(function() {
+                    $this.updateButtonState();
+                });
             })
     };
 
@@ -212,18 +220,15 @@ function TimerBase() {
         if (this.syncing)
             return null;
 
-        var fd = new FormData();
-        fd.append('api_token', token);
-        fd.append('service', this.service);
-        fd.append('action', action);
-        fd.append('external_task_id', cardId);
-
         this.syncing = true;
         return $.ajax({
             url: apiUrl,
-            data: fd,
-            processData: false,
-            contentType: false,
+            data: {
+                api_token   : token,
+                service     : this.service,
+                action      : action,
+                external_task_id : cardId
+            },
             type: 'POST'
         }).always(function () {
                 $this.syncing = false;
@@ -242,6 +247,9 @@ function TimerBase() {
                 $this.isTimerRunning = response.isTimerRunning;
 
                 $this.onSyncSuccess(response);
+
+                for (var i in $this.buttons)
+                    $this.buttons[i].enabled = true;
 
                 if ($this.isTimerRunning)
                 {
@@ -359,13 +367,19 @@ function TimerBase() {
 function TimerButton(taskId) {
     this.taskId     = taskId;
     this.uiElement  = null;
-    this.insertInProgress = false;
+    this.insertInProgress = true;
+    this.enabled    = false;
 
     var $this = this;
 
     this.isRunning = function ()
     {
         return timer.trackedTaskId == $this.taskId;
+    };
+
+    this.isEnabled = function ()
+    {
+        return !this.insertInProgress && this.enabled;
     };
 
     this.isInserted = function ()

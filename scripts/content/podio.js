@@ -200,7 +200,7 @@ function PodioTimer() {
             buttonList = $("#timecamp-container").find('.value').eq(0);
         buttonList.prepend(button);
 
-        $.when(this.updateFreshButton())
+        $.when(this.updateButtonState())
             .always(function () {
                 $this.buttonInsertionInProgress = false;
             });

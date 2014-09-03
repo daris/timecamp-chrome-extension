@@ -115,7 +115,7 @@
             color: "white"
         }).hide());
 
-        $.when(this.updateFreshButton())
+        $.when(this.updateButtonState())
             .always(function () {
                 $this.buttonInsertionInProgress = false;
             });
