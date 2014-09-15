@@ -1,99 +1,78 @@
-function AsanaTimer() {
+function TeamworkTimer() {
 
-    this.service = 'asana';
+    this.service = 'teamwork';
     this.messages.set('synchronizing', 'SYNCING');
     this.messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
     this.messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
-    this.messages.set('buttonTimerStarted', '');
+    this.messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
     this.infoInsertingInProgress = false;
     var $this = this;
 
     this.currentTaskId = function () {
         var url = document.URL;
-        var MatchRes = url.match(/([0-9]+)/g);
+
+        var MatchRes = /tasks\/([0-9]+)/g.exec(url);
         if (MatchRes) {
-            var id = MatchRes[MatchRes.length-1];
+            var id = MatchRes[1];
             return id;
         } else {
             return null;
         }
-    }
+    };
 
     this.isButtonInserted = function () {
         if (this.buttonInsertionInProgress)
             return true;
 
-        var button = $('#timecamp-track-button');
-
-        if (button.length > 0)
-        {
-            if (button.attr('data-taskId') != $this.currentTaskId())
-            {
-                button.remove();
-                return false;
-            }
+        if ($('#timecamp-track-button').length > 0)
             return true;
-        }
 
-        return $('#right_pane').length == 0;
-    }
+        return $('#Task').find('.titlecontent ul.options').length == 0;
+    };
 
     this.insertButtonIntoPage = function () {
         this.buttonInsertionInProgress = true;
         console.log('Inserting button into page...');
         var currentTaskId = $this.currentTaskId();
 
-        var dueDate = $(".property.due_date.flyout-owner").eq(0);
-        if (dueDate.css('margin-right') == '7px')
-            dueDate.css('margin-right','0px');
+        var parent = $('#Task').find('.titlecontent ul.options');
 
 
         var buttonObj = new TimerButton(currentTaskId);
         this.buttons[currentTaskId] = buttonObj;
         buttonObj.insertInProgress = true;
-x
-        var div1 = $('<div/>', { 'class': 'loading-boundary hidden'});
-        var div2 = $('<div/>', { 'class': 'redesign-timecamp-container'});
-        var div3 = $('<div/>', { 'class': 'property tc flyout-owner'});
-        var div4 = $('<div/>', { 'class': 'property-name', 'id':'lunaTC' });
-        var button = $('<span/>', { 'id': 'timecamp-track-button', 'data-taskId': currentTaskId, 'status': 'unknown', 'style':'position:relative' });
 
+        var li = $('<li/>');
+        var button = $('<button/>', { class:'btn btn-default', 'id': 'timecamp-track-button', 'data-taskId': currentTaskId });
         this.button = button;
-        div1.append(div2);
-        div2.append(div3);
-        div3.append(div4);
-        div4.append(button);
-        button.append($('<img src="' + chrome.extension.getURL('images/icon-14.png') + '" style="position: absolute; margin-left:7px; margin-top:-8px; top: 50%;"/>'));
-        button.append($('<span/>', { 'class': 'text', 'style': 'display: inline-block; padding-left: 30px; padding-right:10px;' }).text(this.messages.synchronizing));
+        buttonObj.uiElement = button;
+
+        li.append(button);
+        parent.prepend(li);
+        button.append($('<img id="tc-logo" src="' + chrome.extension.getURL('images/icon-14.png') + '"/>'));
+        button.append($('<span/>', { 'class': 'text' }).text(this.messages.synchronizing));
         button.append($('<span/>', { 'class': 'time' }).text("00:00").css({
-            "font-size": "12px",
-            padding: "0px 2px",
-            "border-radius": "3px",
-            "background-color": "green",
-            color: "white",
-            'margin-right': '5px',
-            'margin-left': '-13px',
-            'text-shadow': 'none'
+
         }).hide());
 
 
         button.click(function () {
             $this.buttonClick($this.currentTaskId(), null, function () { $this.button.children('.time').hide() });
         });
-        var buttonList = $('#right_pane').find('.toolbar-section.left').children().eq(1);
-        div1.insertAfter(buttonList);
+
         buttonObj.insertInProgress = false;
-        buttonObj.uiElement = button;
 
         $.when(this.updateButtonState()).always(function () {
             $this.buttonInsertionInProgress = false;
         });
-    }
+    };
 
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
             this.trackedTaskId = response.external_task_id;
-            var badges = $("#center_pane").find("textarea[id$='"+ this.trackedTaskId +"']").siblings('div');
+
+            var id = "#task"+this.trackedTaskId;
+            var badges = $(id).find('.taskIcons');
             if (badges.find("#tc-badge").length == 0) {
                 var badge = $("#tc-badge");
 
@@ -115,7 +94,7 @@ x
         {
             this.onSyncFailure();
         }
-    }
+    };
 
     this.updateTopMessage = function () {
         var timecampTrackInfo = $('#timecamp-track-info');
@@ -133,34 +112,57 @@ x
             timecampTrackInfo.html('');
         else
             timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task');
-    }
+    };
 
     this.isInfoInserted = function () {
-        return this.infoInsertingInProgress || $("#timecamp-track-info").length > 0;
-    }
+        return true;
+    };
 
     this.insertInfoIntoPage = function () {
-        this.infoInsertingInProgress = true;
-        this.taskDuration[$this.currentTaskId()] = 0;
-        $.when($this.getTrackedTime())
-            .then(function (sum) {
-                $this.taskDuration[$this.currentTaskId()] = sum;
-                $this.updateTopMessage();
-            });
-
-        var infoTop = $('#right_pane').find('.small-feed-story-group');
-        var info = $('<span/>', { 'id': 'timecamp-track-info' });
-        infoTop.prepend(info);
-        this.infoInsertingInProgress = false;
-    }
+    };
 
     this.onSyncFailure = function () {
         var badge = $("#tc-badge");
         if (badge.length > 0)
             badge.remove();
-    }
+    };
+
+    this.getParentId = function() {
+        var overview = $('#tab_overview');
+        if (!overview.length)
+            return null;
+
+        var link = overview.children('a:first').attr('href');
+        if (link == '' || link === undefined)
+            return null;
+        if (link == this.lastData)
+            return this.lastParentId;
+
+        var id = /projects\/([0-9]+)+-.*\/overview/.exec(link);
+
+        if (id.length < 2)
+            return null;
+
+        this.lastData = link;
+        this.lastParentId = id[1];
+        return id[1];
+    };
+
+    this.onTrackingDisabled = function() {
+        var button = this.buttons[this.currentTaskId()];
+        if (!button || button.denied)
+            return;
+
+        var notice = $('<div/>', {'class': 'teamwork-settings-notice',
+            'html':'Current settings of the integration in TimeCamp don\'t allow time tracking for this tasks. <a href="https://www.timecamp.com/addons/teamwork/index/'+this.lastParentId+'" target="_blank">Synchronize this project</a> to start tracking time.'});
+
+        button.denied = true;
+        button.uiElement.off('click').children().css({'opacity': '0.6'});
+        $("#tc-logo").css({'-webkit-filter':'saturate(0%)'});
+        $('#TaskContent').find('.taskList').before(notice);
+    };
 
     this.bindEvents(this);
 }
-AsanaTimer.prototype = new TimerBase();
-timer = new AsanaTimer();
+TeamworkTimer.prototype = new TimerBase();
+timer = new TeamworkTimer();

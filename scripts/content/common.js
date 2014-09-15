@@ -113,6 +113,9 @@ function TimerBase() {
     this.multiButton = false;
     this.taskDuration = [];
     this.buttons = {};
+    this.trackableParents = false;
+    this.lastParentId = null;
+    this.lastData = null;
 
     var $this = this;
 
@@ -138,12 +141,34 @@ function TimerBase() {
     this.insertInfoIntoPage     = function () {};
     this.updateTopMessage       = function (startDate) {};
     this.getAvailableButtons    = function () {};
+    this.onTrackingDisabled     = function () {};
+
     this.isButtonInserted       = function () {
         return true;
     };
 
     this.isInfoInserted = function () {
         return true;
+    };
+
+    this.getParentId = function() {
+        return false;
+    };
+
+
+
+    this.canTrack = function () {
+        var parent = this.getParentId();
+        if (!parent || !this.trackableParents)
+            return true;
+
+        if (this.trackableParents == 'all')
+            return true;
+
+        if (this.trackableParents.indexOf(parent) !== -1)
+            return true;
+
+        return false;
     };
 
     this.runTimer = function (startDate, button) {
@@ -208,11 +233,17 @@ function TimerBase() {
         }
         else
         {
-            if (!$this.isButtonInserted())
-                $this.insertButtonIntoPage();
+            if ($('#timecamp-track-button').length == 0)
+            {
+                if (!$this.isButtonInserted())
+                    $this.insertButtonIntoPage();
 
-            if (!$this.isInfoInserted())
-                $this.insertInfoIntoPage();
+                if (!$this.isInfoInserted())
+                    $this.insertInfoIntoPage();
+            }
+            if (!$this.canTrack())
+                $this.onTrackingDisabled();
+
         }
     };
 
@@ -356,12 +387,26 @@ function TimerBase() {
 
     this.bindEvents = function ($that) {
         $this = $that;
-        setInterval(function () {
-            $this.updateButtonState();
-        }, this.pushInterval);
+        setInterval($this.updateButtonState, this.pushInterval);
+        setTimeout($this.updateButtonState, 3000);
 
         document.addEventListener("DOMNodeInserted", this.onDomModified);
-    }
+
+        $.when(getToken()).then(function (token)
+        {
+            $.ajax({
+                url: restUrl+'can_track/format/json',
+                data: {
+                    api_token: token,
+                    service: $this.service
+                },
+                type: 'GET'
+            }).done(function (response) {
+                $this.trackableParents = response['trackable_parents'];
+
+            }).fail(function () {$this.trackableParents = false;});
+        });
+    };
 }
 
 function TimerButton(taskId) {
@@ -369,6 +414,7 @@ function TimerButton(taskId) {
     this.uiElement  = null;
     this.insertInProgress = true;
     this.enabled    = false;
+    this.denied     = false;
 
     var $this = this;
 

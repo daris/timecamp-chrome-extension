@@ -71,6 +71,20 @@ function PodioTimer() {
         }
     };
 
+    this.onTrackingDisabled = function () {
+        var button = this.buttons[this.currentTaskId()];
+        if (!button || button.denied)
+            return;
+        button.denied = true;
+        button.uiElement.parent().off('click');
+
+        var notice = $('<div/>', {'class': 'podio-settings-notice','html':'Current settings of the integration don\'t allow time tracking for this tasks. <a href="https://www.timecamp.com/addons/podio/index/'+this.lastParentId+'" target="_blank">Synchronize this application</a> to start tracking time.'});
+        $("#timecamp-track-info").hide().after(notice);
+        $("#tc-logo").css({'opacity': '0.5', '-webkit-filter':'saturate(0%)'});
+        $("#timecamp-track-button").children('.text').css({'opacity': '0.4'});
+
+    };
+
     this.onSyncFailure = function () {
         var badge = $("#tc-badge");
         if (badge.length > 0)
@@ -147,7 +161,7 @@ function PodioTimer() {
             info.append($('<div/>', { 'class': 'label', 'text':'TimeCamp' }));
 
             var wrapper = $('<div/>', { 'class': 'value'});
-            wrapper.append($('<div/>', { 'id': 'timecamp-track-info', 'text' : 'No data yet', style:'float: left; margin-left: 10px;' }));
+            wrapper.append($('<div/>', { 'id': 'timecamp-track-info', 'text' : 'No data yet', style:'display: inline-block; margin-left: 10px;' }));
 
             info.append(wrapper);
         }
@@ -161,7 +175,7 @@ function PodioTimer() {
             var labelContent = $('<div/>', { 'class': 'label-content', text: 'TimeCamp'});
             labelContentWrapper.append(labelContent);
             frameLabel.append(labelContentWrapper);
-            frameContent.append($('<div/>', { 'class': 'value', 'id': 'timecamp-track-info', 'text' : 'No data yet', 'style':'margin-left: 10px; float: left;' }));
+            frameContent.append($('<div/>', { 'class': 'value', 'id': 'timecamp-track-info', 'text' : 'No data yet', 'style':'margin-left: 10px; display: inline-block;' }));
             frameWrapper.append(frameLabel);
             frameWrapper.append(frameContent);
             info.append(frameWrapper);
@@ -182,11 +196,13 @@ function PodioTimer() {
 
         this.buttonInsertionInProgress = true;
         console.log('Inserting button into page...');
-        var button = $('<div/>', {'class': 'float-left tc button-new silver'}).width('auto');
+        var button = $('<div/>', {'class': ' tc button-new silver','style':'display: inline-block;'}).width('auto');
         var a = $('<a/>', { 'class': 'button-link', 'id': 'timecamp-track-button', 'status': 'unknown' });
+        buttonObj.uiElement = a;
+
         this.button = a;
         button.append(a);
-        a.append($('<img src="' + chrome.extension.getURL('images/icon-16.png') + '" style="vertical-align:text-bottom;"/>'));
+        a.append($('<img src="' + chrome.extension.getURL('images/icon-16.png') + '" id="tc-logo" style="vertical-align:text-bottom;"/>'));
         a.append($('<span/>', { 'class': 'text', 'style':'float: right; margin-left: 5px;' }).text(this.messages.synchronizing));
         a.append($('<span/>', { 'class': 'time' }).text("00:00").css({ padding: "0px 2px 2px", 'margin-left': '5px'}).hide());
 
@@ -200,12 +216,69 @@ function PodioTimer() {
             buttonList = $("#timecamp-container").find('.value').eq(0);
         buttonList.prepend(button);
 
+        buttonObj.insertInProgress = false;
         $.when(this.updateButtonState())
             .always(function () {
                 $this.buttonInsertionInProgress = false;
             });
-        buttonObj.insertInProgress = false;
-        buttonObj.uiElement = a;
+
+    };
+
+    this.getParentId = function()
+    {
+        var dataBox = $('#bootstrap-data-TaskView');
+        if (dataBox.length > 0)
+        {
+            var content = dataBox.html();
+            if (content === undefined)
+                return null;
+            if (content == this.lastData)
+                return $this.lastParentId;
+
+            var data = $.parseJSON(content);
+            var res = ""+data['ref']['data']['app']['app_id'];
+
+            $this.lastData = content;
+            $this.lastParentId = res;
+
+            return res;
+        }
+
+        dataBox = $('#bootstrap-data-item');
+        if (dataBox.length > 0)
+        {
+            content = dataBox.html();
+            if (content === undefined)
+                return null;
+            if (content == this.lastData)
+                return this.lastParentId;
+
+            data = $.parseJSON(content);
+            res = ""+data['app']['app_id'];
+
+            $this.lastData = content;
+            $this.lastParentId = res;
+
+            return res;
+        }
+        dataBox = $('.searchform');
+        dataBox.each(function (key, obj)
+        {
+            var url = $(obj).attr('action');
+            var pattern = /apps\/([0-9]+)+\/search/g;
+            var res = pattern.exec(url);
+
+            if (!res || res.length < 2)
+                return null;
+
+            $this.lastParentId = res[1];
+            return res[1];
+        });
+
+
+
+
+        return $this.lastParentId;
     };
 
     this.bindEvents(this);

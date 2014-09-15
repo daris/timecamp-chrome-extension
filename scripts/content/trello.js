@@ -7,7 +7,8 @@
     this.messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
     this.messages.set('synchronizing', 'SYNCING');
     this.messages.set('buttonTimerStopping', 'BUTTON_TIMER_STOPPING_SHORT');
-	
+
+
     this.currentTaskId = function () {
         var url = document.URL;
         var MatchRes = url.match(/\/c\/([a-zA-Z0-9]*)/);
@@ -17,7 +18,8 @@
         } else {
             return null;
         }
-    }
+    };
+
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
             this.trackedTaskId = response.external_task_id;
@@ -31,8 +33,7 @@
                     badge = $('<img/>',
                         {
                             id:         "tc-badge",
-                            "class":    "badge",
-                            style:      "padding: 1px 4px; height: 14px;",
+                            class:    "badge",
                             src:        chrome.extension.getURL('images/icon-14.png'),
                             title:      this.messages.badgeTimerRunning
                         });
@@ -43,13 +44,13 @@
         {
             this.onSyncFailure();
         }
-    }
+    };
 
     this.onSyncFailure = function () {
         var badge = $("#tc-badge");
         if (badge.length > 0)
             badge.remove();
-    }
+    };
 
     this.updateTopMessage = function () {
         var timecampTrackInfo = $('#timecamp-track-info');
@@ -70,7 +71,7 @@
         {
             timecampTrackInfo.text('');
         }
-    }
+    };
 
     this.isButtonInserted = function () {
         if (this.buttonInsertionInProgress)
@@ -80,7 +81,7 @@
             return true;
 
         return $('.window .window-main-col').length == 0;
-    }
+    };
 
     this.isInfoInserted = function () {
         if (this.infoInsertingInProgress)
@@ -93,7 +94,7 @@
             return true;
 
         return false;
-    }
+    };
 
     this.insertInfoIntoPage = function () {
         var taskId = $this.currentTaskId();
@@ -112,7 +113,7 @@
         var info = $('<span/>', { 'id': 'timecamp-track-info' });
         infoTop.append(info);
         this.infoInsertingInProgress = false;
-    }
+    };
 
     this.insertButtonIntoPage = function () {
         if (!$this.currentTaskId())
@@ -125,17 +126,12 @@
 
         this.buttonInsertionInProgress = true;
         var button = $('<a/>', { 'class': 'button-link', 'id': 'timecamp-track-button', 'status': 'unknown' });
+
+        buttonObj.uiElement = button;
         this.button = button;
-        button.append($('<img src="' + chrome.extension.getURL('images/icon-16.png') + '" />'));
-        button.append($('<span/>', { 'class': 'text', 'style': 'vertical-align: top; margin-left: 0.3em;width: 60; display: inline-block;' }).text(this.messages.synchronizing));
-        button.append($('<span/>', { 'class': 'time' }).text("00:00").css({
-            float: "right",
-            "font-size": "12px",
-            padding: "1px 4px",
-            "border-radius": "3px",
-            "background-color": "green",
-            color: "white"
-        }).hide());
+        button.append($('<img id="tc-logo" src="' + chrome.extension.getURL('images/icon-16.png') + '" />'));
+        button.append($('<span/>', { 'class': 'text' }).text(this.messages.synchronizing));
+        button.append($('<span/>', { 'class': 'time' }).text("00:00").hide());
 
         $.when(this.updateButtonState())
             .always(function () {
@@ -148,10 +144,55 @@
         });
         var buttonList = $('.window-module.other-actions.clearfix .clearfix');
         buttonList.prepend(button);
-        $('<hr />').insertAfter('#timecamp-track-button');
+        $('<hr />').insertBefore('.js-move-card');
         buttonObj.insertInProgress = false;
-        buttonObj.uiElement = button;
-    }
+    };
+
+    this.getParentId = function()
+    {
+        var a = $(".js-recent-boards").find('.sidebar-boards-list').find('a:first');
+        var href = a.prop('href');
+        if (href == this.lastData)
+            return this.lastParentId;
+
+        var pattern = /\/b\/([a-zA-z0-9]+)\//;
+        var res = pattern.exec(href);
+
+        if (res && res.length > 1)
+        {
+            this.lastData = href;
+            this.lastParentId = res[1];
+            return res[1];
+        }
+
+        return null;
+    };
+
+    this.onTrackingDisabled = function() {
+        var button = this.buttons[this.currentTaskId()];
+        if (!button || button.denied)
+            return;
+
+        var link = $('<a/>', {
+            class:'quiet-button',
+            text:'Integration settings',
+            href:'https://www.timecamp.com/addons/trello/index/'+this.lastParentId,
+            title:'Synchronize this board to start tracking time.',
+            target:'_blank'}
+        );
+
+        var p = $('<p/>', {class: 'quiet bottom', id:'tc-integration-link'});
+
+        p.append(link);
+        button.denied = true;
+        button.uiElement.off('click')
+            .addClass('disabled')
+            .attr('title','Current settings of the integration don\'t allow time tracking for this tasks. Please use link below to review and change the settings of the integration')
+            .after(p);
+
+        $("#timecamp-track-info").hide();
+        $("#tc-logo").css({'opacity': '0.7', '-webkit-filter':'saturate(0%)'});
+    };
 
     this.bindEvents(this);
 }

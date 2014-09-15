@@ -1,6 +1,6 @@
 {
     "name": "__MSG_NAME__",
-    "version": "1.1.4",
+    "version": "1.1.5",
     "manifest_version": 2,
     "description": "__MSG_DESCRIPTION__",
     "icons": {
@@ -23,36 +23,40 @@
             "matches": [
                 "*://*.trello.com/*"
             ],
-            "css": ["styles/style.css"],
-            "js": ["scripts/jquery-2.0.3.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/trello.js"]
+            "css": ["styles/sites/trello.css"],
+            "js": ["scripts/jquery-2.1.1.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/trello.js"]
         },
         {
             "matches": [
                 "*://*.manageprojects.com/*"
             ],
-            "css": ["styles/style.css"],
-            "js": ["scripts/jquery-2.0.3.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/activecollab.js"]
+            "js": ["scripts/jquery-2.1.1.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/activecollab.js"]
         },
         {
             "matches": [
                 "*://*.podio.com/*"
             ],
-            "css": ["styles/style.css"],
-            "js": ["scripts/jquery-2.0.3.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/podio.js"]
+            "css": ["styles/sites/podio.css"],
+            "js": ["scripts/jquery-2.1.1.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/podio.js"]
         },
         {
             "matches": [
                 "*://*.pivotaltracker.com/*"
             ],
-            "css": ["styles/style.css"],
-            "js": ["scripts/jquery-2.0.3.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/pivotaltracker.js"]
+            "js": ["scripts/jquery-2.1.1.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/pivotaltracker.js"]
         },
         {
             "matches": [
                 "*://*.asana.com/*"
             ],
-            "css": ["styles/style.css"],
-            "js": ["scripts/jquery-2.0.3.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/asana.js"]
+            "js": ["scripts/jquery-2.1.1.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/asana.js"]
+        },
+        {
+            "matches": [
+                "*://*.teamwork.com/*"
+            ],
+            "css": ["styles/sites/teamwork.css"],
+            "js": ["scripts/jquery-2.1.1.min.js", "scripts/moment.min.js", "scripts/content/common.js", "scripts/content/teamwork.js"]
         }
     ],
     "homepage_url": "http://www.timecamp.com/",
@@ -63,8 +67,7 @@
         "storage",
         "https://*.timecamp.com/*",
         "https://test.timecamp.pl/*",
-        "https://localhost/*",
-        "*://*/*"
+        "https://localhost/*"
     ],
     "background": {
         "scripts": ["scripts/background.js"],
