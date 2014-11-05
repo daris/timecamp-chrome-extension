@@ -41,6 +41,8 @@ function PodioTimer() {
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
             this.trackedTaskId = response.external_task_id;
+            if (!this.trackedTaskId)
+                return;
 
             var badges;
             if (this.trackedTaskId.charAt(0) != 'i')

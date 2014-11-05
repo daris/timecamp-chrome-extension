@@ -23,6 +23,8 @@
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
             this.trackedTaskId = response.external_task_id;
+            if (!this.trackedTaskId)
+                return;
             var badges = $('.list-cards a[href^="/c/' + this.trackedTaskId + '"]').siblings('div.badges');
             if (badges.find("#tc-badge").length == 0) {
                 var badge = $("#tc-badge");

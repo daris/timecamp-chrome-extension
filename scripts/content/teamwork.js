@@ -70,7 +70,8 @@ function TeamworkTimer() {
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
             this.trackedTaskId = response.external_task_id;
-
+            if (!this.trackedTaskId)
+                return;
             var id = "#task"+this.trackedTaskId;
             var badges = $(id).find('.taskIcons');
             if (badges.find("#tc-badge").length == 0) {
