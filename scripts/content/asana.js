@@ -51,7 +51,7 @@ function AsanaTimer() {
         var buttonObj = new TimerButton(currentTaskId);
         this.buttons[currentTaskId] = buttonObj;
         buttonObj.insertInProgress = true;
-x
+
         var div1 = $('<div/>', { 'class': 'loading-boundary hidden'});
         var div2 = $('<div/>', { 'class': 'redesign-timecamp-container'});
         var div3 = $('<div/>', { 'class': 'property tc flyout-owner'});
