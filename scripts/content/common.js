@@ -117,6 +117,7 @@ function TimerBase() {
     this.trackableParents = false;
     this.lastParentId = null;
     this.lastData = null;
+    this.lastUrl = '';
 
     var $this = this;
 
@@ -134,6 +135,9 @@ function TimerBase() {
             $this.messages[key] = chrome.i18n.getMessage(value);
         }
     };
+
+    this.canWatch = {'DOM': 0,'URL': 1};
+    this.isWatching = this.canWatch.DOM;
 
     this.currentTaskId          = function () { return ''; };
     this.onSyncSuccess          = function (response) {};
@@ -186,6 +190,8 @@ function TimerBase() {
 
     this.buttonClick = function (taskId, onStart, onStop) {
         if (!taskId)
+            return;
+        if (!$this.buttons[taskId])
             return;
         if (!$this.buttons[taskId].isEnabled())
             return;
@@ -386,12 +392,50 @@ function TimerBase() {
         return 'seconds';
     };
 
+    this.URLWatcher = function ()
+    {
+        var url = document.URL;
+        if (url != $this.lastUrl || $this.buttons.length == 0)
+        {
+            this.lastUrl = url;
+
+            var event;
+
+            if (document.createEvent) {
+                event = document.createEvent("HTMLEvents");
+                event.initEvent("TCURLChanged", true, true);
+            } else {
+                event = document.createEventObject();
+                event.eventType = "TCURLChanged";
+            }
+
+            event.eventName = "TCURLChanged";
+
+            if (document.createEvent) {
+                document.dispatchEvent(event);
+            } else {
+                document.fireEvent("on" + event.eventType, event);
+            }
+        }
+    };
+
+
     this.bindEvents = function ($that) {
         $this = $that;
         setInterval($this.updateButtonState, this.pushInterval);
+
         setTimeout($this.updateButtonState, 3000);
 
-        document.addEventListener("DOMNodeInserted", this.onDomModified);
+        switch ($this.isWatching)
+        {
+            case $this.canWatch.DOM:
+                document.addEventListener("DOMNodeInserted", this.onDomModified);
+                break;
+            case $this.canWatch.URL:
+                setInterval($this.URLWatcher, 100);
+                document.addEventListener("TCURLChanged", this.onDomModified);
+                break;
+        }
 
         $.when(getToken()).then(function (token)
         {

@@ -6,6 +6,7 @@ function AsanaTimer() {
     this.messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
     this.messages.set('buttonTimerStarted', '');
     this.infoInsertingInProgress = false;
+    this.isWatching = this.canWatch.URL;
     var $this = this;
 
     this.currentTaskId = function () {
