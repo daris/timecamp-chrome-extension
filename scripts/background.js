@@ -21,6 +21,9 @@ function checkForValidUrl(tabId, changeInfo, tab) {
     if (/teamwork\.com/.test(tab.url)) {
         chrome.pageAction.show(tabId);
     }
+    if (/insight\.ly/.test(tab.url)) {
+        chrome.pageAction.show(tabId);
+    }
 };
 
 // Listen for any changes to the URL of any tab.

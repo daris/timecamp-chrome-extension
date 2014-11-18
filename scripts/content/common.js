@@ -113,6 +113,7 @@ function TimerBase() {
     this.startDate = null;
     this.multiButton = false;
     this.taskDuration = [];
+    this.taskDurationToday = [];
     this.buttons = {};
     this.trackableParents = false;
     this.lastParentId = null;
@@ -244,10 +245,10 @@ function TimerBase() {
             {
                 if (!$this.isButtonInserted())
                     $this.insertButtonIntoPage();
-
-                if (!$this.isInfoInserted())
-                    $this.insertInfoIntoPage();
             }
+            if (!$this.isInfoInserted())
+                $this.insertInfoIntoPage();
+
             if (!$this.canTrack())
                 $this.onTrackingDisabled();
 
@@ -342,37 +343,47 @@ function TimerBase() {
             });
     };
 
+    this.getEntriesStartTime = function () {
+        return moment().format('YYYY-MM-DD');
+    };
+
     this.getTrackedTime = function()
     {
         return $.Deferred(function (dfd) {
             $.when(getToken())
                 .then(function (token) {
+                    var today = moment().format('YYYY-MM-DD');
+
                     if (!$this.currentTaskId())
                     {
                         dfd.reject();
                         return;
                     }
+
                     $.ajax({
                         url: restUrl+'entries/format/json',
                         data: {
                             api_token: token,
                             service: $this.service,
-                            from: moment().format('YYYY-MM-DD'),
-                            to: moment().format('YYYY-MM-DD'),
+                            from: $this.getEntriesStartTime(),
+                            to: today,
                             user_ids: 'me',
                             external_task_id: $this.currentTaskId()
                         },
                         type: 'GET'
                     }).done(function (response) {
                         var sum = 0;
+                        var todaySum = 0;
                         if (response.length > 0)
                         {
                             for (var i in response)
                             {
-                                sum += parseInt(response[i]['duration'])
+                                sum += parseInt(response[i]['duration']);
+                                if (response[i]['date'] == today)
+                                    todaySum += parseInt(response[i]['duration']);
                             }
                         }
-                        dfd.resolve(sum);
+                        dfd.resolve(sum, todaySum);
                     }).fail(function () {dfd.reject();});
                 });
         });
@@ -380,10 +391,11 @@ function TimerBase() {
 
     this.getElapsedTime = function (timeInSeconds)
     {
+        var duration = moment.duration(timeInSeconds, 'seconds');
         var time = {
-            hours : Math.round(moment.duration(timeInSeconds, 'seconds').hours()),
-            minutes : Math.round(moment.duration(timeInSeconds, 'seconds').minutes()),
-            seconds : Math.round(moment.duration(timeInSeconds, 'seconds').seconds())
+            hours : Math.round(duration.hours()),
+            minutes : Math.round(duration.minutes()),
+            seconds : Math.round(duration.seconds())
         };
 
         if(time.hours   > 0){   return time.hours   + ' hour'+(time.hours == 1 ? '' : 's')+' and '     + time.minutes  + ' minute'+(time.minutes == 1 ? '' : 's');}
