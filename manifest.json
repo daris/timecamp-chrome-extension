@@ -1,6 +1,6 @@
 {
     "name": "__MSG_NAME__",
-    "version": "1.1.8",
+    "version": "1.1.9",
     "manifest_version": 2,
     "description": "__MSG_DESCRIPTION__",
     "icons": {
@@ -72,9 +72,7 @@
     "permissions": [
         "tabs",
         "storage",
-        "https://*.timecamp.com/*",
-        "https://test.timecamp.pl/*",
-        "https://localhost/*"
+        "https://*.timecamp.com/*"
     ],
     "background": {
         "scripts": ["scripts/background.js"],

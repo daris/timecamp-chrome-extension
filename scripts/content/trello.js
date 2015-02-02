@@ -122,6 +122,7 @@
             return;
         console.log('Inserting button into page...');
 
+
         var buttonObj = new TimerButton($this.currentTaskId());
         this.buttons[$this.currentTaskId()] = buttonObj;
         buttonObj.insertInProgress = true;
@@ -135,6 +136,7 @@
         button.append($('<span/>', { 'class': 'text' }).text(this.messages.synchronizing));
         button.append($('<span/>', { 'class': 'time' }).text("00:00").hide());
 
+
         $.when(this.updateButtonState())
             .always(function () {
                 $this.buttonInsertionInProgress = false;
@@ -144,7 +146,7 @@
         button.click(function () {
             $this.buttonClick($this.currentTaskId());
         });
-        var buttonList = $('.window-module.other-actions.clearfix .clearfix');
+        var buttonList = $('.window-module.other-actions.u-clearfix .u-clearfix');
         buttonList.prepend(button);
         $('<hr />').insertBefore('.js-move-card');
         buttonObj.insertInProgress = false;
