@@ -80,7 +80,7 @@ function PodioTimer() {
         button.denied = true;
         button.uiElement.parent().off('click');
 
-        var notice = $('<div/>', {'class': 'podio-settings-notice','html':'Current settings of the integration don\'t allow time tracking for this tasks. <a href="https://www.timecamp.com/addons/podio/index/'+this.lastParentId+'" target="_blank">Synchronize this application</a> to start tracking time.'});
+        var notice = $('<div/>', {'style': 'margin-left: 10px;', 'class': 'icon-16 icon-help balloon-visible','title':'Current settings of the integration don\'t allow time tracking for this task. Click the settings icon on the left to change them.'});
         $("#timecamp-track-info").hide().after(notice);
         $("#tc-logo").css({'opacity': '0.5', '-webkit-filter':'saturate(0%)'});
         $("#timecamp-track-button").children('.text').css({'opacity': '0.4'});
@@ -160,7 +160,7 @@ function PodioTimer() {
         if (addDiv)
         {
             info = $('<div/>', { 'class': 'field text', 'id': 'timecamp-container'});
-            info.append($('<div/>', { 'class': 'label', 'text':'TimeCamp' }));
+            info.append($('<div/>', { 'class': 'label', 'html':'TimeCamp <a href="https://www.timecamp.com/addons/podio/index/'+this.lastParentId+'"><span class="icon-16 icon-16-black-wrench"></span></a>' }));
 
             var wrapper = $('<div/>', { 'class': 'value'});
             wrapper.append($('<div/>', { 'id': 'timecamp-track-info', 'text' : 'No data yet', style:'display: inline-block; margin-left: 10px;' }));
@@ -174,7 +174,7 @@ function PodioTimer() {
             var frameLabel = $('<div/>', { 'class': 'frame-label'});
             var frameContent = $('<div/>', { 'class': 'frame-content'});
             var labelContentWrapper = $('<div/>', { 'class': 'label-content-wrapper'});
-            var labelContent = $('<div/>', { 'class': 'label-content', text: 'TimeCamp'});
+            var labelContent = $('<div/>', { 'class': 'label-content', 'html':'TimeCamp <a href="https://www.timecamp.com/addons/podio/index/'+this.lastParentId+'"><span class="icon-16 icon-16-black-wrench"></span></a>'});
             labelContentWrapper.append(labelContent);
             frameLabel.append(labelContentWrapper);
             frameContent.append($('<div/>', { 'class': 'value', 'id': 'timecamp-track-info', 'text' : 'No data yet', 'style':'margin-left: 10px; display: inline-block;' }));
