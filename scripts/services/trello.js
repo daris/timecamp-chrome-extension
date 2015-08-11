@@ -107,7 +107,6 @@
 
         $.when($this.getTrackedTime())
             .then(function (sum) {
-                $this.taskDuration[taskId] = sum;
                 $this.updateTopMessage();
             });
 

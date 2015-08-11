@@ -1,5 +1,5 @@
-﻿var serverUrl = 'https://www.timecamp.com/';
-//var serverUrl = 'https://localhost/timecamp/';
+﻿//var serverUrl = 'https://www.timecamp.com/';
+var serverUrl = 'https://localhost/timecamp/';
 
 var restUrl = serverUrl + 'third_party/api/';
 var apiUrl = serverUrl + 'third_party/api/timer/format/json';
@@ -112,8 +112,8 @@ function TimerBase() {
     this.syncing = false;
     this.startDate = null;
     this.multiButton = false;
-    this.taskDuration = [];
-    this.taskDurationToday = [];
+    this.taskDuration = {};
+    this.taskDurationToday = {};
     this.buttons = {};
     this.trackableParents = false;
     this.lastParentId = null;
@@ -137,7 +137,7 @@ function TimerBase() {
         }
     };
 
-    this.canWatch = {'DOM': 0,'URL': 1};
+    this.canWatch = {'DOM': 0,'URL': 1, 'HISTORY': 2};
     this.isWatching = this.canWatch.DOM;
 
     this.currentTaskId          = function () { return ''; };
@@ -359,6 +359,18 @@ function TimerBase() {
                         dfd.reject();
                         return;
                     }
+                    var taskId = $this.currentTaskId();
+
+                    if ($this.taskDuration[taskId] !== undefined)
+                    {
+                        dfd.resolve($this.taskDuration[taskId], $this.taskDurationToday[taskId]);
+                        return;
+                    }
+                    else
+                    {
+                        $this.taskDuration[taskId] = 0;
+                        $this.taskDurationToday[taskId] = 0;
+                    }
 
                     $.ajax({
                         url: restUrl+'entries/format/json',
@@ -383,6 +395,8 @@ function TimerBase() {
                                     todaySum += parseInt(response[i]['duration']);
                             }
                         }
+                        $this.taskDuration[taskId] = sum;
+                        $this.taskDurationToday[taskId] = todaySum;
                         dfd.resolve(sum, todaySum);
                     }).fail(function () {dfd.reject();});
                 });
@@ -447,6 +461,15 @@ function TimerBase() {
                 setInterval($this.URLWatcher, 100);
                 document.addEventListener("TCURLChanged", this.onDomModified);
                 break;
+            case $this.canWatch.HISTORY:
+                window.addEventListener("popstate", function(){
+                    setTimeout($this.onDomModified, 20)
+                });
+
+                window.addEventListener("historyPushState", function(){
+                    setTimeout($this.onDomModified, 20)
+                });
+                break;
         }
 
         $.when(getToken()).then(function (token)
@@ -496,3 +519,20 @@ function TimerButton(taskId) {
             $this.uiElement.children('.text').html(text);
     };
 }
+
+$(document).ready(function() {
+    var manifest = chrome.runtime.getManifest();
+
+    $.ajaxSetup({
+        beforeSend: function(request) {
+            request.setRequestHeader("X-Chrome-Timer", manifest.version);
+        }
+    });
+
+    var interceptor = document.createElement('script');
+
+    interceptor.src = chrome.extension.getURL('scripts/interceptHistoryChanges.js');
+    interceptor.type ='text/javascript';
+
+    document.body.appendChild(interceptor);
+});

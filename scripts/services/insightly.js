@@ -48,7 +48,6 @@ function TeamworkTimer() {
         this.buttonInsertionInProgress = true;
         console.log('Inserting button into page...');
         var currentTaskId = $this.currentTaskId();
-        console.log('currentTaskId', currentTaskId);
         if (!currentTaskId)
         {
             this.buttonInsertionInProgress = false;
@@ -218,19 +217,10 @@ function TeamworkTimer() {
         this.infoInsertingInProgress = true;
         console.log('Inserting info...');
 
-        if (this.taskDuration[taskId] === undefined)
-        {
-            this.taskDuration[taskId] = 0;
-            this.taskDurationToday[taskId] = 0;
-            $.when($this.getTrackedTime())
-                .then(function (sum, sumToday) {
-                    $this.taskDuration[taskId] = sum;
-                    $this.taskDurationToday[taskId] = sumToday;
-                    $this.updateTopMessage();
-                });
-        }
-        else
-            $this.updateTopMessage();
+        $.when($this.getTrackedTime())
+            .then(function () {
+                $this.updateTopMessage();
+        });
 
         var container = $(".entity-detail").find(".property-table");
 

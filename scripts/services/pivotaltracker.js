@@ -90,12 +90,6 @@ function PivotalTrackerTimer() {
 
         this.infoInsertingInProgress = true;
         console.log('Inserting info...');
-        this.taskDuration[taskId] = 0;
-        $.when($this.getTrackedTime())
-            .then(function (sum) {
-                $this.taskDuration[taskId] = sum;
-                $this.updateTopMessage();
-            });
 
         var addDiv = false;
         var infoTop = $('ul.app-fields-list');

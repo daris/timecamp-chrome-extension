@@ -64,18 +64,9 @@ function AsanaTimer() {
         div2.append(div3);
         div3.append(div4);
         div4.append(button);
-        button.append($('<img src="' + chrome.extension.getURL('images/icon-14.png') + '" style="position: absolute; margin-left:7px; margin-top:-8px; top: 50%;"/>'));
-        button.append($('<span/>', { 'class': 'text', 'style': 'display: inline-block; padding-left: 30px; padding-right:10px;' }).text(this.messages.synchronizing));
-        button.append($('<span/>', { 'class': 'time' }).text("00:00").css({
-            "font-size": "12px",
-            padding: "0px 2px",
-            "border-radius": "3px",
-            "background-color": "green",
-            color: "white",
-            'margin-right': '5px',
-            'margin-left': '-13px',
-            'text-shadow': 'none'
-        }).hide());
+        button.append($('<img />', {"src": chrome.extension.getURL('images/icon-14.png'), "id" : "tc-logo"}));
+        button.append($('<span/>', {'class': 'text'}).text(this.messages.synchronizing));
+        button.append($('<span/>', {'class': 'time'}).text("00:00").hide());
 
 
         button.click(function () {
@@ -106,7 +97,6 @@ function AsanaTimer() {
                     badge = $('<img/>',
                         {
                             id:         "tc-badge",
-                            "class":    "badge",
                             style:      "vertical-align: top;",
                             src:        chrome.extension.getURL('images/icon-14.png'),
                             title:      this.messages.badgeTimerRunning
@@ -144,16 +134,16 @@ function AsanaTimer() {
 
     this.insertInfoIntoPage = function () {
         this.infoInsertingInProgress = true;
-        this.taskDuration[$this.currentTaskId()] = 0;
         $.when($this.getTrackedTime())
-            .then(function (sum) {
-                $this.taskDuration[$this.currentTaskId()] = sum;
+            .then(function () {
                 $this.updateTopMessage();
             });
 
-        var infoTop = $('#right_pane').find('.small-feed-story-group');
+        var infoTop = $('#right_pane').find('.small-feed-story-group').eq(0);
+        var feedStory = $('<div>', {'class' : 'feed-story'});
         var info = $('<span/>', { 'id': 'timecamp-track-info' });
-        infoTop.prepend(info);
+        feedStory.prepend(info);
+        infoTop.prepend(feedStory);
         this.infoInsertingInProgress = false;
     }
 

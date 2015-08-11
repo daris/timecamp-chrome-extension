@@ -80,10 +80,8 @@
         console.log('Inserting info...');
 
         this.infoInsertingInProgress = true;
-        this.taskDuration[$this.currentTaskId()] = 0;
         $.when($this.getTrackedTime())
             .then(function (sum) {
-                $this.taskDuration[$this.currentTaskId()] = sum;
                 $this.updateTopMessage();
             });
 
@@ -93,7 +91,7 @@
         info.append($('<div/>', { 'class': 'content', 'id': 'timecamp-track-info', 'text' : 'No data yet' }));
         infoTop.append(info);
         this.infoInsertingInProgress = false;
-    }
+    };
 
     this.insertButtonIntoPage = function () {
         console.log('Inserting button into page...');
@@ -129,7 +127,7 @@
 
         buttonObj.insertInProgress = false;
         buttonObj.uiElement = a;
-    }
+    };
 
     this.bindEvents(this);
 }
