@@ -60,6 +60,27 @@ function PivotalTrackerTimer() {
                 }
             }
         });
+        parents.each(function (i, item) {
+            var arr = $(item).attr('class').split(' ');
+            for (var j in arr)
+            {
+                var cl = arr[j];
+                if (cl.substring(0, 6) == 'story_')
+                {
+                    var storyId = cl.replace('story_','');
+                    var details = $(item).find('.edit.details');
+                    if (details.length)
+                    {
+                        var box = details.find('.info_box .info');
+                        if (box.length)
+                            res.push({taskId: storyId, parentElement: box});
+                    }
+                    else
+                        res.push({taskId: storyId, parentElement: item});
+                }
+            }
+        });
+        console.log('res', res);
         return res;
     };
 
@@ -138,23 +159,44 @@ function PivotalTrackerTimer() {
         var taskId = task.taskId;
         var parentElement = task.parentElement;
 
+        if (this.buttons.hasOwnProperty(taskId))
+        {
+            var tmp = this.buttons[taskId];
+            if (tmp.insertInProgress)
+                return;
+        }
+
+        console.log('parentElement', parentElement);
+
         var buttonObj = new TimerButton(taskId);
         buttonObj.insertInProgress = true;
         this.buttons[taskId] = buttonObj;
 
         console.log('Inserting button into page...', taskId);
-        var button = $('<label/>', { 'class': 'button tc', 'id': 'timecamp-track-button-'+taskId, style:'cursor: pointer; float: right; background-color: #59be7b; border: 1px solid #46A766; padding: 1px 3px 0 3px; border-radius: 3px;'});
+        var button = $('<label/>', { 'class': 'tc-button', 'id': 'timecamp-track-button-'+taskId, style:''});
         this.button = button;
-        button.append($('<span/>', { 'class': 'text', 'style':'float: right; color: #fff; font-size: 11px; font-weight: bold;' }).text(this.messages.synchronizing));
-        button.append($('<span/>', { 'class': 'time', 'style':'float: right; color: #fff; font-size: 11px; font-weight: bold;' }).text("00:00").css({ padding: "0px 2px 2px"}).hide());
+        button.append($('<span/>', { 'class': 'text'}).text(this.messages.synchronizing));
+        button.append($('<span/>', { 'class': 'time'}).text("00:00").css({ padding: "0px 2px 2px"}).hide());
 
         button.click(function () {
             $this.buttonClick(taskId);
         });
 
-        $(parentElement).find('span.state').append(button);
+        if ($(parentElement).is('.info'))
+        {
+            var row = $('<div/>', {"class": 'timecamp row'});
+            row.append($('<em/>', {"text": 'TimeCamp'}));
+            row.append(button);
+            $(parentElement).prepend(row);
+        }
+        else
+        {
+            $(parentElement).find('span.state').append(button);
+        }
+
         buttonObj.uiElement = button;
         buttonObj.insertInProgress = false;
+        this.updateButtonState();
     };
 
     this.bindEvents(this);
