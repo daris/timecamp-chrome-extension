@@ -18,7 +18,7 @@ function AsanaTimer() {
         } else {
             return null;
         }
-    }
+    };
 
     this.isButtonInserted = function () {
         if (this.buttonInsertionInProgress)
@@ -37,7 +37,7 @@ function AsanaTimer() {
         }
 
         return $('#right_pane').length == 0;
-    }
+    };
 
     this.insertButtonIntoPage = function () {
         this.buttonInsertionInProgress = true;
@@ -80,7 +80,7 @@ function AsanaTimer() {
         $.when(this.updateButtonState()).always(function () {
             $this.buttonInsertionInProgress = false;
         });
-    }
+    };
 
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
@@ -108,7 +108,7 @@ function AsanaTimer() {
         {
             this.onSyncFailure();
         }
-    }
+    };
 
     this.updateTopMessage = function () {
         var timecampTrackInfo = $('#timecamp-track-info');
@@ -126,32 +126,33 @@ function AsanaTimer() {
             timecampTrackInfo.html('');
         else
             timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task');
-    }
+    };
 
     this.isInfoInserted = function () {
         return this.infoInsertingInProgress || $("#timecamp-track-info").length > 0;
-    }
+    };
 
     this.insertInfoIntoPage = function () {
         this.infoInsertingInProgress = true;
-        $.when($this.getTrackedTime())
-            .then(function () {
-                $this.updateTopMessage();
-            });
-
         var infoTop = $('#right_pane').find('.small-feed-story-group').eq(0);
         var feedStory = $('<div>', {'class' : 'feed-story'});
         var info = $('<span/>', { 'id': 'timecamp-track-info' });
         feedStory.prepend(info);
         infoTop.prepend(feedStory);
+
+        $.when($this.getTrackedTime())
+            .then(function () {
+                $this.updateTopMessage();
+            });
+
         this.infoInsertingInProgress = false;
-    }
+    };
 
     this.onSyncFailure = function () {
         var badge = $("#tc-badge");
         if (badge.length > 0)
             badge.remove();
-    }
+    };
 
     this.bindEvents(this);
 }

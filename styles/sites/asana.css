@@ -5,6 +5,10 @@
     top: 50%;
 }
 
+#timecamp-track-button {
+    margin: 0px 4px;
+}
+
 #timecamp-track-button .text {
     display: inline-block;
     padding-left: 23px;
