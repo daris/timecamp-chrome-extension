@@ -179,7 +179,7 @@ function TimerBase() {
 
     this.runTimer = function (startDate, button) {
         return setInterval(function () {
-            var diff = Math.abs((new Date().valueOf() - startDate.valueOf())) / 1000;
+            var diff = moment().diff(startDate,'seconds');
             if (button)
                 button.setButtonTime(diff);
             if ($this.trackedTaskId == $this.currentTaskId())
@@ -197,9 +197,9 @@ function TimerBase() {
 
         $.when(getToken())
             .then(function (token) {
-                var command;
+                var payload = {};
                 if ($this.isTimerRunning && $this.trackedTaskId == taskId) {
-                    command = 'stop';
+                    payload = {"stopped_at": currentDateTime(), "action":"stop"};
                     $this.buttons[taskId].setButtonTime(0).hideTimer().setButtonText($this.messages.buttonTimerStopping);
                     $this.buttons[taskId].enabled = false;
                     if (onStop)
@@ -210,7 +210,7 @@ function TimerBase() {
                     }
                 }
                 else {
-                    command = 'start';
+                    payload = {"started_at": currentDateTime(), "action":"start"};
                     $this.buttons[taskId].setButtonText($this.messages.buttonTimerStarting);
                     $this.buttons[taskId].enabled = false;
                     if (onStart)
@@ -218,7 +218,7 @@ function TimerBase() {
                 }
 
                 $this.syncing = false;
-                $this.apiCall(apiUrl, token, taskId, command).done(function() {
+                $this.apiCall(apiUrl, token, taskId, payload).done(function() {
                     $this.updateButtonState();
                     $.when($this.getEntries(taskId)).then(function () {
                         $.when($this.getTrackedTime()).then(function () {
@@ -257,19 +257,19 @@ function TimerBase() {
         }
     };
 
-    this.apiCall = function (apiUrl, token, cardId, action) {
+    this.apiCall = function (apiUrl, token, cardId, payload) {
         if (this.syncing)
             return null;
 
         this.syncing = true;
+
+        payload.api_token = token;
+        payload.service = this.service;
+        payload.external_task_id = cardId;
+
         return $.ajax({
             url: apiUrl,
-            data: {
-                api_token   : token,
-                service     : this.service,
-                action      : action,
-                external_task_id : cardId
-            },
+            data: payload,
             type: 'POST'
         }).always(function () {
                 $this.syncing = false;
@@ -280,7 +280,7 @@ function TimerBase() {
         $.when(getToken())
             .then(function (token) {
                 var cardId = $this.currentTaskId();
-                return $this.apiCall(apiUrl, token, cardId, 'status');
+                return $this.apiCall(apiUrl, token, cardId, {action: 'status'});
             }).done(function (response) {
                 if (response == null)
                     return;
@@ -295,7 +295,7 @@ function TimerBase() {
                 if ($this.isTimerRunning)
                 {
                     $this.trackedTaskId = response.external_task_id;
-                    var startDate = new Date(new Date().valueOf() - response.elapsed * 1000);
+                    var startDate = moment(response.start_time);
                     var button = $this.buttons[$this.trackedTaskId];
                     $this.startDate = startDate;
 

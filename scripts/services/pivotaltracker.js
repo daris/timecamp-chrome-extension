@@ -80,7 +80,6 @@ function PivotalTrackerTimer() {
                 }
             }
         });
-        console.log('res', res);
         return res;
     };
 
@@ -166,7 +165,7 @@ function PivotalTrackerTimer() {
                 return;
         }
 
-        console.log('parentElement', parentElement);
+
 
         var buttonObj = new TimerButton(taskId);
         buttonObj.insertInProgress = true;
