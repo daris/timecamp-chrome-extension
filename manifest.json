@@ -1,6 +1,6 @@
 {
     "name": "__MSG_NAME__",
-    "version": "1.1.15",
+    "version": "1.2.0",
     "manifest_version": 2,
     "description": "__MSG_DESCRIPTION__",
     "icons": {
@@ -24,48 +24,56 @@
                 "*://*.trello.com/*"
             ],
             "css": ["styles/sites/trello.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/common.js", "scripts/services/trello.js"]
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+                "scripts/services/trello.js"]
         },
         {
             "matches": [
                 "*://*.manageprojects.com/*"
             ],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/common.js", "scripts/services/activecollab.js"]
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+                "scripts/services/activecollab.js"]
         },
         {
             "matches": [
                 "*://*.podio.com/*"
             ],
             "css": ["styles/sites/podio.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/common.js", "scripts/services/podio.js"]
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "scripts/services/podio.js"]
         },
         {
             "matches": [
                 "*://*.pivotaltracker.com/*"
             ],
             "css": ["styles/sites/pivotaltracker.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/common.js", "scripts/services/pivotaltracker.js"]
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "scripts/services/pivotaltracker.js"]
         },
         {
             "matches": [
                 "*://*.asana.com/*"
             ],
             "css": ["styles/sites/asana.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/common.js", "scripts/services/asana.js"]
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+
+            "scripts/services/asana.js"]
         },
         {
             "matches": [
                 "*://*.teamwork.com/*"
             ],
             "css": ["styles/sites/teamwork.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/common.js", "scripts/services/teamwork.js"]
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "scripts/services/teamwork.js"]
         },
         {
             "matches": [
                 "*://*.insight.ly/*"
             ],
             "css": ["styles/sites/insightly.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/common.js", "scripts/services/insightly.js"]
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "scripts/services/insightly.js"]
         }
     ],
     "homepage_url": "http://www.timecamp.com/",

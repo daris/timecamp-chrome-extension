@@ -1,18 +1,16 @@
 ﻿/// <reference path="../jquery-2.0.3.js" />
 /// <reference path="../chrome-api-vsdoc.js" />
 /// <reference path="common.js" />
-
 function refreshPopup(statusText, loggedIn, hideButton)
 {
     function _loggedIn() {
         $('#tc-button').unbind('click').click(function () {
-            removeStoredToken();
+            TokenManager.removeStoredToken();
             refreshPopup(chrome.i18n.getMessage("STATUS_SUCCESS"), false, true);
             setTimeout(function () {
                 window.close();
             }, 3000);
         }).text(chrome.i18n.getMessage("BUTTON_LOG_OUT"));
-        console.log($("#tc-signup"));
         $("#tc-signup").hide();
     }
 
@@ -38,7 +36,7 @@ function refreshPopup(statusText, loggedIn, hideButton)
             _loggedOut();
         }
     } else {
-        getStoredToken().done(function () {
+        TokenManager.getStoredToken().done(function () {
             _loggedIn();
         }).fail(function () {
             _loggedOut();
@@ -60,9 +58,9 @@ $(document).ready(function () {
         //----------We are in iframe!!!-----------
         if (params.status == "1") {
             refreshPopup(chrome.i18n.getMessage("STATUS_LOGGING_IN"), true, true);
-            getToken(true).done(function (token) {
+            TokenManager.getToken(true).done(function (token) {
                 refreshPopup(chrome.i18n.getMessage("STATUS_SUCCESS"), true, true);
-                storeToken(token);
+                TokenManager.storeToken(token);
                 setTimeout(function(){
                     window.parent.close();
                 }, 3000);
