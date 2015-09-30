@@ -1,0 +1,17 @@
+<div class="tc-sidebar-day-header">
+    <div class="row header">
+        <div class="date-header inline left">
+            {{date}}
+        </div>
+        <div class="billable-header inline">
+            {{#isFirst}}Billable{{/isFirst}}
+        </div>
+        <div class="hours-header right">
+            {{#isFirst}}Hours{{/isFirst}}
+        </div>
+    </div>
+    <div class="row">
+        <div class="add-time right" data-date="{{rawDate}}">Add time</div>
+        <div class="clearfix"></div>
+    </div>
+</div>

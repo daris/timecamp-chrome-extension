@@ -24,15 +24,15 @@
                 "*://*.trello.com/*"
             ],
             "css": ["styles/sites/trello.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-                "scripts/services/trello.js"]
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+                "scripts/third_party/trello.js"]
         },
         {
             "matches": [
                 "*://*.manageprojects.com/*"
             ],
             "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-                "scripts/services/activecollab.js"]
+                "scripts/third_party/activecollab.js"]
         },
         {
             "matches": [
@@ -40,7 +40,7 @@
             ],
             "css": ["styles/sites/podio.css"],
             "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-            "scripts/services/podio.js"]
+            "scripts/third_party/podio.js"]
         },
         {
             "matches": [
@@ -48,16 +48,15 @@
             ],
             "css": ["styles/sites/pivotaltracker.css"],
             "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-            "scripts/services/pivotaltracker.js"]
+            "scripts/third_party/pivotaltracker.js"]
         },
         {
             "matches": [
                 "*://*.asana.com/*"
             ],
-            "css": ["styles/sites/asana.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-
-            "scripts/services/asana.js"]
+            "css": ["styles/common.css", "styles/sites/asana.css","styles/sidebar.css", "styles/font-awesome.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/lib/ICanHaz.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "scripts/third_party/asana.js"]
         },
         {
             "matches": [
@@ -65,15 +64,15 @@
             ],
             "css": ["styles/sites/teamwork.css"],
             "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-            "scripts/services/teamwork.js"]
+            "scripts/third_party/teamwork.js"]
         },
         {
             "matches": [
                 "*://*.insight.ly/*"
             ],
-            "css": ["styles/sites/insightly.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-            "scripts/services/insightly.js"]
+            "css": ["styles/common.css", "styles/sites/insightly.css","styles/sidebar.css", "styles/font-awesome.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/lib/ICanHaz.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "scripts/third_party/insightly.js"]
         }
     ],
     "homepage_url": "http://www.timecamp.com/",
@@ -90,12 +89,9 @@
         "persistent": false
     },
     "web_accessible_resources": [
-        "images/icon-14.png",
-        "images/icon-16.png",
-        "images/icon-19.png",
-        "images/icon-38.png",
-        "images/icon-48.png",
-        "images/icon-128.png",
-        "scripts/interceptHistoryChanges.js"
+        "images/*.png",
+        "scripts/interceptHistoryChanges.js",
+        "templates/*",
+        "fonts/*"
     ]
 }

@@ -11,7 +11,7 @@
         } else {
             return null;
         }
-    }
+    };
 
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
@@ -32,7 +32,7 @@
                         "class":    "badge",
                         style:      "padding: 1px 4px; height: 14px;",
                         src:        chrome.extension.getURL('images/icon-14.png'),
-                        title:      this.messages.badgeTimerRunning
+                        title:      Messages.badgeTimerRunning
                     });
                 badges.append(badge);
             }
@@ -41,13 +41,13 @@
         {
             this.onSyncFailure();
         }
-    }
+    };
 
     this.onSyncFailure = function () {
         var badge = $("#tc-badge");
         if (badge.length > 0)
             badge.remove();
-    }
+    };
 
     this.updateTopMessage = function ()
     {
@@ -70,11 +70,11 @@
 
     this.isButtonInserted = function () {
         return !(!this.buttonInsertionInProgress && $('#timecamp-track-button').length == 0 && $('.objects_list_details_single_wrapper').find('.actions').length > 0);
-    }
+    };
 
     this.isInfoInserted = function () {
         return !(!this.infoInsertingInProgress && $("#timecamp-track-info").length == 0 && $('.objects_list_details_single_wrapper').find('.properties').length > 0);
-    }
+    };
 
     this.insertInfoIntoPage = function () {
         console.log('Inserting info...');
@@ -106,7 +106,7 @@
         this.button = a;
         button.append(a);
         a.append($('<img src="' + chrome.extension.getURL('images/icon-16.png') + '" style="vertical-align:middle; margin-top:-4px;"/>'));
-        a.append($('<span/>', { 'class': 'text', 'style': 'width: 60; display: inline-block;' }).text(this.messages.synchronizing));
+        a.append($('<span/>', { 'class': 'text', 'style': 'width: 60; display: inline-block;' }).text(Messages.synchronizing));
         a.append($('<span/>', { 'class': 'time' }).text("00:00").css({
             padding: "0px 2px 2px",
             'margin-left': '5px',

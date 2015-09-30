@@ -1,0 +1,19 @@
+<div class="tc-sidebar-start-button {{#isRunning}}running{{/isRunning}}">
+    {{#taskName}}
+        <div class="task-name">{{taskName}}</div>
+    {{/taskName}}
+    {{^taskName}}
+    <span class="task-name">
+        {{^isRunning}}Start task{{/isRunning}}
+        {{#isRunning}}Stop task{{/isRunning}}
+    </span>
+    {{/taskName}}
+    <div class="tc-timer-state-icon">
+        {{#isRunning}}
+        <i class="fa fa-stop fa-lg"></i>
+        {{/isRunning}}
+        {{^isRunning}}
+        <i class="fa fa-play fa-lg"></i>
+        {{/isRunning}}
+    </div>
+</div>

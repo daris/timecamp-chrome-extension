@@ -7,12 +7,37 @@ function TimerButton(taskId) {
     this.insertInProgress = true;
     this.enabled    = false;
     this.denied     = false;
+    this.startedAt  = null;
+    this.intervalId = null;
 
     var $this = this;
 
     this.isRunning = function ()
     {
         return timer.trackedTaskId == $this.taskId;
+    };
+
+    this.start = function (startDate) {
+        this.startedAt = startDate;
+
+        var callback = function () {
+            var diff = moment().diff($this.startedAt,'seconds');
+            $this.setButtonTime(diff);
+        };
+
+        callback();
+        this.setButtonText(Messages.buttonTimerStarted);
+        this.showTimer();
+
+        this.intervalId = setInterval(callback, 1000);
+    };
+
+    this.stop = function()
+    {
+        this.setButtonTime(0);
+        this.hideTimer();
+        clearInterval(this.intervalId);
+        this.intervalId = null;
     };
 
     this.isEnabled = function ()
@@ -46,7 +71,17 @@ function TimerButton(taskId) {
 
     this.hideTimer = function ()
     {
-        $this.uiElement.children('.time').hide();
+        var ui = $this.uiElement.children('.time');
+        if (ui.is(':visible'))
+            ui.hide();
+        return $this;
+    };
+
+    this.showTimer = function ()
+    {
+        var ui = $this.uiElement.children('.time');
+        if (!ui.is(':visible'))
+            ui.show();
         return $this;
     };
 }

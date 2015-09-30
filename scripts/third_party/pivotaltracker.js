@@ -4,11 +4,11 @@
 function PivotalTrackerTimer() {
     this.service = 'pivotaltracker';
     this.multiButton = true;
-    this.messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED');
-    this.messages.set('buttonTimerStarted', 'EMPTY_MESSAGE');
-    this.messages.set('synchronizing', 'SYNCING');
-    this.messages.set('buttonTimerStopping', 'BUTTON_TIMER_STOPPING_SHORT');
-    this.messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED');
+    Messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED');
+    Messages.set('buttonTimerStarted', 'EMPTY_MESSAGE');
+    Messages.set('synchronizing', 'SYNCING');
+    Messages.set('buttonTimerStopping', 'BUTTON_TIMER_STOPPING_SHORT');
+    Messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED');
     var $this = this;
 
     this.currentTaskId = function () {
@@ -174,7 +174,7 @@ function PivotalTrackerTimer() {
         console.log('Inserting button into page...', taskId);
         var button = $('<label/>', { 'class': 'tc-button', 'id': 'timecamp-track-button-'+taskId, style:''});
         this.button = button;
-        button.append($('<span/>', { 'class': 'text'}).text(this.messages.synchronizing));
+        button.append($('<span/>', { 'class': 'text'}).text(Messages.synchronizing));
         button.append($('<span/>', { 'class': 'time'}).text("00:00").css({ padding: "0px 2px 2px"}).hide());
 
         button.click(function () {

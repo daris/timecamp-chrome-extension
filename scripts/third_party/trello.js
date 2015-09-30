@@ -3,10 +3,10 @@
     this.service = 'trello';
     var $this = this;
 
-	this.messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
-    this.messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
-    this.messages.set('synchronizing', 'SYNCING');
-    this.messages.set('buttonTimerStopping', 'BUTTON_TIMER_STOPPING_SHORT');
+	Messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
+    Messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
+    Messages.set('synchronizing', 'SYNCING');
+    Messages.set('buttonTimerStopping', 'BUTTON_TIMER_STOPPING_SHORT');
 
 
     this.currentTaskId = function () {
@@ -37,7 +37,7 @@
                             id:         "tc-badge",
                             class:    "badge",
                             src:        chrome.extension.getURL('images/icon-14.png'),
-                            title:      this.messages.badgeTimerRunning
+                            title:      Messages.badgeTimerRunning
                         });
                 badges.append(badge);
             }
@@ -132,7 +132,7 @@
         buttonObj.uiElement = button;
         this.button = button;
         button.append($('<img id="tc-logo" src="' + chrome.extension.getURL('images/icon-16.png') + '" />'));
-        button.append($('<span/>', { 'class': 'text' }).text(this.messages.synchronizing));
+        button.append($('<span/>', { 'class': 'text' }).text(Messages.synchronizing));
         button.append($('<span/>', { 'class': 'time' }).text("00:00").hide());
 
 

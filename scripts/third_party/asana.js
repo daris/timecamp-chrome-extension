@@ -1,10 +1,10 @@
 function AsanaTimer() {
 
     this.service = 'asana';
-    this.messages.set('synchronizing', 'SYNCING');
-    this.messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
-    this.messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
-    this.messages.set('buttonTimerStarted', '');
+    Messages.set('synchronizing', 'SYNCING');
+    Messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
+    Messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
+    Messages.set('buttonTimerStarted', '');
     this.infoInsertingInProgress = false;
     this.isWatching = this.canWatch.URL;
     var $this = this;
@@ -18,6 +18,15 @@ function AsanaTimer() {
         } else {
             return null;
         }
+    };
+
+    this.currentTaskName = function () {
+
+        var el = $("#details_property_sheet_title");
+        if (el.length)
+            return el.val();
+
+        return false;
     };
 
     this.isButtonInserted = function () {
@@ -36,7 +45,7 @@ function AsanaTimer() {
             return true;
         }
 
-        return $('#right_pane').length == 0;
+        return $('#right_pane').find('.toolbar-section.left').children().eq(1).length == 0;
     };
 
     this.insertButtonIntoPage = function () {
@@ -65,7 +74,7 @@ function AsanaTimer() {
         div3.append(div4);
         div4.append(button);
         button.append($('<img />', {"src": chrome.extension.getURL('images/icon-14.png'), "id" : "tc-logo"}));
-        button.append($('<span/>', {'class': 'text'}).text(this.messages.synchronizing));
+        button.append($('<span/>', {'class': 'text'}).text(Messages.synchronizing));
         button.append($('<span/>', {'class': 'time'}).text("00:00").hide());
 
 
@@ -99,7 +108,7 @@ function AsanaTimer() {
                             id:         "tc-badge",
                             style:      "vertical-align: top;",
                             src:        chrome.extension.getURL('images/icon-14.png'),
-                            title:      this.messages.badgeTimerRunning
+                            title:      Messages.badgeTimerRunning
                         });
                 badges.prepend(badge);
             }
@@ -110,18 +119,14 @@ function AsanaTimer() {
         }
     };
 
-    this.updateTopMessage = function () {
-        var timecampTrackInfo = $('#timecamp-track-info');
-        var taskDuration = $this.taskDuration[$this.currentTaskId()];
-        if (!taskDuration)
-            taskDuration = 0;
+    this.updateTopMessage = function (taskId, duration) {
+        if (taskId != $this.currentTaskId())
+            return;
 
-        var duration = 0;
         if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
-            duration = moment().diff($this.startDate, 'seconds');
+            duration += moment().diff($this.startDate, 'seconds');
 
-        duration += taskDuration;
-
+        var timecampTrackInfo = $('#timecamp-track-info');
         if (duration == 0)
             timecampTrackInfo.html('');
         else
@@ -156,5 +161,8 @@ function AsanaTimer() {
 
     this.bindEvents(this);
 }
+Sidebar.marginSelector = "#whole_page_container";
+Sidebar.appendSelector = "body";
+
 AsanaTimer.prototype = new TimerBase();
 timer = new AsanaTimer();

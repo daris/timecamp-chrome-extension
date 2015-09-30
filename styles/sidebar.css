@@ -1,0 +1,206 @@
+.tc-sidebar {
+    position: fixed;
+    height: 100%;
+    /*left: 0;*/
+    /*transition: left 1s ease-in-out;*/
+    /*transition: width 1s ease-in-out;*/
+    width: 280px;
+    z-index: 1000;
+    background-color: white;
+    font-size: 12px;
+}
+
+.tc-sidebar.collapsed {
+    /*left: -210px;*/
+    width: 50px;
+}
+
+.tc-sidebar.expanded {
+    /*left: 0;*/
+    width: 280px;
+}
+
+.tc-sidebar-header {
+    background-color: white;
+    width: 280px;
+    float: right;
+    height: 62px;
+    overflow: hidden;
+}
+
+.tc-sidebar-header .task-name {
+    max-width: 200px;
+    overflow: hidden;
+    display: inline-block;
+    text-overflow: ellipsis;
+}
+
+.tc-sidebar-footer {
+    background-color: white;
+    width: 280px;
+    float: right;
+    overflow: hidden;
+}
+
+.tc-sidebar-footer-box {
+    width: 70px;
+    height: 50px;
+    line-height: 50px;
+    display: inline-block;
+    float: left;
+    text-align: center;
+    cursor: pointer;
+}
+
+.tc-sidebar-footer-box:hover {
+    background-color: #dddddd;
+    color: #444444;
+}
+
+.tc-sidebar-footer-box .fa {
+    vertical-align: middle;
+    margin: auto;
+}
+
+.tc-sidebar-footer-tclogo {
+    width: 50px;
+    float: right;
+}
+
+.tc-sidebar-scrollable {
+    height: calc( 100% - 112px );
+    width: 100%;
+}
+
+.tc-sidebar-scrollable-inner {
+    width: 265px;
+    float: right;
+}
+
+.tc-sidebar.expanded .tc-sidebar-scrollable {
+    overflow-y: auto;
+}
+
+.tc-sidebar.collapsed .tc-sidebar-scrollable {
+    overflow-y: hidden;
+}
+
+.tc-sidebar-time-details {
+    width: 100%;
+    height: 900px;
+}
+
+.tc-sidebar .tc-logo {
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.tc-sidebar-start-button {
+    text-align: center;
+    vertical-align: middle;
+    color: #ffffff;
+    background-color: #59be7b;
+    padding: 10px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 15px;
+    text-transform: uppercase;
+    border: 1px solid #47b66d;
+    width: 240px;
+    margin: 7px auto;
+    white-space: nowrap;
+    display: block;
+    height: 25px;
+    line-height: 25px;
+}
+
+.tc-sidebar-start-button:hover {
+    background-color: #40a462;
+    border-color: #368a52
+}
+
+.tc-sidebar-start-button.running {
+    background-color: #d9534f;
+    border-color: #d43f3a;
+}
+
+.tc-sidebar-start-button.running:hover {
+    background-color: #c9302c;
+    border-color: #ac2925;
+}
+
+.tc-timer-state-icon {
+    display: inline-block;
+    float: right;
+}
+
+
+.tc-sidebar-add-time-button {
+    text-align: center;
+    vertical-align: middle;
+    color: #555555;
+    background-color: #e6e6e6;
+    border-color: #bdbdbd;
+    padding: 10px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 15px;
+    text-transform: uppercase;
+    width: 40px;
+    margin: 7px auto;
+    white-space: nowrap;
+    display: block;
+    height: 25px;
+    line-height: 25px;
+}
+
+.row {
+    display: block;
+    width: 100%;
+}
+
+.header {
+    font-weight: bold;
+    border-bottom: 2px solid black;
+    font-size: 14px;
+}
+
+.inline {
+    display: inline-block;
+}
+
+.right {
+    float: right;
+    padding-right: 5px;
+}
+
+.left {
+    padding-left: 5px;
+}
+
+.tc-sidebar-entry {
+    padding-bottom: 5px;
+}
+
+.tc-sidebar-entry .time-from {
+    width: 30px;
+}
+
+.tc-sidebar-entry .separator {
+    width: 4px;
+}
+
+.tc-sidebar-entry .time-from {
+    width: 30px;
+}
+
+.tc-sidebar-entry .billable {
+    width: 13px;
+    padding-left: 58px;
+}
+
+.tc-sidebar-day-header .billable-header {
+    padding-left: 60px;
+}

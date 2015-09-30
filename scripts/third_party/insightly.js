@@ -1,10 +1,10 @@
-function TeamworkTimer() {
+function InsightlyTimer() {
 
     this.service = 'insightly';
-    this.messages.set('synchronizing', 'SYNCING');
-    this.messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
-    this.messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
-    this.messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
+    Messages.set('synchronizing', 'SYNCING');
+    Messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
+    Messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
+    Messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
     this.infoInsertingInProgress = false;
     this.isWatching = this.canWatch.DOM;
     var $this = this;
@@ -63,7 +63,7 @@ function TeamworkTimer() {
         var containter = $('<div/>',{class:'btn-group'});
         var button = $('<button/>', { class:'btn btn-default', 'id': 'timecamp-track-button', 'data-taskId': currentTaskId });
         button.append($('<img id="tc-logo" src="' + chrome.extension.getURL('images/icon-14.png') + '"/>'));
-        button.append($('<span/>', { 'class': 'text' }).text(this.messages.synchronizing));
+        button.append($('<span/>', { 'class': 'text' }).text(Messages.synchronizing));
         button.append($('<span/>', { 'class': 'time' }).text("00:00").css({}).hide());
 
         this.button = button;
@@ -130,7 +130,7 @@ function TeamworkTimer() {
                             id:         "tc-badge",
                             style:      "margin-top: -2px;",
                             src:        chrome.extension.getURL('images/icon-14.png'),
-                            title:      this.messages.badgeTimerRunning
+                            title:      Messages.badgeTimerRunning
                         });
                 badges.parent().append(badge);
             }
@@ -282,5 +282,8 @@ function TeamworkTimer() {
 
     this.bindEvents(this);
 }
-TeamworkTimer.prototype = new TimerBase();
-timer = new TeamworkTimer();
+Sidebar.marginSelector = "#wrapper";
+Sidebar.appendSelector = "body";
+
+InsightlyTimer.prototype = new TimerBase();
+timer = new InsightlyTimer();

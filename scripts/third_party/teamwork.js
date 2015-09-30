@@ -1,10 +1,10 @@
 function TeamworkTimer() {
 
     this.service = 'teamwork';
-    this.messages.set('synchronizing', 'SYNCING');
-    this.messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
-    this.messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
-    this.messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
+    Messages.set('synchronizing', 'SYNCING');
+    Messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
+    Messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
+    Messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
     this.infoInsertingInProgress = false;
     var $this = this;
 
@@ -50,7 +50,7 @@ function TeamworkTimer() {
         li.append(button);
         parent.prepend(li);
         button.append($('<img id="tc-logo" src="' + chrome.extension.getURL('images/icon-14.png') + '"/>'));
-        button.append($('<span/>', { 'class': 'text' }).text(this.messages.synchronizing));
+        button.append($('<span/>', { 'class': 'text' }).text(Messages.synchronizing));
         button.append($('<span/>', { 'class': 'time' }).text("00:00").css({
 
         }).hide());
@@ -86,7 +86,7 @@ function TeamworkTimer() {
                             "class":    "badge",
                             style:      "vertical-align: top;",
                             src:        chrome.extension.getURL('images/icon-14.png'),
-                            title:      this.messages.badgeTimerRunning
+                            title:      Messages.badgeTimerRunning
                         });
                 badges.prepend(badge);
             }
