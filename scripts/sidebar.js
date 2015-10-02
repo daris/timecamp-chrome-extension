@@ -6,6 +6,7 @@ function Sidebar()
     this.marginSelector = null;
     this.appendSelector = null;
     this.sidebar = $('<div class="tc-sidebar">');
+    this.barChartSelector = '#tcBarChart';
     this.isReady = false;
     this.isCollapsed = true;
     this.templates = {
@@ -26,13 +27,40 @@ function Sidebar()
     var watchTimerId = null;
     var hoverTimerId = null;
     var mouseoutTimerId = null;
+    var barChart;
 
     this.bindInternalEvents = function()
     {
         $this.sidebar.on('click', $this.expand);
         $this.sidebar.on('mouseenter', $this.onHover);
+        $this.sidebar.on('click', '.tc-sidebar-entry', $this.onEntryClick);
+        $this.sidebar.on('blur', '.note-input', $this.onEntryLeave);
+        $this.sidebar.on('click', '.tc-sidebar-start-button', $this.onButtonClick);
         //$this.sidebar.on('mouseleave', $this.onMouseOut);
         $($this.marginSelector).on('click', $this.collapse);
+    };
+
+    this.onButtonClick = function() {
+
+    };
+
+
+
+    this.onEntryClick = function()
+    {
+        console.log('this', this);
+        var parent = $(this).parent();
+        console.log('parent', parent);
+        $(this).find('.note-placeholder').hide();
+        $(this).find('.note-input-box').show();
+    };
+
+    $this.onEntryLeave = function() {
+        var entryId = $(this).parents('.tc-sidebar-entry').attr('data-entryId');
+        var note = $(this).val();
+        
+        console.log('entryId', entryId);
+        console.log('note', note);
     };
 
     this.watch = function()
@@ -72,7 +100,7 @@ function Sidebar()
     };
 
     this.clearEntriesBox = function() {
-        $('tc-sidebar-time-details').html('');
+        $('.tc-sidebar-time-details').html('');
     };
 
     this.renderEntriesDay = function(entries, date, isFirst) {
@@ -83,7 +111,6 @@ function Sidebar()
         };
 
         var sidebarTimeDetails = $('.tc-sidebar-time-details');
-        console.log('sidebarTimeDetails', sidebarTimeDetails);
         sidebarTimeDetails.append(ich.sidebarDayHeader(params));
 
         for (i in entries)
@@ -91,6 +118,9 @@ function Sidebar()
     };
 
     this.renderTotalTime = function(totalTime) {
+        var duration = moment.duration(totalTime, 'seconds');
+        totalTime = duration.hours()+":"+zeroFill(duration.minutes(), 2)+":"+zeroFill(duration.seconds(), 2);
+
         var params = {
             totalTime : totalTime
         };
@@ -100,17 +130,35 @@ function Sidebar()
     };
 
     this.onEntriesLoaded = function(event, eventData) {
+        bench('start');
         var entriesByDays = {};
+        var totalByDays = {};
 
         var params = eventData.params;
         var entries = eventData.data;
         var totalTime = 0;
 
+        if (entries.length == 0)
+        {
+            $this.clearEntriesBox();
+            return;
+        }
+        bench('data');
+        console.log('entries', entries);
+
+        if (barChart)
+            barChart.destroy();
+        var chartData = prepareChartData(entries);
+        var ctx = $this.sidebar.find($this.barChartSelector).get(0).getContext("2d");
+        console.log('chartData', chartData);
+        barChart = new Chart(ctx).Bar(chartData);
+
         for (i in entries)
         {
             var entry = entries[i];
 
-            entry.noteFormatted = entry.description.linkify();
+
+            entry.description_formatted = entry.description.linkify();
             entry.isBillable = entry.billable == 1;
             entry.start_time_formatted = entry.start_time.substr(0,5);
             entry.end_time_formatted = entry.end_time.substr(0,5);
@@ -126,15 +174,18 @@ function Sidebar()
             totalTime += parseInt(entry['duration'], 10);
         }
 
+        bench('parse');
         $this.clearEntriesBox();
+        bench('clear');
         var first = true;
         for (day in entriesByDays)
         {
             $this.renderEntriesDay(entriesByDays[day], day, first);
             first = false;
         }
-
+        bench('renderDays');
         $this.renderTotalTime(totalTime);
+        bench('renderTotal');
     };
 
     this.onMouseOut = function ()
@@ -200,7 +251,114 @@ function Sidebar()
         });
     };
 
+    function prepareChartData(entries) {
+        var startDate = entries[0].date + " 00:00:00";
+        var today = moment();
+
+        console.log('pcdEntries', entries);
+        console.log('startDate', startDate);
+        var range = moment.range(startDate, today);
+        var subRanges = [];
+
+        var unit = "day";
+
+        if(range.diff('days') == 0)
+            unit = 'hour';
+        else if (range.diff('days') <= 7)
+            unit = 'day';
+        else if (range.diff('weeks') <= 5)
+            unit = 'week';
+        else if (range.diff('months') <= 12)
+            unit = 'month';
+        else
+            unit = 'year';
+
+        range.by(unit+'s', function(m) {
+            var startOf = moment(m).startOf(unit);
+            var endOf = moment(m).endOf(unit);
+            var range = formatRange(unit,startOf, endOf);
+            subRanges.push(range);
+        });
+
+        if (!subRanges[subRanges.length-1].range.contains(today))
+            subRanges.push(formatRange(unit,moment().startOf(unit), moment().endOf(unit)));
+
+        for(var i in entries)
+        {
+            var entry = entries[i];
+            var datetime = entries[i].date + " " + entries[i].start_time;
+            console.log('datetime', datetime);
+            var m = moment(datetime, 'YYYY-MM-DD HH:mm:ss');
+
+            for (var j in subRanges)
+            {
+                var subRange = subRanges[j];
+
+                if (subRange.range.contains(m))
+                {
+                    subRange.totalTime += parseInt(entry.duration, 10);
+                    break;
+                }
+            }
+        }
+
+        var labels = [];
+        var datasetData = [];
+
+        for (var i in subRanges)
+        {
+            var subRange = subRanges[i];
+            labels.push(subRange.label);
+            datasetData.push(subRange.totalTime);
+        }
+        console.log('labels', labels);
+
+        var data = {
+            labels: labels,
+            datasets: [
+                {
+                    fillColor: "rgba(220,220,220,0.5)",
+                    strokeColor: "rgba(220,220,220,0.8)",
+                    highlightFill: "rgba(220,220,220,0.75)",
+                    highlightStroke: "rgba(220,220,220,1)",
+                    data: datasetData
+                }
+            ]
+        };
+
+        return data;
+    }
+
+    function formatRange(unit, startOf, endOf) {
+        console.log('unit', unit);
+        var label = null;
+        switch(unit) {
+            case 'hour' : label = startOf.format('HH:00'); break;
+            case 'day' : label = startOf.format('ddd'); break;
+            case 'week' :
+                if (startOf.month() != endOf.month())
+                    label = startOf.format('DD MMM') + '/' + endOf.format('DD MMM');
+                else
+                    label = startOf.format('DD') + '/' + endOf.format('DD MMM');
+                break;
+            case 'month' : label = startOf.format('MMMM'); break;
+            case 'year' : label = startOf.format('YYYY'); break;
+        }
+        console.log('label', label);
+        var range = moment.range(startOf,endOf);
+        return {
+            label: label,
+            range: range,
+            totalTime: 0
+        };
+    }
+
+    this.pcd = prepareChartData;
+
     watchTimerId = setInterval($this.watch, 100);
     this.loadTemplates();
     this.bindEvents();
+
+    Chart.defaults.global.animation = false;
+    Chart.defaults.global.maintainAspectRatio = true;
 }

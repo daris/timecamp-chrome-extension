@@ -17,6 +17,11 @@
     };
 }
 
+function bench(name)
+{
+    console.log(name, +moment());
+}
+
 if (!String.format) {
     String.format = function(format) {
         var args = Array.prototype.slice.call(arguments, 1);

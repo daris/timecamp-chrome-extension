@@ -208,12 +208,8 @@ function TimerBase() {
 
     this.onEntriesLoaded = function(event, eventData)
     {
-        console.log('entriesLoaded', event, eventData);
         var params = eventData.params;
         var data   = eventData.data;
-
-        var taskId = params.external_task_id;
-        storage.entries[taskId] = data;
 
         var total = 0;
         for (i in data)
@@ -221,10 +217,7 @@ function TimerBase() {
             entry = data[i];
             total += parseInt(entry.duration,10);
         }
-
-        console.log('storage', storage);
-        console.log('taskId', taskId);
-        console.log('totall', total);
+        var taskId = params.external_task_id;
         $this.updateTopMessage(taskId, total);
     };
 
@@ -244,6 +237,9 @@ function TimerBase() {
         }
 
         $.when(ApiService.Entries.get(params)).then(function (data) {
+            if (data.lenght)
+                data.reverse();
+            storage.entries[taskId] = data;
             $(document).trigger('tcEntriesLoaded', {params: params, data: data});
         });
     };
@@ -311,12 +307,20 @@ function TimerBase() {
         }
     };
 
+    this.onTaskChangeDetected = function(event, eventData) {
+        console.log('event', event);
+        console.log('eventData', eventData);
+
+        if (eventData.externalTaskId)
+            $this.getEntries(eventData.externalTaskId);
+    };
 
     this.bindEvents = function ($that) {
         $this = $that;
         setInterval($this.updateButtonState, this.pushInterval);
         setTimeout($this.updateButtonState, 3000);
         $(document).on('tcEntriesLoaded',this.onEntriesLoaded);
+        $(document).on('tcTaskChangeDetected',this.onTaskChangeDetected);
         switch ($this.isWatching)
         {
             case $this.canWatch.DOM:

@@ -180,6 +180,14 @@
     padding-left: 5px;
 }
 
+.tc-sidebar-total-time {
+    font-weight: bold;
+    float: right;
+    border-top: 2px solid black;
+    width: 100%;
+    padding-top: 2px;
+}
+
 .tc-sidebar-entry {
     padding-bottom: 5px;
 }
@@ -192,7 +200,7 @@
     width: 4px;
 }
 
-.tc-sidebar-entry .time-from {
+.tc-sidebar-entry .time-to {
     width: 30px;
 }
 
@@ -201,6 +209,31 @@
     padding-left: 58px;
 }
 
+.tc-sidebar-entry .note-input-box {
+    padding: 0 5px;
+    display: none;
+}
+
+.tc-sidebar-entry .note-input-box textarea{
+    width: 100%;
+    height: 70px;
+}
+
+.tc-sidebar-entry .note-placeholder {
+    padding: 0 5px;
+    font-style: italic;
+    color: #999
+}
+
 .tc-sidebar-day-header .billable-header {
     padding-left: 60px;
+}
+
+.tc-sidebar .tc-chart {
+    padding: 0 5px;
+}
+
+.tc-sidebar .chart-canvas {
+    width: 260px;
+    height: 250px;
 }
