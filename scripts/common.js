@@ -11,9 +11,9 @@
         var emailAddressPattern = /[\w.]+@[a-zA-Z_-]+?(?:\.[a-zA-Z]{2,6})+/gim;
 
         return this
-            .replace(urlPattern, '<a href="$&">$&</a>')
-            .replace(pseudoUrlPattern, '$1<a href="http://$2">$2</a>')
-            .replace(emailAddressPattern, '<a href="mailto:$&">$&</a>');
+            .replace(urlPattern, '<a target="_blank" href="$&">$&</a>')
+            .replace(pseudoUrlPattern, '$1<a target="_blank" href="http://$2">$2</a>')
+            .replace(emailAddressPattern, '<a target="_blank" href="mailto:$&">$&</a>');
     };
 }
 
@@ -53,6 +53,12 @@ function zeroFill(number, width) {
         return new Array(width + (/\./.test(number) ? 2 : 1)).join('0') + number;
     }
     return number + ""; // always return a string
+}
+
+function formatHMS(seconds)
+{
+    var duration = moment.duration(seconds, 'seconds');
+    return duration.hours() + ":" + zeroFill(duration.minutes(), 2) + ":" + zeroFill(duration.seconds(), 2);
 }
 
 $(document).ready(function() {

@@ -9,35 +9,49 @@ function TimerButton(taskId) {
     this.denied     = false;
     this.startedAt  = null;
     this.intervalId = null;
+    this.runningEntryId = false;
+    this.isRunning = false;
 
     var $this = this;
 
-    this.isRunning = function ()
-    {
-        return timer.trackedTaskId == $this.taskId;
-    };
-
-    this.start = function (startDate) {
-        this.startedAt = startDate;
+    this.start = function (startDate, entryId) {
+        if ($this.isRunning)
+            return;
+        $this.isRunning = true;
+        $this.startedAt = startDate;
+        $this.runningEntryId = entryId;
 
         var callback = function () {
             var diff = moment().diff($this.startedAt,'seconds');
             $this.setButtonTime(diff);
+
+            var eventParams = {
+                elapsed: diff,
+                entryId: $this.runningEntryId,
+                taskId: $this.taskId
+            };
+
+            $(document).trigger('tcTimerTick', eventParams);
         };
 
         callback();
-        this.setButtonText(Messages.buttonTimerStarted);
-        this.showTimer();
+        $this.setButtonText(Messages.buttonTimerStarted);
+        $this.showTimer();
 
-        this.intervalId = setInterval(callback, 1000);
+        $this.intervalId = setInterval(callback, 1000);
+        console.error('start');
     };
 
     this.stop = function()
     {
-        this.setButtonTime(0);
-        this.hideTimer();
-        clearInterval(this.intervalId);
-        this.intervalId = null;
+        if (!$this.isRunning)
+            return;
+
+        $this.isRunning = false;
+        console.error('stop');
+        $this.hideTimer();
+        clearInterval($this.intervalId);
+        $this.intervalId = null;
     };
 
     this.isEnabled = function ()

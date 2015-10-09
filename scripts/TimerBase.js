@@ -79,8 +79,8 @@ function TimerBase() {
         $this.buttons[taskId].enabled = false;
 
         var always = function() {
-            $this.updateButtonState();
-            $.when($this.getEntries(taskId)).then(function () {
+            //$this.updateButtonState();
+            $.when($this.getEntries(taskId, true)).then(function () {
                 $.when($this.getTrackedTime()).then(function () {
                     $this.updateTopMessage();
                 });
@@ -101,8 +101,9 @@ function TimerBase() {
         else
         {
             $this.buttons[taskId].setButtonText(Messages.buttonTimerStarting);
-            $.when(ApiService.Timer.start(taskId, now)).then(function () {
-                $this.buttons[taskId].start(now);
+            $.when(ApiService.Timer.start(taskId, now)).then(function (data) {
+                console.log('data', data);
+                $this.buttons[taskId].start(now, data.entry_id);
                 always();
                 if (onStart)
                     onStart();
@@ -155,18 +156,25 @@ function TimerBase() {
             if (response == null)
                 return;
 
-            $this.isTimerRunning = response.isTimerRunning;
-
             $this.onSyncSuccess(response);
 
             for (var i in $this.buttons)
                 $this.buttons[i].enabled = true;
 
-            if ($this.isTimerRunning)
+            if(!response.isTimerRunning) {
+                for (var i in $this.buttons)
+                {
+                    $this.buttons[i].stop();
+                    $this.buttons[i].setButtonText(Messages.buttonTimerStopped);
+                }
+            }
+            else
             {
+                if ($this.trackedTaskId == response.external_task_id)
+                    return;
+
                 $this.trackedTaskId = response.external_task_id;
                 var startDate = moment(response.start_time);
-                var button = $this.buttons[$this.trackedTaskId];
                 $this.startDate = startDate;
 
                 for (var i in $this.buttons)
@@ -176,21 +184,14 @@ function TimerBase() {
                         $this.buttons[i].setButtonText(Messages.buttonTimerStopTrackingAnotherTask);
                         $this.buttons[i].stop();
                     }
+                    else
+                        $this.buttons[i].start(startDate, response.entry_id);
                 }
+            }
 
-                if(button)
-                {
-                    button.start(startDate);
-                }
-            }
-            else {
-                for (var i in $this.buttons)
-                {
-                    $this.buttons[i].stop();
-                    $this.buttons[i].setButtonText(Messages.buttonTimerStopped);
-                }
-            }
+            $this.isTimerRunning = response.isTimerRunning;
             $this.updateTopMessage();
+
         }).fail(function (reason) {
             $this.onSyncFailure(reason);
 
@@ -315,11 +316,41 @@ function TimerBase() {
             $this.getEntries(eventData.externalTaskId);
     };
 
+    this.onDatasetChange = function(event, eventData) {
+        console.log('onDatasetChange', eventData);
+        var source = eventData.source;
+        var refType = eventData.refType;
+        var refId = eventData.refId;
+        var data = eventData.data;
+
+        if (source == "timer")
+            return;
+
+        console.log('storage', storage);
+
+        if (refType == 'entry')
+        {
+            var taskId = eventData.parentId;
+            for (i in storage['entries'][taskId])
+            {
+                var entry = storage['entries'][taskId][i];
+                if (entry['id'] == refId)
+                {
+                    $.extend(storage['entries'][taskId][i], data);
+                    console.log('storage', storage);
+                    return;
+                }
+
+            }
+        }
+    };
+
     this.bindEvents = function ($that) {
         $this = $that;
         setInterval($this.updateButtonState, this.pushInterval);
         setTimeout($this.updateButtonState, 3000);
         $(document).on('tcEntriesLoaded',this.onEntriesLoaded);
+        $(document).on('tcDatasetChange',this.onDatasetChange);
         $(document).on('tcTaskChangeDetected',this.onTaskChangeDetected);
         switch ($this.isWatching)
         {

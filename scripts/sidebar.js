@@ -1,3 +1,4 @@
+
 /**
  * Created by mdybizbanski on 22.09.15.
  */
@@ -14,13 +15,15 @@ function Sidebar()
         "sidebarMain"   :"sidebar_main",
         "sidebarDayHeader"  :"sidebar_day_header",
         "sidebarTotalTime"  :"sidebar_total_time",
-        "sidebarEntry"      :"sidebar_entry"
+        "sidebarEntry"      :"sidebar_entry",
+        "sidebarPlaceholder":"sidebar_placeholder"
     };
 
     this.templateData = {};
     this.templateData.sidebarButton = {};
     this.templateData.sidebarButton.taskName = false;
     this.templateData.sidebarButton.isRunning = false;
+    this.templateData.sidebarButton.taskId = false;
 
     $this = this;
 
@@ -31,36 +34,76 @@ function Sidebar()
 
     this.bindInternalEvents = function()
     {
-        $this.sidebar.on('click', $this.expand);
-        $this.sidebar.on('mouseenter', $this.onHover);
-        $this.sidebar.on('click', '.tc-sidebar-entry', $this.onEntryClick);
-        $this.sidebar.on('blur', '.note-input', $this.onEntryLeave);
-        $this.sidebar.on('click', '.tc-sidebar-start-button', $this.onButtonClick);
-        //$this.sidebar.on('mouseleave', $this.onMouseOut);
         $($this.marginSelector).on('click', $this.collapse);
+        //$this.sidebar.on('mouseleave', $this.onMouseOut);
+        $this.sidebar.on('click',       $this.expand);
+        $this.sidebar.on('mouseenter',  $this.onHover);
+        $this.sidebar.on('blur',        '.note-input',              $this.onEntryLeave);
+        $this.sidebar.on('click',       '.tc-sidebar-entry',        $this.onEntryClick);
+        $this.sidebar.on('click',       '.tc-sidebar-start-button', $this.onButtonClick);
+        $this.sidebar.on('click',       '.billable-checkbox',       $this.onBillableClick);
+        $this.sidebar.on('click',       '.note-placeholder a',      function(e) { e.stopPropagation(); });
     };
 
     this.onButtonClick = function() {
 
     };
 
+    this.onBillableClick = function(e) {
+        e.stopPropagation();
 
+        var DOMObj = $(this).parents('.tc-sidebar-entry');
+        var entry = DOMObj.data('entry');
+        var entryDiff = {billable: value};
+
+        $.extend(entry, entryDiff);
+
+        ApiService.Entries.put({id: entry.id, billable: value});
+        var eventData = {
+            refType: "entry",
+            refId: entry.id,
+            parentId: $this.templateData.sidebarButton.taskId,
+            data: entryDiff,
+            source: "sidebar"
+        };
+
+        $(document).trigger('tcDatasetChange', eventData);
+    };
 
     this.onEntryClick = function()
     {
-        console.log('this', this);
-        var parent = $(this).parent();
-        console.log('parent', parent);
         $(this).find('.note-placeholder').hide();
         $(this).find('.note-input-box').show();
     };
 
-    $this.onEntryLeave = function() {
-        var entryId = $(this).parents('.tc-sidebar-entry').attr('data-entryId');
+    this.onEntryLeave = function() {
+        var DOMObj = $(this).parents('.tc-sidebar-entry');
+        var entry = DOMObj.data('entry');
+
         var note = $(this).val();
-        
-        console.log('entryId', entryId);
-        console.log('note', note);
+        var linkify = note.linkify();
+
+        var entryDiff = {
+            description: note,
+            description_formatted: linkify
+        };
+
+        $.extend(entry, entryDiff);
+
+        DOMObj.find('.note-placeholder').html(linkify).show();
+        DOMObj.find('.note-input-box').hide();
+
+        ApiService.Entries.put({id: entry.id, description: note});
+
+        var eventData = {
+            refType: "entry",
+            refId: entry.id,
+            parentId: $this.templateData.sidebarButton.taskId,
+            data: entryDiff,
+            source: "sidebar"
+        };
+
+        $(document).trigger('tcDatasetChange', eventData);
     };
 
     this.watch = function()
@@ -95,8 +138,34 @@ function Sidebar()
     {
         $(document).on('tcTimerStarted', $this.onTimerStarted);
         $(document).on('tcTimerStopped', $this.onTimerStopped);
+        $(document).on('tcTimerTick', $this.onTimerTick);
         $(document).on('tcTaskChangeDetected', $this.onTaskChange);
         $(document).on('tcEntriesLoaded', $this.onEntriesLoaded);
+    };
+
+    this.onTimerTick = function(event, eventData) {
+        var taskId = eventData.taskId;
+        var entryId = eventData.entryId;
+        var elapsed = eventData.elapsed;
+
+        if (taskId != $this.templateData.sidebarButton.taskId)
+            return;
+
+        var entryElement = $this.sidebar.find('[data-entryid="'+entryId+'"]');
+
+        if (!entryElement.length)
+            return;
+
+        var entry = entryElement.data('entry');
+
+        console.log('entryElement', entryElement);
+        console.log('entry', entry);
+
+        var newDuration = parseInt(entry.duration,10) + elapsed;
+        console.log('entry.duration+', newDuration);
+
+        entryElement.find('.duration').html(formatHMS(newDuration));
+
     };
 
     this.clearEntriesBox = function() {
@@ -105,7 +174,7 @@ function Sidebar()
 
     this.renderEntriesDay = function(entries, date, isFirst) {
         var params = {
-            date : moment(date,'YYYY-MM-DD').format("DD MMM"),
+            date: moment(date,'YYYY-MM-DD').format("DD MMM"),
             rawDate: date,
             isFirst: isFirst
         };
@@ -114,49 +183,56 @@ function Sidebar()
         sidebarTimeDetails.append(ich.sidebarDayHeader(params));
 
         for (i in entries)
-            sidebarTimeDetails.append(ich.sidebarEntry(entries[i]));
+        {
+            var entry = entries[i];
+            var render = ich.sidebarEntry(entry);
+            render.data('entry', entry);
+            sidebarTimeDetails.append(render);
+        }
     };
 
     this.renderTotalTime = function(totalTime) {
-        var duration = moment.duration(totalTime, 'seconds');
-        totalTime = duration.hours()+":"+zeroFill(duration.minutes(), 2)+":"+zeroFill(duration.seconds(), 2);
+        var sidebarTimeDetails = $('.tc-sidebar-time-details');
+        totalTime = formatHMS(totalTime);
 
         var params = {
             totalTime : totalTime
         };
 
-        var sidebarTimeDetails = $('.tc-sidebar-time-details');
-        sidebarTimeDetails.append(ich.sidebarTotalTime(params));
+        var DOMObj = ich.sidebarTotalTime(params);
+        DOMObj.data('totalTime', totalTime);
+        sidebarTimeDetails.append(DOMObj);
     };
 
     this.onEntriesLoaded = function(event, eventData) {
-        bench('start');
         var entriesByDays = {};
-        var totalByDays = {};
 
         var params = eventData.params;
         var entries = eventData.data;
         var totalTime = 0;
 
-        if (entries.length == 0)
-        {
-            $this.clearEntriesBox();
+        if (!$this.sidebar)
             return;
-        }
-        bench('data');
-        console.log('entries', entries);
 
         if (barChart)
             barChart.destroy();
-        var chartData = prepareChartData(entries);
+
+        $this.clearEntriesBox();
+
+        if (entries.length == 0)
+        {
+            $('.tc-sidebar-time-details').append(ich.sidebarPlaceholder());
+            return;
+        }
+
+        console.log('entries', entries);
+        var chartParams = prepareChartData(entries);
         var ctx = $this.sidebar.find($this.barChartSelector).get(0).getContext("2d");
-        console.log('chartData', chartData);
-        barChart = new Chart(ctx).Bar(chartData);
+        barChart = new Chart(ctx).Bar(chartParams.data, chartParams.options);
 
         for (i in entries)
         {
             var entry = entries[i];
-
 
             entry.description_formatted = entry.description.linkify();
             entry.isBillable = entry.billable == 1;
@@ -169,23 +245,22 @@ function Sidebar()
             if (!entriesByDays[entry['date']])
                 entriesByDays[entry['date']] = [];
 
-            console.log('entry', entry);
             entriesByDays[entry['date']].push(entry);
             totalTime += parseInt(entry['duration'], 10);
         }
 
-        bench('parse');
         $this.clearEntriesBox();
-        bench('clear');
         var first = true;
-        for (day in entriesByDays)
+        var days = Object.keys(entriesByDays).reverse();
+        for (i in days)
         {
+            var day = days[i];
+
+            entriesByDays[day].sort(function(a,b) { if (a.start_time > b.start_time) return -1; return 1; });
             $this.renderEntriesDay(entriesByDays[day], day, first);
             first = false;
         }
-        bench('renderDays');
         $this.renderTotalTime(totalTime);
-        bench('renderTotal');
     };
 
     this.onMouseOut = function ()
@@ -204,10 +279,16 @@ function Sidebar()
 
     this.onTaskChange = function(event, args)
     {
-        if (args && args.hasOwnProperty('taskName'))
-            $this.templateData.sidebarButton.taskName = args.taskName;
+        if (args['taskName'])
+            $this.templateData.sidebarButton.taskName = args['taskName'];
         else
             $this.templateData.sidebarButton.taskName = false;
+
+        if (args['externalTaskId'])
+            $this.templateData.sidebarButton.taskId = args['externalTaskId'];
+        else
+            $this.templateData.sidebarButton.taskId = false;
+
 
         $this.renderSidebarButton();
     };
@@ -252,11 +333,9 @@ function Sidebar()
     };
 
     function prepareChartData(entries) {
-        var startDate = entries[0].date + " 00:00:00";
+        var startDate = entries[0].date + " " + entries[0].start_time;
         var today = moment();
 
-        console.log('pcdEntries', entries);
-        console.log('startDate', startDate);
         var range = moment.range(startDate, today);
         var subRanges = [];
 
@@ -264,9 +343,9 @@ function Sidebar()
 
         if(range.diff('days') == 0)
             unit = 'hour';
-        else if (range.diff('days') <= 7)
+        else if (range.diff('days') <= 6)
             unit = 'day';
-        else if (range.diff('weeks') <= 5)
+        else if (range.diff('week') <= 5)
             unit = 'week';
         else if (range.diff('months') <= 12)
             unit = 'month';
@@ -274,20 +353,50 @@ function Sidebar()
             unit = 'year';
 
         range.by(unit+'s', function(m) {
-            var startOf = moment(m).startOf(unit);
-            var endOf = moment(m).endOf(unit);
-            var range = formatRange(unit,startOf, endOf);
+            var unitTmp = unit;
+            var startOf = moment(m).startOf(unitTmp);
+            var endOf = moment(m).endOf(unitTmp);
+            if (unit == 'week')
+            {
+                startOf.add(1, 'days');
+                endOf.add(1, 'days');
+            }
+            var range = formatRange(unitTmp,startOf, endOf);
             subRanges.push(range);
         });
 
         if (!subRanges[subRanges.length-1].range.contains(today))
+        {
+            if (unit == 'week')
+                unit = 'isoweek';
             subRanges.push(formatRange(unit,moment().startOf(unit), moment().endOf(unit)));
+        }
 
+        //if (unit == 'hour')
+        //{
+        //    var newEntries = [];
+        //    for(var i in entries)
+        //    {
+        //        var datetime = entries[i].date + " " + entries[i].start_time;
+        //        var m = moment(datetime, 'YYYY-MM-DD HH:mm:ss');
+        //
+        //        var hourEnd = moment(m).endOf('hour');
+        //        var diff = m.diff(hourEnd, 'second');
+        //        var durationLeft = parseInt(entries[i].duration, 10);
+        //
+        //
+        //        if (diff < durationLeft)
+        //        {
+        //
+        //        }
+        //    }
+        //}
+
+        var maxTotalTime = 0;
         for(var i in entries)
         {
             var entry = entries[i];
             var datetime = entries[i].date + " " + entries[i].start_time;
-            console.log('datetime', datetime);
             var m = moment(datetime, 'YYYY-MM-DD HH:mm:ss');
 
             for (var j in subRanges)
@@ -297,6 +406,8 @@ function Sidebar()
                 if (subRange.range.contains(m))
                 {
                     subRange.totalTime += parseInt(entry.duration, 10);
+                    if (subRange.totalTime > maxTotalTime)
+                        maxTotalTime = subRange.totalTime;
                     break;
                 }
             }
@@ -305,46 +416,62 @@ function Sidebar()
         var labels = [];
         var datasetData = [];
 
+        var timeUnit = "s";
+        var timeDivider = 1;
+        if (maxTotalTime > 7200)
+        {
+            timeDivider = 3600;
+            timeUnit = 'h';
+        }
+        else if (maxTotalTime > 60)
+        {
+            timeDivider = 60;
+            timeUnit = 'min';
+        }
+
         for (var i in subRanges)
         {
             var subRange = subRanges[i];
+            var value = Math.floor(subRange.totalTime * 100 / timeDivider)/100;
+            datasetData.push(value);
             labels.push(subRange.label);
-            datasetData.push(subRange.totalTime);
         }
-        console.log('labels', labels);
 
-        var data = {
-            labels: labels,
-            datasets: [
-                {
-                    fillColor: "rgba(220,220,220,0.5)",
-                    strokeColor: "rgba(220,220,220,0.8)",
-                    highlightFill: "rgba(220,220,220,0.75)",
-                    highlightStroke: "rgba(220,220,220,1)",
-                    data: datasetData
-                }
-            ]
+        return {
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        fillColor: "rgba(220,220,220,0.5)",
+                        strokeColor: "rgba(220,220,220,0.8)",
+                        highlightFill: "rgba(220,220,220,0.75)",
+                        highlightStroke: "rgba(220,220,220,1)",
+                        data: datasetData
+                    }
+                ]
+            },
+            options: {
+                tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= value %>" + timeUnit,
+                scaleLabel: "<%= value %>" + timeUnit
+            }
         };
-
-        return data;
     }
 
     function formatRange(unit, startOf, endOf) {
-        console.log('unit', unit);
         var label = null;
         switch(unit) {
             case 'hour' : label = startOf.format('HH:00'); break;
             case 'day' : label = startOf.format('ddd'); break;
+            case 'isoweek' :
             case 'week' :
                 if (startOf.month() != endOf.month())
                     label = startOf.format('DD MMM') + '/' + endOf.format('DD MMM');
                 else
                     label = startOf.format('DD') + '/' + endOf.format('DD MMM');
                 break;
-            case 'month' : label = startOf.format('MMMM'); break;
+            case 'month' : label = startOf.format('MMM'); break;
             case 'year' : label = startOf.format('YYYY'); break;
         }
-        console.log('label', label);
         var range = moment.range(startOf,endOf);
         return {
             label: label,
@@ -352,8 +479,6 @@ function Sidebar()
             totalTime: 0
         };
     }
-
-    this.pcd = prepareChartData;
 
     watchTimerId = setInterval($this.watch, 100);
     this.loadTemplates();

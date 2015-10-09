@@ -43,7 +43,7 @@
 }
 
 .tc-sidebar-footer-box {
-    width: 70px;
+    width: 76px;
     height: 50px;
     line-height: 50px;
     display: inline-block;
@@ -190,6 +190,7 @@
 
 .tc-sidebar-entry {
     padding-bottom: 5px;
+    cursor: pointer;
 }
 
 .tc-sidebar-entry .time-from {
@@ -216,6 +217,7 @@
 
 .tc-sidebar-entry .note-input-box textarea{
     width: 100%;
+    padding: 3px;
     height: 70px;
 }
 
