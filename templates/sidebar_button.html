@@ -13,7 +13,21 @@
         <i class="fa fa-stop fa-lg"></i>
         {{/isRunning}}
         {{^isRunning}}
-        <i class="fa fa-play fa-lg"></i>
+            {{^isSingle}}
+                <i class="fa fa-play fa-lg fa-rotate-90"></i>
+            {{/isSingle}}
+            {{#isSingle}}
+                <i class="fa fa-play fa-lg"></i>
+            {{/isSingle}}
         {{/isRunning}}
     </div>
+    {{#hasSubtasks}}
+    <div class="tc-subtask-picker">
+        <ul>
+            {{#subtasks}}
+            <li class="tc-subtask-picker-entry" data-taskId="{{taskId}}">{{taskName}}</li>
+            {{/subtasks}}
+        </ul>
+    </div>
+    {{/hasSubtasks}}
 </div>

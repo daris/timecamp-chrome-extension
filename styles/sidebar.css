@@ -239,3 +239,45 @@
     width: 260px;
     height: 250px;
 }
+
+.tc-sidebar .tc-subtask-picker {
+    position: absolute;
+    top: 54px;
+    width: 240px;
+    color: #333;
+    text-decoration: none;
+    display: none;
+}
+
+.tc-sidebar .tc-subtask-picker ul {
+    z-index: 1000;
+    float: left;
+    padding: 5px 0;
+    margin: 2px 0 0;
+    font-size: 14px;
+    text-align: left;
+    list-style: none;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid rgba(0,0,0,.15);
+    border-radius: 4px;
+    box-shadow: 0 6px 12px rgba(0,0,0,.175);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    width: 240px;
+}
+
+.tc-sidebar .tc-subtask-picker ul li {
+    padding: 3px 20px;
+    clear: both;
+    font-weight: 400;
+    line-height: 1.42857143;
+    color: #333;
+    white-space: nowrap;
+}
+
+.tc-sidebar .tc-subtask-picker ul li:hover {
+    color: #262626;
+    text-decoration: none;
+    background-color: #f5f5f5;
+}

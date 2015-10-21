@@ -27,7 +27,10 @@ function TimerBase() {
     this.isWatching = this.canWatch.DOM;
 
     this.currentTaskId          = function () { return ''; };
+    this.isTaskSelected         = function () { return !!$this.currentTaskId() };
     this.currentTaskName        = function () { return false; };
+    this.isParentSelected       = function () { return !!$this.getParentId() };
+    this.getSubtasks            = function () { return [] };
     this.onSyncSuccess          = function (response) {};
     this.onSyncFailure          = function (reason) {};
     this.insertButtonIntoPage   = function () {};
@@ -111,7 +114,25 @@ function TimerBase() {
         }
     };
 
-    this.detectTaskIdChange = function() {
+    this.detectTaskIdChange = function()
+    {
+        if (!$this.isTaskSelected())
+        {
+            if (!$this.isParentSelected())
+                return;
+
+            var parentId = $this.getParentId();
+            if ($this.previousParentId == parentId)
+                return;
+
+            var args = {
+                externalParentId: parentId,
+                subtasks: $this.getSubtasks()
+            };
+            $(document).trigger('tcParentChangeDetected', args);
+            $this.previousParentId = parentId;
+        }
+
         var currentTaskId = $this.currentTaskId();
         if ($this.previousTaskId == currentTaskId)
             return;
@@ -120,8 +141,8 @@ function TimerBase() {
             externalTaskId: currentTaskId,
             taskName: $this.currentTaskName()
         };
-
         $(document).trigger('tcTaskChangeDetected', args);
+        $this.previousTaskId = currentTaskId;
     };
 
     this.onDomModified = function () {
@@ -212,6 +233,9 @@ function TimerBase() {
         var params = eventData.params;
         var data   = eventData.data;
 
+        if (params.with_subtasks)
+            return;
+
         var total = 0;
         for (i in data)
         {
@@ -222,13 +246,19 @@ function TimerBase() {
         $this.updateTopMessage(taskId, total);
     };
 
-    this.getEntries = function(taskId, forceReload)
+    this.getEntries = function(taskId, forceReload, with_subtasks)
     {
+        with_subtasks = !!with_subtasks;
+
+        if (!taskId || taskId == "")
+            return;
+
         var params = {
             from : '2012-01-01',
             to   : moment().format('YYYY-MM-DD'),
             user_ids: "me",
-            external_task_id: taskId
+            external_task_id: taskId,
+            with_subtasks: with_subtasks
         };
 
         if (storage.entries.hasOwnProperty(taskId) && !forceReload)
@@ -307,6 +337,13 @@ function TimerBase() {
             }
         }
     };
+    this.onParentChangeDetected = function(event, eventData) {
+        console.log('event', event);
+        console.log('eventData', eventData);
+
+        if (eventData.externalParentId)
+            $this.getEntries(eventData.externalTaskId);
+    };
 
     this.onTaskChangeDetected = function(event, eventData) {
         console.log('event', event);
@@ -352,6 +389,7 @@ function TimerBase() {
         $(document).on('tcEntriesLoaded',this.onEntriesLoaded);
         $(document).on('tcDatasetChange',this.onDatasetChange);
         $(document).on('tcTaskChangeDetected',this.onTaskChangeDetected);
+        $(document).on('tcParentChangeDetected',this.onParentChangeDetected);
         switch ($this.isWatching)
         {
             case $this.canWatch.DOM:
@@ -375,7 +413,7 @@ function TimerBase() {
         $.when(TokenManager.getToken()).then(function (token)
         {
             $.ajax({
-                url: restUrl+'can_track/format/json',
+                url: restUrl+'/can_track/format/json',
                 data: {
                     api_token: token,
                     service: $this.service

@@ -21,6 +21,7 @@ function Sidebar()
 
     this.templateData = {};
     this.templateData.sidebarButton = {};
+    this.templateData.sidebarButton.isSingle = true;
     this.templateData.sidebarButton.taskName = false;
     this.templateData.sidebarButton.isRunning = false;
     this.templateData.sidebarButton.taskId = false;
@@ -42,11 +43,29 @@ function Sidebar()
         $this.sidebar.on('click',       '.tc-sidebar-entry',        $this.onEntryClick);
         $this.sidebar.on('click',       '.tc-sidebar-start-button', $this.onButtonClick);
         $this.sidebar.on('click',       '.billable-checkbox',       $this.onBillableClick);
+        $this.sidebar.on('click',       '.tc-subtask-picker-entry', $this.onTaskSelected);
         $this.sidebar.on('click',       '.note-placeholder a',      function(e) { e.stopPropagation(); });
     };
 
     this.onButtonClick = function() {
+        console.log('here');
+        console.log('$this.templateData', $this.templateData);
+        if (!$this.templateData.sidebarButton.isSingle)
+        {
+            $this.sidebar.find('.tc-subtask-picker').toggle();
+        }
+    };
 
+    this.onTaskSelected = function() {
+        var DOMObj = $(this);
+        var taskId = DOMObj.attr('data-taskId');
+        var taskName = DOMObj.text();
+
+        var args = {
+            externalTaskId: taskId,
+            taskName: taskName
+        };
+        $(document).trigger('tcTaskChangeDetected', args);
     };
 
     this.onBillableClick = function(e) {
@@ -83,15 +102,18 @@ function Sidebar()
         var note = $(this).val();
         var linkify = note.linkify();
 
+        DOMObj.find('.note-placeholder').html(linkify).show();
+        DOMObj.find('.note-input-box').hide();
+
+        if (note == entry.description)
+            return;
+
         var entryDiff = {
             description: note,
             description_formatted: linkify
         };
 
         $.extend(entry, entryDiff);
-
-        DOMObj.find('.note-placeholder').html(linkify).show();
-        DOMObj.find('.note-input-box').hide();
 
         ApiService.Entries.put({id: entry.id, description: note});
 
@@ -140,6 +162,7 @@ function Sidebar()
         $(document).on('tcTimerStopped', $this.onTimerStopped);
         $(document).on('tcTimerTick', $this.onTimerTick);
         $(document).on('tcTaskChangeDetected', $this.onTaskChange);
+        $(document).on('tcParentChangeDetected', $this.onParentChange);
         $(document).on('tcEntriesLoaded', $this.onEntriesLoaded);
     };
 
@@ -279,6 +302,7 @@ function Sidebar()
 
     this.onTaskChange = function(event, args)
     {
+        $this.templateData.sidebarButton.isSingle = true;
         if (args['taskName'])
             $this.templateData.sidebarButton.taskName = args['taskName'];
         else
@@ -290,6 +314,22 @@ function Sidebar()
             $this.templateData.sidebarButton.taskId = false;
 
 
+        $this.renderSidebarButton();
+    };
+
+    this.onParentChange = function(event, args)
+    {
+        $this.templateData.sidebarButton.isSingle = false;
+        if (args['subtasks'])
+            $this.templateData.sidebarButton.subtasks = args['subtasks'];
+        else
+            $this.templateData.sidebarButton.subtasks = [];
+        $this.templateData.sidebarButton.hasSubtasks = $this.templateData.sidebarButton.subtasks.length > 0;
+
+        $this.templateData.sidebarButton.taskId = event['externalParentId'];
+        $this.templateData.sidebarButton.taskName = "Select task";
+
+        console.log('$this.templateData', $this.templateData);
         $this.renderSidebarButton();
     };
 

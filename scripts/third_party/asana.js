@@ -11,13 +11,39 @@ function AsanaTimer() {
 
     this.currentTaskId = function () {
         var url = document.URL;
-        var MatchRes = url.match(/([0-9]+)/g);
-        if (MatchRes) {
-            var id = MatchRes[MatchRes.length-1];
-            return id;
-        } else {
-            return null;
-        }
+        var reg = /0\/([0-9]+)\/([0-9]+)/g;
+        var MatchRes = reg.exec(url);
+
+        if (MatchRes && MatchRes.length >= 3)
+            return MatchRes[2];
+
+        return null;
+    };
+
+    this.getParentId = function() {
+        var url = document.URL;
+        var reg = /0\/([0-9]+)/g;
+        var MatchRes = reg.exec(url);
+
+        if (MatchRes && MatchRes.length >= 2)
+            return MatchRes[1];
+
+        return null;
+    };
+
+    this.getSubtasks = function() {
+        var subtasks = [];
+
+        $(".item-list-groups").find('.task-row').each(function(i, el){
+            var arr = $(el).attr('id').split('_');
+            var taskId = arr[3];
+
+            var taskName = $(el).find('textarea').val();
+
+            subtasks.push({taskId: taskId, taskName: taskName});
+        });
+
+        return subtasks;
     };
 
     this.currentTaskName = function () {
@@ -120,6 +146,8 @@ function AsanaTimer() {
     };
 
     this.updateTopMessage = function (taskId, duration) {
+        if (!$this.isInfoInserted())
+            return;
         if (taskId != $this.currentTaskId())
             return;
 
@@ -134,6 +162,9 @@ function AsanaTimer() {
     };
 
     this.isInfoInserted = function () {
+        if (!$this.isTaskSelected())
+            return false;
+
         return this.infoInsertingInProgress || $("#timecamp-track-info").length > 0;
     };
 

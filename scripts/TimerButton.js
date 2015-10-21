@@ -39,7 +39,6 @@ function TimerButton(taskId) {
         $this.showTimer();
 
         $this.intervalId = setInterval(callback, 1000);
-        console.error('start');
     };
 
     this.stop = function()
@@ -48,7 +47,6 @@ function TimerButton(taskId) {
             return;
 
         $this.isRunning = false;
-        console.error('stop');
         $this.hideTimer();
         clearInterval($this.intervalId);
         $this.intervalId = null;
@@ -66,25 +64,32 @@ function TimerButton(taskId) {
 
     this.setButtonText = function (text)
     {
-        if ($this.uiElement)
-            $this.uiElement.children('.text').html(text);
+        if (!$this.uiElement)
+            return $this;
+
+        $this.uiElement.children('.text').html(text);
 
         return $this;
     };
 
     this.setButtonTime = function (seconds)
     {
+        if (!$this.uiElement)
+            return $this;
+
         var minutes = Math.floor(seconds / 60);
         seconds = Math.floor((seconds - minutes * 60 ));
 
-        if ($this.uiElement)
-            $this.uiElement.children('.time').html(zeroFill(minutes, 2) + ':' + zeroFill(seconds, 2));
+        $this.uiElement.children('.time').html(zeroFill(minutes, 2) + ':' + zeroFill(seconds, 2));
 
         return $this;
     };
 
     this.hideTimer = function ()
     {
+        if (!$this.uiElement)
+            return $this;
+
         var ui = $this.uiElement.children('.time');
         if (ui.is(':visible'))
             ui.hide();
@@ -93,6 +98,8 @@ function TimerButton(taskId) {
 
     this.showTimer = function ()
     {
+        if (!$this.uiElement)
+            return $this;
         var ui = $this.uiElement.children('.time');
         if (!ui.is(':visible'))
             ui.show();
