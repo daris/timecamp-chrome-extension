@@ -25,6 +25,8 @@ function Sidebar()
     this.templateData.sidebarButton.taskName = false;
     this.templateData.sidebarButton.isRunning = false;
     this.templateData.sidebarButton.taskId = false;
+    this.templateData.sidebarButton.hasRecent = false;
+    this.templateData.sidebarButton.recent = [];
 
     $this = this;
 
@@ -32,6 +34,30 @@ function Sidebar()
     var hoverTimerId = null;
     var mouseoutTimerId = null;
     var barChart;
+    var recentList = [];
+
+    function pushRecentTask(taskId, taskName)
+    {
+        var found = false;
+        for (i in recentList)
+        {
+            var entry = recentList[i];
+            if (entry.taskId = taskId)
+            {
+                recentList.splice(0, 0, recentList.splice(i, 1)[0]);
+                found = true;
+                break;
+            }
+        }
+
+        if (!found)
+            recentList.push({taskId: taskId, taskName: taskName});
+
+        recentList.slice(0, 4);
+
+        $this.templateData.sidebarButton.hasRecent = true;
+        $this.templateData.sidebarButton.recent = recentList;
+    }
 
     this.bindInternalEvents = function()
     {
@@ -65,6 +91,9 @@ function Sidebar()
             externalTaskId: taskId,
             taskName: taskName
         };
+
+        pushRecentTask(taskId, taskName);
+
         $(document).trigger('tcTaskChangeDetected', args);
     };
 
@@ -81,6 +110,7 @@ function Sidebar()
         var eventData = {
             refType: "entry",
             refId: entry.id,
+            parentType: "task",
             parentId: $this.templateData.sidebarButton.taskId,
             data: entryDiff,
             source: "sidebar"
@@ -188,7 +218,6 @@ function Sidebar()
         console.log('entry.duration+', newDuration);
 
         entryElement.find('.duration').html(formatHMS(newDuration));
-
     };
 
     this.clearEntriesBox = function() {
@@ -313,7 +342,6 @@ function Sidebar()
         else
             $this.templateData.sidebarButton.taskId = false;
 
-
         $this.renderSidebarButton();
     };
 
@@ -333,15 +361,32 @@ function Sidebar()
         $this.renderSidebarButton();
     };
 
-    this.onTimerStarted = function ()
+    this.onTimerStarted = function(event, eventData)
     {
+        console.log('event', event);
+        console.log('eventData', eventData);
+
+        var taskName = eventData['taskName'];
+        var taskId = eventData['taskId'];
+
+        $this.templateData.sidebarButton.taskName = taskName;
+        $this.templateData.sidebarButton.taskId = taskId;
         $this.templateData.sidebarButton.isRunning = true;
+
+        pushRecentTask(taskId, taskName);
+
         $this.renderSidebarButton();
     };
 
-    this.onTimerStopped = function ()
+    this.onTimerStopped = function (event, eventData)
     {
+        var taskName = eventData['taskName'];
+        var taskId = eventData['taskId'];
+
         $this.templateData.sidebarButton.isRunning = false;
+        $this.templateData.sidebarButton.taskName = taskName;
+        $this.templateData.sidebarButton.taskId = taskId;
+
         $this.renderSidebarButton();
     };
 
@@ -362,7 +407,6 @@ function Sidebar()
         $this.sidebar.removeClass('expanded').addClass('collapsed');
         $this.isCollapsed = true;
     };
-
 
     this.loadTemplates = function() {
         $.each($this.templates, function (name, url) {

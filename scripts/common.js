@@ -96,5 +96,6 @@ Messages = {
 var TokenManager    = new TokenManager();
 var ApiService      = new ApiService();
 var Sidebar         = new Sidebar();
+var ButtonList      = {};
 
 $.when(TokenManager.getToken()).then(function (token) {ApiService.setToken(token);});

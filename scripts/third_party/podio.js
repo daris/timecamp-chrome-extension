@@ -74,7 +74,7 @@ function PodioTimer() {
     };
 
     this.onTrackingDisabled = function () {
-        var button = this.buttons[this.currentTaskId()];
+        var button = ButtonList[this.currentTaskId()];
         if (!button || button.denied)
             return;
         button.denied = true;
@@ -191,7 +191,7 @@ function PodioTimer() {
             return;
 
         var buttonObj = new TimerButton(taskId);
-        this.buttons[taskId] = buttonObj;
+        ButtonList[taskId] = buttonObj;
         buttonObj.insertInProgress = true;
 
         this.buttonInsertionInProgress = true;

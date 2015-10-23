@@ -39,7 +39,7 @@ function TeamworkTimer() {
 
 
         var buttonObj = new TimerButton(currentTaskId);
-        this.buttons[currentTaskId] = buttonObj;
+        ButtonList[currentTaskId] = buttonObj;
         buttonObj.insertInProgress = true;
 
         var li = $('<li/>');
@@ -150,7 +150,7 @@ function TeamworkTimer() {
     };
 
     this.onTrackingDisabled = function() {
-        var button = this.buttons[this.currentTaskId()];
+        var button = ButtonList[$this.currentTaskId()];
         if (!button || button.denied)
             return;
 

@@ -1,8 +1,9 @@
 /**
  * Created by mdybizbanski on 14.09.15.
  */
-function TimerButton(taskId) {
+function TimerButton(taskId, taskName) {
     this.taskId     = taskId;
+    this.taskName   = taskName;
     this.uiElement  = null;
     this.insertInProgress = true;
     this.enabled    = false;
@@ -20,6 +21,14 @@ function TimerButton(taskId) {
         $this.isRunning = true;
         $this.startedAt = startDate;
         $this.runningEntryId = entryId;
+
+        var eventParams = {
+            entryId: $this.runningEntryId,
+            taskName: $this.taskName,
+            taskId: $this.taskId
+        };
+
+        $(document).trigger('tcTimerStarted', eventParams);
 
         var callback = function () {
             var diff = moment().diff($this.startedAt,'seconds');

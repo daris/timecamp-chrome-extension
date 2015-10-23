@@ -123,7 +123,7 @@
 
 
         var buttonObj = new TimerButton($this.currentTaskId());
-        this.buttons[$this.currentTaskId()] = buttonObj;
+        ButtonList[$this.currentTaskId()] = buttonObj;
         buttonObj.insertInProgress = true;
 
         this.buttonInsertionInProgress = true;
@@ -172,7 +172,7 @@
     };
 
     this.onTrackingDisabled = function() {
-        var button = this.buttons[this.currentTaskId()];
+        var button = ButtonList[$this.currentTaskId()];
         if (!button || button.denied)
             return;
 

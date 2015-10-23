@@ -57,7 +57,7 @@ function InsightlyTimer() {
         var parent = $('#content').find('[class^="header-toolbar"] .btn-toolbar');
         var buttonObj = new TimerButton(currentTaskId);
 
-        this.buttons[currentTaskId] = buttonObj;
+        ButtonList[currentTaskId] = buttonObj;
         buttonObj.insertInProgress = true;
 
         var containter = $('<div/>',{class:'btn-group'});
@@ -267,7 +267,7 @@ function InsightlyTimer() {
     };
 
     this.onTrackingDisabled = function() {
-        var button = this.buttons[this.currentTaskId()];
+        var button = ButtonList[this.currentTaskId()];
         if (!button || button.denied)
             return;
 

@@ -15,7 +15,6 @@ function TimerBase() {
     this.multiButton = false;
     this.taskDuration = {};
     this.taskDurationToday = {};
-    this.buttons = {};
     this.trackableParents = false;
     this.lastParentId = null;
     this.lastData = null;
@@ -73,13 +72,13 @@ function TimerBase() {
         if (!taskId)
             return;
 
-        console.log('$this.buttons', $this.buttons);
-        if (!$this.buttons[taskId])
+        console.log('ButtonList', ButtonList);
+        if (!ButtonList[taskId])
             return;
-        if (!$this.buttons[taskId].isEnabled())
+        if (!ButtonList[taskId].isEnabled())
             return;
 
-        $this.buttons[taskId].enabled = false;
+        ButtonList[taskId].enabled = false;
 
         var always = function() {
             //$this.updateButtonState();
@@ -93,9 +92,9 @@ function TimerBase() {
         var now = moment().format("YYYY-MM-DD HH:mm:ss");
         if ($this.isTimerRunning && $this.trackedTaskId == taskId)
         {
-            $this.buttons[taskId].hideTimer().setButtonText(Messages.buttonTimerStopping);
+            ButtonList[taskId].hideTimer().setButtonText(Messages.buttonTimerStopping);
             $.when(ApiService.Timer.stop(now)).then(function () {
-                $this.buttons[taskId].stop();
+                ButtonList[taskId].stop();
                 always();
                 if (onStop)
                     onStop();
@@ -103,10 +102,10 @@ function TimerBase() {
         }
         else
         {
-            $this.buttons[taskId].setButtonText(Messages.buttonTimerStarting);
+            ButtonList[taskId].setButtonText(Messages.buttonTimerStarting);
             $.when(ApiService.Timer.start(taskId, now)).then(function (data) {
                 console.log('data', data);
-                $this.buttons[taskId].start(now, data.entry_id);
+                ButtonList[taskId].start(now, data.entry_id);
                 always();
                 if (onStart)
                     onStart();
@@ -179,14 +178,14 @@ function TimerBase() {
 
             $this.onSyncSuccess(response);
 
-            for (var i in $this.buttons)
-                $this.buttons[i].enabled = true;
+            for (var i in ButtonList)
+                ButtonList[i].enabled = true;
 
             if(!response.isTimerRunning) {
-                for (var i in $this.buttons)
+                for (var i in ButtonList)
                 {
-                    $this.buttons[i].stop();
-                    $this.buttons[i].setButtonText(Messages.buttonTimerStopped);
+                    ButtonList[i].stop();
+                    ButtonList[i].setButtonText(Messages.buttonTimerStopped);
                 }
             }
             else
@@ -195,18 +194,14 @@ function TimerBase() {
                     return;
 
                 $this.trackedTaskId = response.external_task_id;
-                var startDate = moment(response.start_time);
-                $this.startDate = startDate;
+                $this.startDate = moment(response.start_time);
 
-                for (var i in $this.buttons)
+                for (var i in ButtonList)
                 {
                     if ($this.trackedTaskId != i )
-                    {
-                        $this.buttons[i].setButtonText(Messages.buttonTimerStopTrackingAnotherTask);
-                        $this.buttons[i].stop();
-                    }
+                        ButtonList[i].setButtonText(Messages.buttonTimerStopTrackingAnotherTask).stop();
                     else
-                        $this.buttons[i].start(startDate, response.entry_id);
+                        ButtonList[i].start($this.startDate, response.entry_id);
                 }
             }
 
@@ -218,11 +213,11 @@ function TimerBase() {
 
             TokenManager.getLoggedOutFlag().done(function(loggedOut){
                 if (loggedOut) {
-                    for (var i in $this.buttons)
-                        $this.buttons[i].setButtonText(Messages.buttonLogIn);
+                    for (var i in ButtonList)
+                        ButtonList[i].setButtonText(Messages.buttonLogIn);
                 } else {
-                    for (var i in $this.buttons)
-                        $this.buttons[i].setButtonText(Messages.buttonConnectionError);
+                    for (var i in ButtonList)
+                        ButtonList[i].setButtonText(Messages.buttonConnectionError);
                 }
             });
         });
@@ -238,10 +233,8 @@ function TimerBase() {
 
         var total = 0;
         for (i in data)
-        {
-            entry = data[i];
-            total += parseInt(entry.duration,10);
-        }
+            total += parseInt(data[i].duration, 10);
+
         var taskId = params.external_task_id;
         $this.updateTopMessage(taskId, total);
     };
@@ -314,7 +307,7 @@ function TimerBase() {
     this.URLWatcher = function ()
     {
         var url = document.URL;
-        if (url != $this.lastUrl || $this.buttons.length == 0)
+        if (url != $this.lastUrl || ButtonList.length == 0)
         {
             $this.lastUrl = url;
 

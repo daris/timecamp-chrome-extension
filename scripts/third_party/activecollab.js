@@ -97,7 +97,7 @@
         console.log('Inserting button into page...');
 
         var buttonObj = new TimerButton($this.currentTaskId());
-        this.buttons[$this.currentTaskId()] = buttonObj;
+        ButtonList[$this.currentTaskId()] = buttonObj;
         buttonObj.insertInProgress = true;
 
         this.buttonInsertionInProgress = true;

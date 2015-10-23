@@ -85,7 +85,7 @@ function PivotalTrackerTimer() {
 
     this.isButtonInserted = function (taskId)
     {
-        var button = timer.buttons[taskId];
+        var button = ButtonList[taskId];
         if (!button)
             return false;
 
@@ -158,9 +158,9 @@ function PivotalTrackerTimer() {
         var taskId = task.taskId;
         var parentElement = task.parentElement;
 
-        if (this.buttons.hasOwnProperty(taskId))
+        if (ButtonList.hasOwnProperty(taskId))
         {
-            var tmp = this.buttons[taskId];
+            var tmp = ButtonList[taskId];
             if (tmp.insertInProgress)
                 return;
         }
@@ -169,7 +169,7 @@ function PivotalTrackerTimer() {
 
         var buttonObj = new TimerButton(taskId);
         buttonObj.insertInProgress = true;
-        this.buttons[taskId] = buttonObj;
+        ButtonList[taskId] = buttonObj;
 
         console.log('Inserting button into page...', taskId);
         var button = $('<label/>', { 'class': 'tc-button', 'id': 'timecamp-track-button-'+taskId, style:''});

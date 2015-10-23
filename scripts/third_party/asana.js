@@ -83,9 +83,10 @@ function AsanaTimer() {
         if (dueDate.css('margin-right') == '7px')
             dueDate.css('margin-right','0px');
 
+        var taskName = $this.currentTaskName();
 
-        var buttonObj = new TimerButton(currentTaskId);
-        this.buttons[currentTaskId] = buttonObj;
+        var buttonObj = new TimerButton(currentTaskId, taskName);
+        ButtonList[currentTaskId] = buttonObj;
         buttonObj.insertInProgress = true;
 
         var div1 = $('<div/>', { 'class': 'loading-boundary hidden'});
