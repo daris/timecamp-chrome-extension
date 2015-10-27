@@ -8,6 +8,7 @@ function Sidebar()
     this.appendSelector = null;
     this.sidebar = $('<div class="tc-sidebar">');
     this.barChartSelector = '#tcBarChart';
+    this.chartEntries = [];
     this.isReady = false;
     this.isCollapsed = true;
     this.templates = {
@@ -57,13 +58,20 @@ function Sidebar()
 
         $this.templateData.sidebarButton.hasRecent = true;
         $this.templateData.sidebarButton.recent = recentList;
+
+        chrome.storage.sync.set({recentTasks: recentList});
+    }
+
+    function clearEntriesBox() {
+        $('.tc-sidebar-time-details').html('');
+        $('.tc-sidebar-total-time').remove();
     }
 
     this.bindInternalEvents = function()
     {
         $($this.marginSelector).on('click', $this.collapse);
         //$this.sidebar.on('mouseleave', $this.onMouseOut);
-        $this.sidebar.on('click',       $this.expand);
+        $this.sidebar.on('click',       $this.onSidebarClick);
         $this.sidebar.on('mouseenter',  $this.onHover);
         $this.sidebar.on('blur',        '.note-input',              $this.onEntryLeave);
         $this.sidebar.on('click',       '.tc-sidebar-entry',        $this.onEntryClick);
@@ -71,6 +79,7 @@ function Sidebar()
         $this.sidebar.on('click',       '.billable-checkbox',       $this.onBillableClick);
         $this.sidebar.on('click',       '.tc-subtask-picker-entry', $this.onTaskSelected);
         $this.sidebar.on('click',       '.note-placeholder a',      function(e) { e.stopPropagation(); });
+        $this.sidebar.on('click',       '.tc-subtask-picker-list-header',      function(e) { e.stopPropagation(); });
     };
 
     this.onButtonClick = function() {
@@ -119,21 +128,38 @@ function Sidebar()
         $(document).trigger('tcDatasetChange', eventData);
     };
 
-    this.onEntryClick = function()
+    function expandEntry(DOMObj)
     {
-        $(this).find('.note-placeholder').hide();
-        $(this).find('.note-input-box').show();
+        DOMObj.addClass('active');
+        DOMObj.find('.note-placeholder').hide();
+        DOMObj.find('.note-input-box').show();
+    }
+
+    function collapseEntry(DOMObj, placeholder)
+    {
+        console.log('placeholder', placeholder);
+        if (placeholder)
+            DOMObj.find('.note-placeholder').html(placeholder);
+
+        DOMObj.find('.note-placeholder').show();
+        DOMObj.find('.note-input-box').hide();
+        DOMObj.removeClass('active');
+    }
+
+    this.onEntryClick = function(e)
+    {
+        var DOMObj = $(this);
+        expandEntry(DOMObj);
+        e.stopPropagation();
     };
 
-    this.onEntryLeave = function() {
+    this.onEntryLeave = function(e) {
         var DOMObj = $(this).parents('.tc-sidebar-entry');
         var entry = DOMObj.data('entry');
 
         var note = $(this).val();
         var linkify = note.linkify();
-
-        DOMObj.find('.note-placeholder').html(linkify).show();
-        DOMObj.find('.note-input-box').hide();
+        collapseEntry(DOMObj, linkify);
 
         if (note == entry.description)
             return;
@@ -156,6 +182,7 @@ function Sidebar()
         };
 
         $(document).trigger('tcDatasetChange', eventData);
+        e.stopPropagation();
     };
 
     this.watch = function()
@@ -218,10 +245,29 @@ function Sidebar()
         console.log('entry.duration+', newDuration);
 
         entryElement.find('.duration').html(formatHMS(newDuration));
-    };
 
-    this.clearEntriesBox = function() {
-        $('.tc-sidebar-time-details').html('');
+        var totalTimeObj = $('.tc-sidebar-total-time');
+
+        console.log('totalTimeObj', totalTimeObj);
+        if (!totalTimeObj.length)
+            return;
+
+        var totalTimeVal = parseInt(totalTimeObj.data('totalTime'), 10);
+        $this.renderTotalTime(totalTimeVal, elapsed, taskId);
+
+        var tmpEntries = JSON.parse(JSON.stringify($this.chartEntries));
+        for (var i in tmpEntries)
+        {
+            if (tmpEntries[i].id == entryId)
+            {
+                tmpEntries[i].duration = parseInt(tmpEntries[i].duration, 10) + elapsed;
+                break;
+            }
+        }
+
+        console.log('tmpEntries', tmpEntries);
+        console.log('$this.chartEntries', $this.chartEntries);
+        renderBarChart(tmpEntries);
     };
 
     this.renderEntriesDay = function(entries, date, isFirst) {
@@ -243,18 +289,26 @@ function Sidebar()
         }
     };
 
-    this.renderTotalTime = function(totalTime) {
-        var sidebarTimeDetails = $('.tc-sidebar-time-details');
-        totalTime = formatHMS(totalTime);
+    this.renderTotalTime = function(totalTime, elapsed, taskId) {
+        $('.tc-sidebar-total-time').remove();
+        var sidebarFooter = $('.tc-sidebar-footer');
 
         var params = {
-            totalTime : totalTime
+            totalTime   : formatHMS(totalTime + elapsed),
+            taskId      : taskId
         };
 
         var DOMObj = ich.sidebarTotalTime(params);
         DOMObj.data('totalTime', totalTime);
-        sidebarTimeDetails.append(DOMObj);
+        sidebarFooter.before(DOMObj);
     };
+
+    function renderBarChart(entries)
+    {
+        var chartParams = prepareChartData(entries);
+        var ctx = $($this.barChartSelector).get(0).getContext("2d");
+        barChart = new Chart(ctx).Bar(chartParams.data, chartParams.options);
+    }
 
     this.onEntriesLoaded = function(event, eventData) {
         var entriesByDays = {};
@@ -269,7 +323,7 @@ function Sidebar()
         if (barChart)
             barChart.destroy();
 
-        $this.clearEntriesBox();
+        clearEntriesBox();
 
         if (entries.length == 0)
         {
@@ -277,11 +331,9 @@ function Sidebar()
             return;
         }
 
+        $this.chartEntries = entries;
         console.log('entries', entries);
-        var chartParams = prepareChartData(entries);
-        var ctx = $this.sidebar.find($this.barChartSelector).get(0).getContext("2d");
-        barChart = new Chart(ctx).Bar(chartParams.data, chartParams.options);
-
+        renderBarChart($this.chartEntries);
         for (i in entries)
         {
             var entry = entries[i];
@@ -301,7 +353,6 @@ function Sidebar()
             totalTime += parseInt(entry['duration'], 10);
         }
 
-        $this.clearEntriesBox();
         var first = true;
         var days = Object.keys(entriesByDays).reverse();
         for (i in days)
@@ -312,7 +363,8 @@ function Sidebar()
             $this.renderEntriesDay(entriesByDays[day], day, first);
             first = false;
         }
-        $this.renderTotalTime(totalTime);
+        console.log('params', params);
+        $this.renderTotalTime(totalTime, 0, params.external_task_id);
     };
 
     this.onMouseOut = function ()
@@ -324,13 +376,16 @@ function Sidebar()
 
     this.onHover = function ()
     {
-        hoverTimerId = setTimeout($this.expand, 300);
+        hoverTimerId = setTimeout($this.onSidebarClick, 300);
         clearTimeout(mouseoutTimerId);
         mouseoutTimerId = null;
     };
 
     this.onTaskChange = function(event, args)
     {
+        if ($this.templateData.sidebarButton.isRunning)
+            return;
+
         $this.templateData.sidebarButton.isSingle = true;
         if (args['taskName'])
             $this.templateData.sidebarButton.taskName = args['taskName'];
@@ -347,6 +402,9 @@ function Sidebar()
 
     this.onParentChange = function(event, args)
     {
+        if ($this.templateData.sidebarButton.isRunning)
+            return;
+
         $this.templateData.sidebarButton.isSingle = false;
         if (args['subtasks'])
             $this.templateData.sidebarButton.subtasks = args['subtasks'];
@@ -390,8 +448,12 @@ function Sidebar()
         $this.renderSidebarButton();
     };
 
-    this.expand = function()
+    this.onSidebarClick = function()
     {
+        var entryObj = $this.sidebar.find('.tc-sidebar-entry.active');
+        if (entryObj.length)
+            collapseEntry(entryObj);
+
         if (!$this.isCollapsed)
             return;
 
@@ -567,6 +629,14 @@ function Sidebar()
     watchTimerId = setInterval($this.watch, 100);
     this.loadTemplates();
     this.bindEvents();
+    chrome.storage.sync.get('recentTasks', function (items) {
+        var recent = items['recentTasks'];
+        console.log('recent', recent);
+        if (!recent)
+            return;
+        $this.templateData.sidebarButton.recent = recent;
+        $this.templateData.sidebarButton.hasRecent = recent.length;
+    });
 
     Chart.defaults.global.animation = false;
     Chart.defaults.global.maintainAspectRatio = true;

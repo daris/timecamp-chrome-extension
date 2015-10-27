@@ -23,23 +23,20 @@
     </div>
     {{^isSingle}}
     <div class="tc-subtask-picker">
-        {{#hasRecent}}
         <ul>
-            <li class="tc-subtask-picker-list-header">Recently used</li>
-            {{#recent}}
-                <li class="tc-subtask-picker-entry" data-taskId="{{taskId}}">{{taskName}}</li>
-            {{/recent}}
+            {{#hasRecent}}
+                <li class="tc-subtask-picker-list-header">Recently used</li>
+                {{#recent}}
+                    <li class="tc-subtask-picker-entry" data-taskId="{{taskId}}">{{taskName}}</li>
+                {{/recent}}
+            {{/hasRecent}}
+            {{#hasSubtasks}}
+                <li class="tc-subtask-picker-list-header">All tasks</li>
+                {{#subtasks}}
+                    <li class="tc-subtask-picker-entry" data-taskId="{{taskId}}">{{taskName}}</li>
+                {{/subtasks}}
+            {{/hasSubtasks}}
         </ul>
-        {{#hasRecent}}
-        {{#hasSubtasks}}
-        <ul>
-            <li class="tc-subtask-picker-list-header">All tasks</li>
-            {{#subtasks}}
-            <li class="tc-subtask-picker-entry" data-taskId="{{taskId}}">{{taskName}}</li>
-            {{/subtasks}}
-        </ul>
-        {{#hasSubtasks}}
-
     </div>
     {{/isSingle}}
 </div>

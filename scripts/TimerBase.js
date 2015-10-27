@@ -8,7 +8,6 @@ function TimerBase() {
     this.infoInsertingInProgress = false;
     this.pushInterval = 30000;
     this.isTimerRunning = false;
-    this.previousTaskId = null;
     this.trackedTaskId = "";
     this.button = null;
     this.startDate = null;
@@ -115,33 +114,26 @@ function TimerBase() {
 
     this.detectTaskIdChange = function()
     {
+        var args;
+
         if (!$this.isTaskSelected())
         {
             if (!$this.isParentSelected())
                 return;
 
-            var parentId = $this.getParentId();
-            if ($this.previousParentId == parentId)
-                return;
-
-            var args = {
-                externalParentId: parentId,
+            args = {
+                externalParentId: $this.getParentId(),
                 subtasks: $this.getSubtasks()
             };
             $(document).trigger('tcParentChangeDetected', args);
-            $this.previousParentId = parentId;
+            return;
         }
 
-        var currentTaskId = $this.currentTaskId();
-        if ($this.previousTaskId == currentTaskId)
-            return;
-
-        var args = {
-            externalTaskId: currentTaskId,
+        args = {
+            externalTaskId: $this.currentTaskId(),
             taskName: $this.currentTaskName()
         };
         $(document).trigger('tcTaskChangeDetected', args);
-        $this.previousTaskId = currentTaskId;
     };
 
     this.onDomModified = function () {
@@ -377,20 +369,23 @@ function TimerBase() {
 
     this.bindEvents = function ($that) {
         $this = $that;
-        setInterval($this.updateButtonState, this.pushInterval);
+        setInterval($this.updateButtonState, $this.pushInterval);
         setTimeout($this.updateButtonState, 3000);
-        $(document).on('tcEntriesLoaded',this.onEntriesLoaded);
-        $(document).on('tcDatasetChange',this.onDatasetChange);
-        $(document).on('tcTaskChangeDetected',this.onTaskChangeDetected);
-        $(document).on('tcParentChangeDetected',this.onParentChangeDetected);
+        $(document).on('tcEntriesLoaded',$this.onEntriesLoaded);
+        $(document).on('tcDatasetChange',$this.onDatasetChange);
+        $(document).on('tcTaskChangeDetected',$this.onTaskChangeDetected);
+        $(document).on('tcParentChangeDetected',$this.onParentChangeDetected);
+        $(document).on('tcTimerStarted', $this.onTimerStarted);
+        $(document).on('tcTimerStopped', $this.onTimerStopped);
+
         switch ($this.isWatching)
         {
             case $this.canWatch.DOM:
-                document.addEventListener("DOMNodeInserted", this.onDomModified);
+                document.addEventListener("DOMNodeInserted", $this.onDomModified);
                 break;
             case $this.canWatch.URL:
                 setInterval($this.URLWatcher, 100);
-                document.addEventListener("TCURLChanged", this.onDomModified);
+                document.addEventListener("TCURLChanged", $this.onDomModified);
                 break;
             case $this.canWatch.HISTORY:
                 window.addEventListener("popstate", function(){
@@ -415,7 +410,9 @@ function TimerBase() {
             }).done(function (response) {
                 $this.trackableParents = response['trackable_parents'];
 
-            }).fail(function () {$this.trackableParents = false;});
+            }).fail(function () {
+                $this.trackableParents = false;
+            });
         });
     };
 }

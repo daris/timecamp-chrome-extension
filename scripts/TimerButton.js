@@ -25,7 +25,8 @@ function TimerButton(taskId, taskName) {
         var eventParams = {
             entryId: $this.runningEntryId,
             taskName: $this.taskName,
-            taskId: $this.taskId
+            taskId: $this.taskId,
+            source: 'button'
         };
 
         $(document).trigger('tcTimerStarted', eventParams);
@@ -59,6 +60,15 @@ function TimerButton(taskId, taskName) {
         $this.hideTimer();
         clearInterval($this.intervalId);
         $this.intervalId = null;
+
+        var eventParams = {
+            entryId: $this.runningEntryId,
+            taskName: $this.taskName,
+            taskId: $this.taskId,
+            source: 'button'
+        };
+
+        $(document).trigger('tcTimerStopped', eventParams);
     };
 
     this.isEnabled = function ()

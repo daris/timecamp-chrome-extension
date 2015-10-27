@@ -193,8 +193,11 @@ function AsanaTimer() {
 
     this.bindEvents(this);
 }
+
+$(document).ready(function () {
+    AsanaTimer.prototype = new TimerBase();
+    timer = new AsanaTimer();
+});
+
 Sidebar.marginSelector = "#whole_page_container";
 Sidebar.appendSelector = "body";
-
-AsanaTimer.prototype = new TimerBase();
-timer = new AsanaTimer();
