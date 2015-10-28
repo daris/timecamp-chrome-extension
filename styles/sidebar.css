@@ -36,6 +36,8 @@
 }
 
 .tc-sidebar-footer {
+    position: absolute;
+    bottom: 0px;
     background-color: white;
     width: 280px;
     float: right;

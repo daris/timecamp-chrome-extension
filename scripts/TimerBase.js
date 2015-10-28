@@ -326,8 +326,19 @@ function TimerBase() {
         console.log('event', event);
         console.log('eventData', eventData);
 
-        if (eventData.externalParentId)
-            $this.getEntries(eventData.externalTaskId);
+        if (eventData.subtasks)
+        {
+            var ids = [];
+            for (i in eventData.subtasks)
+            {
+                var sub = eventData.subtasks[i];
+                ids.push(sub.taskId);
+            }
+
+            if (ids.length)
+                $this.getEntries(ids.join(','), false, true);
+        }
+
     };
 
     this.onTaskChangeDetected = function(event, eventData) {

@@ -17,6 +17,7 @@ function Sidebar()
         "sidebarDayHeader"  :"sidebar_day_header",
         "sidebarTotalTime"  :"sidebar_total_time",
         "sidebarEntry"      :"sidebar_entry",
+        "sidebarMultiEntry" :"sidebar_multi_entry",
         "sidebarPlaceholder":"sidebar_placeholder"
     };
 
@@ -289,6 +290,25 @@ function Sidebar()
         }
     };
 
+    this.renderMultiEntriesDay = function(entries, date) {
+        var params = {
+            date: moment(date,'YYYY-MM-DD').format("DD MMM"),
+            rawDate: date,
+            isFirst: false
+        };
+
+        var sidebarTimeDetails = $('.tc-sidebar-time-details');
+        sidebarTimeDetails.append(ich.sidebarDayHeader(params));
+
+        for (i in entries)
+        {
+            var entry = entries[i];
+            var render = ich.sidebarMultiEntry(entry);
+            render.data('entry', entry);
+            sidebarTimeDetails.append(render);
+        }
+    };
+
     this.renderTotalTime = function(totalTime, elapsed, taskId) {
         $('.tc-sidebar-total-time').remove();
         var sidebarFooter = $('.tc-sidebar-footer');
@@ -305,17 +325,203 @@ function Sidebar()
 
     function renderBarChart(entries)
     {
-        var chartParams = prepareChartData(entries);
+        var chartParams = prepareBarChartData(entries);
         var ctx = $($this.barChartSelector).get(0).getContext("2d");
         barChart = new Chart(ctx).Bar(chartParams.data, chartParams.options);
     }
 
-    this.onEntriesLoaded = function(event, eventData) {
+    function renderPieChart(entries)
+    {
+        var tasks = [];
+        var maxVal = 0;
+
+        for (i in entries)
+        {
+            var entry = entries[i];
+            var taskId = entry.task_id;
+            var idx = -1;
+
+            for (j in tasks)
+            {
+                if (tasks[j].task_id == taskId)
+                {
+                    idx = j;
+                    break;
+                }
+            }
+
+            if (idx == -1)
+            {
+                row = {
+                    name: entry.name,
+                    duration: parseInt(entry.duration, 10),
+                    task_id: taskId
+                };
+                if (maxVal < row.duration)
+                    maxVal = row.duration;
+
+                tasks.push(row);
+            }
+            else
+            {
+                tasks[idx].duration += parseInt(entry.duration, 10);
+                if (maxVal < row.duration)
+                    maxVal = row.duration;
+            }
+        }
+
+        var dataset = [];
+        var timeUnit = "s";
+        var timeDivider = 1;
+
+        if (maxVal > 7200)
+        {
+            timeDivider = 3600;
+            timeUnit = 'h';
+        }
+        else if (maxVal > 60)
+        {
+            timeDivider = 60;
+            timeUnit = 'min';
+        }
+
+        console.log('tasks', tasks);
+
+        for (var i in tasks)
+        {
+            console.log('i', i);
+            var subRange = tasks[i];
+            var value = Math.floor(subRange.duration * 100 / timeDivider) / 100;
+            var highlightColor = colorLuminance(getColor(i), 0.2);
+
+            dataset.push({
+                value: value,
+                color: getColor(i),
+                highlight: highlightColor,
+                label: subRange.name
+            });
+        }
+
+        var options = {
+            tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= value %>" + timeUnit
+        };
+
+        var ctx = $($this.barChartSelector).get(0).getContext("2d");
+        pieChart = new Chart(ctx).Pie(dataset, options);
+    }
+
+    function processSingleTask(entries, params)
+    {
         var entriesByDays = {};
+        var totalTime = 0;
+        $this.chartEntries = entries;
+        console.log('entries', entries);
+        renderBarChart($this.chartEntries);
+        for (i in entries)
+        {
+            var entry = entries[i];
+
+            entry.description_formatted = entry.description.linkify();
+            entry.isBillable = entry.billable == 1;
+            entry.start_time_formatted = entry.start_time.substr(0, 5);
+            entry.end_time_formatted = entry.end_time.substr(0, 5);
+
+            var duration = moment.duration(parseInt(entry.duration, 10), 'seconds');
+            entry.duration_formatted = duration.hours() + ":" + zeroFill(duration.minutes(), 2) + ":" +
+                                       zeroFill(duration.seconds(), 2);
+            entry.isBillable = entry.billable == 1;
+            if (!entriesByDays[entry['date']])
+                entriesByDays[entry['date']] = [];
+
+            entriesByDays[entry['date']].push(entry);
+            totalTime += parseInt(entry['duration'], 10);
+        }
+
+        var first = true;
+        var days = Object.keys(entriesByDays).reverse();
+        for (i in days)
+        {
+            var day = days[i];
+
+            entriesByDays[day].sort(function (a, b)
+            {
+                if (a.start_time > b.start_time) return -1;
+                return 1;
+            });
+            $this.renderEntriesDay(entriesByDays[day], day, first);
+            first = false;
+        }
+        console.log('params', params);
+        $this.renderTotalTime(totalTime, 0, params.external_task_id);
+    }
+
+    function processMultiTask(entries, params)
+    {
+        var row;
+        var entriesByDays = {};
+        var totalTime = 0;
+        $this.chartEntries = entries;
+        console.log('entries', entries);
+        renderPieChart($this.chartEntries);
+        for (i in entries)
+        {
+            var entry = entries[i];
+            var date = entry.date;
+            var taskId = entry.taskId;
+            var idx = -1;
+
+            if (!entriesByDays[date])
+                entriesByDays[date] = [];
+
+            for (j in entriesByDays[date])
+            {
+                if (entriesByDays[date].taskId == taskId)
+                {
+                    idx = j;
+                    break;
+                }
+            }
+
+            if (idx == -1)
+            {
+                row = {
+                    name: entry.name,
+                    duration: parseInt(entry.duration, 10),
+                    taskId: taskId
+                };
+                row.duration_formatted = formatHMS(row.duration);
+
+                entriesByDays[date].push(row);
+            }
+            else
+            {
+                entriesByDays[date][idx].duration += parseInt(entry.duration, 10);
+                entriesByDays[date][idx].duration_formatted = formatHMS(entriesByDays[date][idx].duration);
+            }
+            totalTime += parseInt(entry['duration'], 10);
+        }
+
+        var days = Object.keys(entriesByDays).reverse();
+        for (i in days)
+        {
+            var day = days[i];
+            entriesByDays[day].sort(function (a, b)
+            {
+                if (a.duration > b.duration) return -1;
+                return 1;
+            });
+            $this.renderMultiEntriesDay(entriesByDays[day], day);
+        }
+        $this.renderTotalTime(totalTime, 0, params.external_task_id);
+    }
+
+    this.onEntriesLoaded = function(event, eventData) {
+        console.log('event', event);
+        console.log('eventData', eventData);
 
         var params = eventData.params;
         var entries = eventData.data;
-        var totalTime = 0;
+
 
         if (!$this.sidebar)
             return;
@@ -331,40 +537,10 @@ function Sidebar()
             return;
         }
 
-        $this.chartEntries = entries;
-        console.log('entries', entries);
-        renderBarChart($this.chartEntries);
-        for (i in entries)
-        {
-            var entry = entries[i];
-
-            entry.description_formatted = entry.description.linkify();
-            entry.isBillable = entry.billable == 1;
-            entry.start_time_formatted = entry.start_time.substr(0,5);
-            entry.end_time_formatted = entry.end_time.substr(0,5);
-
-            var duration = moment.duration(parseInt(entry.duration, 10), 'seconds');
-            entry.duration_formatted = duration.hours()+":"+zeroFill(duration.minutes(), 2)+":"+zeroFill(duration.seconds(), 2);
-            entry.isBillable = entry.billable == 1;
-            if (!entriesByDays[entry['date']])
-                entriesByDays[entry['date']] = [];
-
-            entriesByDays[entry['date']].push(entry);
-            totalTime += parseInt(entry['duration'], 10);
-        }
-
-        var first = true;
-        var days = Object.keys(entriesByDays).reverse();
-        for (i in days)
-        {
-            var day = days[i];
-
-            entriesByDays[day].sort(function(a,b) { if (a.start_time > b.start_time) return -1; return 1; });
-            $this.renderEntriesDay(entriesByDays[day], day, first);
-            first = false;
-        }
-        console.log('params', params);
-        $this.renderTotalTime(totalTime, 0, params.external_task_id);
+        if (!params.with_subtasks)
+            processSingleTask(entries, params);
+        else
+            processMultiTask(entries, params);
     };
 
     this.onMouseOut = function ()
@@ -466,7 +642,7 @@ function Sidebar()
         if ($this.isCollapsed)
             return;
 
-        $this.sidebar.removeClass('expanded').addClass('collapsed');
+        $this.sidebar.scrollTop(0).removeClass('expanded').addClass('collapsed');
         $this.isCollapsed = true;
     };
 
@@ -478,7 +654,7 @@ function Sidebar()
         });
     };
 
-    function prepareChartData(entries) {
+    function prepareBarChartData(entries) {
         var startDate = entries[0].date + " " + entries[0].start_time;
         var today = moment();
 
