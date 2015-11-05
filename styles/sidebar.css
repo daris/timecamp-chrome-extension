@@ -76,8 +76,26 @@
 }
 
 .tc-sidebar-scrollable-inner {
-    float: right;
-    width: 100%;
+    width: calc( 100% - 5px);
+    padding-right: 5px;
+}
+
+.tc-sidebar .chart-icon {
+    height: 260px;
+    line-height: 260px;
+    position: absolute;
+    right: 12px;
+    background: white;
+    text-align: right;
+    width:100px;
+}
+
+.tc-sidebar.expanded .chart-icon {
+    display: none;
+}
+
+.tc-sidebar .fa {
+    vertical-align: middle;
 }
 
 .tc-sidebar.expanded .tc-sidebar-scrollable {
@@ -98,19 +116,20 @@
 }
 
 .tc-sidebar-start-button {
-    text-align: center;
+    text-align: left;
     vertical-align: middle;
     color: #ffffff;
     background-color: #59be7b;
     padding: 10px 12px;
     cursor: pointer;
     border-radius: 4px;
+    border-radius: 4px;
     font-weight: bold;
     font-size: 15px;
     text-transform: uppercase;
     border: 1px solid #47b66d;
-    width: 240px;
-    margin: 7px auto;
+    width: 246px;
+    margin: 5px auto;
     white-space: nowrap;
     display: block;
     height: 25px;
@@ -165,7 +184,7 @@
 
 .header {
     font-weight: bold;
-    border-bottom: 2px solid black;
+    border-bottom: 2px solid rgb(83, 83, 83);
     font-size: 14px;
 }
 
@@ -175,7 +194,6 @@
 
 .right {
     float: right;
-    padding-right: 5px;
 }
 
 .left {
@@ -185,13 +203,17 @@
 .tc-sidebar-total-time {
     font-weight: bold;
     float: right;
-    border-top: 2px solid black;
+    border-top: 2px solid  rgb(83, 83, 83);
     width: 100%;
     padding-top: 2px;
 }
 
+.tc-sidebar-total-time .time,.label{
+    padding-right: 5px;
+}
+
 .tc-sidebar-entry {
-    padding: 3px 0;
+    padding: 5px 0;
     cursor: pointer;
 }
 
@@ -204,38 +226,46 @@
     background-color: rgb(225, 225, 225);
 }
 
-.tc-sidebar-entry .time-from {
+.tc-sidebar-entry-single .time-from {
     width: 30px;
 }
 
-.tc-sidebar-entry .separator {
+.tc-sidebar-entry-single .separator {
     width: 4px;
 }
 
-.tc-sidebar-entry .time-to {
+.tc-sidebar-entry-single .time-to {
     width: 30px;
 }
 
-.tc-sidebar-entry .billable {
+.tc-sidebar-entry-single .billable {
     width: 13px;
     padding-left: 58px;
 }
 
-.tc-sidebar-entry .note-input-box {
+.tc-sidebar-entry-single .billable-checkbox {
+    vertical-align: middle;
+}
+
+.tc-sidebar-entry-single .note-input-box {
     padding: 0 5px;
     display: none;
 }
 
-.tc-sidebar-entry .note-input-box textarea{
+.tc-sidebar-entry-single .note-input-box textarea{
     width: 100%;
     padding: 3px;
     height: 70px;
 }
 
-.tc-sidebar-entry .note-placeholder {
+.tc-sidebar-entry-single .note-placeholder {
     padding: 0 5px;
     font-style: italic;
     color: #999
+}
+
+.tc-sidebar-day-header {
+    margin-top: 5px;
 }
 
 .tc-sidebar-day-header .billable-header {
@@ -296,7 +326,7 @@
 
 .tc-sidebar .tc-subtask-picker-list-header {
     text-transform: uppercase;
-    border-bottom: 1px solid black;
+    border-bottom: 1px solid  rgb(83, 83, 83);
     font-weight: bold;
     padding-left: 5px;
 }

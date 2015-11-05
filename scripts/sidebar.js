@@ -35,7 +35,7 @@ function Sidebar()
     var watchTimerId = null;
     var hoverTimerId = null;
     var mouseoutTimerId = null;
-    var barChart;
+    var chart;
     var recentList = [];
 
     function pushRecentTask(taskId, taskName)
@@ -75,7 +75,7 @@ function Sidebar()
         $this.sidebar.on('click',       $this.onSidebarClick);
         $this.sidebar.on('mouseenter',  $this.onHover);
         $this.sidebar.on('blur',        '.note-input',              $this.onEntryLeave);
-        $this.sidebar.on('click',       '.tc-sidebar-entry',        $this.onEntryClick);
+        $this.sidebar.on('click',       '.tc-sidebar-entry-single', $this.onEntryClick);
         $this.sidebar.on('click',       '.tc-sidebar-start-button', $this.onButtonClick);
         $this.sidebar.on('click',       '.billable-checkbox',       $this.onBillableClick);
         $this.sidebar.on('click',       '.tc-subtask-picker-entry', $this.onTaskSelected);
@@ -84,8 +84,6 @@ function Sidebar()
     };
 
     this.onButtonClick = function() {
-        console.log('here');
-        console.log('$this.templateData', $this.templateData);
         if (!$this.templateData.sidebarButton.isSingle)
         {
             $this.sidebar.find('.tc-subtask-picker').toggle();
@@ -238,18 +236,12 @@ function Sidebar()
             return;
 
         var entry = entryElement.data('entry');
-
-        console.log('entryElement', entryElement);
-        console.log('entry', entry);
-
         var newDuration = parseInt(entry.duration,10) + elapsed;
-        console.log('entry.duration+', newDuration);
 
         entryElement.find('.duration').html(formatHMS(newDuration));
 
         var totalTimeObj = $('.tc-sidebar-total-time');
 
-        console.log('totalTimeObj', totalTimeObj);
         if (!totalTimeObj.length)
             return;
 
@@ -266,9 +258,12 @@ function Sidebar()
             }
         }
 
-        console.log('tmpEntries', tmpEntries);
-        console.log('$this.chartEntries', $this.chartEntries);
-        renderBarChart(tmpEntries);
+
+        if(chart)
+            chart.destroy();
+
+        var dataset = ChartService.prepareDataset('bar', tmpEntries);
+        chart = ChartService.renderChart($this.barChartSelector,'bar', dataset);
     };
 
     this.renderEntriesDay = function(entries, date, isFirst) {
@@ -323,100 +318,19 @@ function Sidebar()
         sidebarFooter.before(DOMObj);
     };
 
-    function renderBarChart(entries)
-    {
-        var chartParams = prepareBarChartData(entries);
-        var ctx = $($this.barChartSelector).get(0).getContext("2d");
-        barChart = new Chart(ctx).Bar(chartParams.data, chartParams.options);
-    }
-
-    function renderPieChart(entries)
-    {
-        var tasks = [];
-        var maxVal = 0;
-
-        for (i in entries)
-        {
-            var entry = entries[i];
-            var taskId = entry.task_id;
-            var idx = -1;
-
-            for (j in tasks)
-            {
-                if (tasks[j].task_id == taskId)
-                {
-                    idx = j;
-                    break;
-                }
-            }
-
-            if (idx == -1)
-            {
-                row = {
-                    name: entry.name,
-                    duration: parseInt(entry.duration, 10),
-                    task_id: taskId
-                };
-                if (maxVal < row.duration)
-                    maxVal = row.duration;
-
-                tasks.push(row);
-            }
-            else
-            {
-                tasks[idx].duration += parseInt(entry.duration, 10);
-                if (maxVal < row.duration)
-                    maxVal = row.duration;
-            }
-        }
-
-        var dataset = [];
-        var timeUnit = "s";
-        var timeDivider = 1;
-
-        if (maxVal > 7200)
-        {
-            timeDivider = 3600;
-            timeUnit = 'h';
-        }
-        else if (maxVal > 60)
-        {
-            timeDivider = 60;
-            timeUnit = 'min';
-        }
-
-        console.log('tasks', tasks);
-
-        for (var i in tasks)
-        {
-            console.log('i', i);
-            var subRange = tasks[i];
-            var value = Math.floor(subRange.duration * 100 / timeDivider) / 100;
-            var highlightColor = colorLuminance(getColor(i), 0.2);
-
-            dataset.push({
-                value: value,
-                color: getColor(i),
-                highlight: highlightColor,
-                label: subRange.name
-            });
-        }
-
-        var options = {
-            tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= value %>" + timeUnit
-        };
-
-        var ctx = $($this.barChartSelector).get(0).getContext("2d");
-        pieChart = new Chart(ctx).Pie(dataset, options);
-    }
 
     function processSingleTask(entries, params)
     {
         var entriesByDays = {};
         var totalTime = 0;
         $this.chartEntries = entries;
-        console.log('entries', entries);
-        renderBarChart($this.chartEntries);
+
+        if (chart)
+            chart.destroy();
+
+        var dataset = ChartService.prepareDataset('bar', $this.chartEntries);
+        chart = ChartService.renderChart($this.barChartSelector, 'bar', dataset);
+
         for (i in entries)
         {
             var entry = entries[i];
@@ -451,7 +365,6 @@ function Sidebar()
             $this.renderEntriesDay(entriesByDays[day], day, first);
             first = false;
         }
-        console.log('params', params);
         $this.renderTotalTime(totalTime, 0, params.external_task_id);
     }
 
@@ -461,8 +374,13 @@ function Sidebar()
         var entriesByDays = {};
         var totalTime = 0;
         $this.chartEntries = entries;
-        console.log('entries', entries);
-        renderPieChart($this.chartEntries);
+
+        if (chart)
+            chart.destroy();
+
+        var dataset = ChartService.prepareDataset('pie', $this.chartEntries);
+        chart = ChartService.renderChart($this.barChartSelector, 'pie', dataset);
+
         for (i in entries)
         {
             var entry = entries[i];
@@ -526,8 +444,8 @@ function Sidebar()
         if (!$this.sidebar)
             return;
 
-        if (barChart)
-            barChart.destroy();
+        if (chart)
+            chart.destroy();
 
         clearEntriesBox();
 
@@ -591,7 +509,6 @@ function Sidebar()
         $this.templateData.sidebarButton.taskId = event['externalParentId'];
         $this.templateData.sidebarButton.taskName = "Select task";
 
-        console.log('$this.templateData', $this.templateData);
         $this.renderSidebarButton();
     };
 
@@ -654,160 +571,12 @@ function Sidebar()
         });
     };
 
-    function prepareBarChartData(entries) {
-        var startDate = entries[0].date + " " + entries[0].start_time;
-        var today = moment();
-
-        var range = moment.range(startDate, today);
-        var subRanges = [];
-
-        var unit = "day";
-
-        if(range.diff('days') == 0)
-            unit = 'hour';
-        else if (range.diff('days') <= 6)
-            unit = 'day';
-        else if (range.diff('week') <= 5)
-            unit = 'week';
-        else if (range.diff('months') <= 12)
-            unit = 'month';
-        else
-            unit = 'year';
-
-        range.by(unit+'s', function(m) {
-            var unitTmp = unit;
-            var startOf = moment(m).startOf(unitTmp);
-            var endOf = moment(m).endOf(unitTmp);
-            if (unit == 'week')
-            {
-                startOf.add(1, 'days');
-                endOf.add(1, 'days');
-            }
-            var range = formatRange(unitTmp,startOf, endOf);
-            subRanges.push(range);
-        });
-
-        if (!subRanges[subRanges.length-1].range.contains(today))
-        {
-            if (unit == 'week')
-                unit = 'isoweek';
-            subRanges.push(formatRange(unit,moment().startOf(unit), moment().endOf(unit)));
-        }
-
-        //if (unit == 'hour')
-        //{
-        //    var newEntries = [];
-        //    for(var i in entries)
-        //    {
-        //        var datetime = entries[i].date + " " + entries[i].start_time;
-        //        var m = moment(datetime, 'YYYY-MM-DD HH:mm:ss');
-        //
-        //        var hourEnd = moment(m).endOf('hour');
-        //        var diff = m.diff(hourEnd, 'second');
-        //        var durationLeft = parseInt(entries[i].duration, 10);
-        //
-        //
-        //        if (diff < durationLeft)
-        //        {
-        //
-        //        }
-        //    }
-        //}
-
-        var maxTotalTime = 0;
-        for(var i in entries)
-        {
-            var entry = entries[i];
-            var datetime = entries[i].date + " " + entries[i].start_time;
-            var m = moment(datetime, 'YYYY-MM-DD HH:mm:ss');
-
-            for (var j in subRanges)
-            {
-                var subRange = subRanges[j];
-
-                if (subRange.range.contains(m))
-                {
-                    subRange.totalTime += parseInt(entry.duration, 10);
-                    if (subRange.totalTime > maxTotalTime)
-                        maxTotalTime = subRange.totalTime;
-                    break;
-                }
-            }
-        }
-
-        var labels = [];
-        var datasetData = [];
-
-        var timeUnit = "s";
-        var timeDivider = 1;
-        if (maxTotalTime > 7200)
-        {
-            timeDivider = 3600;
-            timeUnit = 'h';
-        }
-        else if (maxTotalTime > 60)
-        {
-            timeDivider = 60;
-            timeUnit = 'min';
-        }
-
-        for (var i in subRanges)
-        {
-            var subRange = subRanges[i];
-            var value = Math.floor(subRange.totalTime * 100 / timeDivider)/100;
-            datasetData.push(value);
-            labels.push(subRange.label);
-        }
-
-        return {
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                        fillColor: "rgba(220,220,220,0.5)",
-                        strokeColor: "rgba(220,220,220,0.8)",
-                        highlightFill: "rgba(220,220,220,0.75)",
-                        highlightStroke: "rgba(220,220,220,1)",
-                        data: datasetData
-                    }
-                ]
-            },
-            options: {
-                tooltipTemplate: "<%if (label){%><%=label%>: <%}%><%= value %>" + timeUnit,
-                scaleLabel: "<%= value %>" + timeUnit
-            }
-        };
-    }
-
-    function formatRange(unit, startOf, endOf) {
-        var label = null;
-        switch(unit) {
-            case 'hour' : label = startOf.format('HH:00'); break;
-            case 'day' : label = startOf.format('ddd'); break;
-            case 'isoweek' :
-            case 'week' :
-                if (startOf.month() != endOf.month())
-                    label = startOf.format('DD MMM') + '/' + endOf.format('DD MMM');
-                else
-                    label = startOf.format('DD') + '/' + endOf.format('DD MMM');
-                break;
-            case 'month' : label = startOf.format('MMM'); break;
-            case 'year' : label = startOf.format('YYYY'); break;
-        }
-        var range = moment.range(startOf,endOf);
-        return {
-            label: label,
-            range: range,
-            totalTime: 0
-        };
-    }
 
     watchTimerId = setInterval($this.watch, 100);
     this.loadTemplates();
     this.bindEvents();
     chrome.storage.sync.get('recentTasks', function (items) {
         var recent = items['recentTasks'];
-        console.log('recent', recent);
         if (!recent)
             return;
         $this.templateData.sidebarButton.recent = recent;

@@ -134,6 +134,7 @@ function ApiService() {
             return ApiService.call('/timer', data, 'POST');
         }
     };
+
     this.Entries = new ApiResource('/entries', ["get","post", "put"]);
     this.Tasks = new ApiResource('/tasks', ["get"]);
 }

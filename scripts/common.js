@@ -126,6 +126,7 @@ Messages = {
 
 var TokenManager    = new TokenManager();
 var ApiService      = new ApiService();
+var ChartService    = new chartService();
 var Sidebar         = new Sidebar();
 var ButtonList      = {};
 

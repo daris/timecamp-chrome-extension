@@ -40,7 +40,12 @@ function AsanaTimer() {
 
             var taskName = $(el).find('textarea').val();
 
-            subtasks.push({taskId: taskId, taskName: taskName});
+            var subtask = {
+                taskId: taskId,
+                taskName: taskName
+            };
+
+            subtasks.push(subtask);
         });
 
         return subtasks;
