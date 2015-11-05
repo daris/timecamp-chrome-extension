@@ -6,7 +6,7 @@ function Sidebar()
 {
     this.marginSelector = null;
     this.appendSelector = null;
-    this.sidebar = $('<div class="tc-sidebar">');
+    this.sidebar = null;
     this.barChartSelector = '#tcBarChart';
     this.chartEntries = [];
     this.isReady = false;
@@ -29,6 +29,8 @@ function Sidebar()
     this.templateData.sidebarButton.taskId = false;
     this.templateData.sidebarButton.hasRecent = false;
     this.templateData.sidebarButton.recent = [];
+
+    this.eventStore = null;
 
     $this = this;
 
@@ -198,14 +200,22 @@ function Sidebar()
         if (appendObj.length == 0)
             return null;
 
-        $this.sidebar = ich.sidebarMain($this.templateData);
-        $this.bindInternalEvents();
+        if (!$this.sidebar)
+        {
+            $this.sidebar = ich.sidebarMain($this.templateData);
+            $this.bindInternalEvents();
+        }
 
-        marginObj.css('margin-left', '50px');
-        appendObj.prepend($this.sidebar);
+        if (marginObj.css("margin-left") != '50px')
+            marginObj.css('margin-left', '50px');
+        if (!$.contains(document.documentElement, $this.sidebar[0]))
+            appendObj.prepend($this.sidebar);
 
-        clearInterval(watchTimerId);
-        watchTimerId = null;
+        if ($this.eventStore != null)
+        {
+            $this.onEntriesLoaded(null, $this.eventStore);
+            $this.eventStore = null;
+        }
     };
 
     this.renderSidebarButton =  function() {
@@ -441,8 +451,12 @@ function Sidebar()
         var entries = eventData.data;
 
 
+        console.log('$this.sidebar.length', $this.sidebar);
         if (!$this.sidebar)
+        {
+            $this.eventStore = eventData;
             return;
+        }
 
         if (chart)
             chart.destroy();

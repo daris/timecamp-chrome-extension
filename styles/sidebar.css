@@ -206,9 +206,10 @@
     border-top: 2px solid  rgb(83, 83, 83);
     width: 100%;
     padding-top: 2px;
+    padding-right: 5px;
 }
 
-.tc-sidebar-total-time .time,.label{
+.tc-sidebar-total-time .label{
     padding-right: 5px;
 }
 
