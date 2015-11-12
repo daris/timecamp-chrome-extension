@@ -1,4 +1,4 @@
-<div class="tc-sidebar-start-button {{#isRunning}}running{{/isRunning}}">
+<div id="tc-sidebar-start-button" class="btn {{#isRunning}}btn-error running{{/isRunning}}{{^isRunning}}btn-success{{/isRunning}}" data-taskId="{{taskId}}">
     {{#taskName}}
         <div class="task-name">{{taskName}}</div>
     {{/taskName}}

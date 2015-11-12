@@ -16,6 +16,9 @@ function TimerButton(taskId, taskName) {
     var $this = this;
 
     this.start = function (startDate, entryId) {
+        $this.setButtonText(Messages.buttonTimerStarted);
+        $this.showTimer();
+
         if ($this.isRunning)
             return;
         $this.isRunning = true;
@@ -45,19 +48,18 @@ function TimerButton(taskId, taskName) {
         };
 
         callback();
-        $this.setButtonText(Messages.buttonTimerStarted);
-        $this.showTimer();
 
         $this.intervalId = setInterval(callback, 1000);
     };
 
     this.stop = function()
     {
+        $this.hideTimer();
+
         if (!$this.isRunning)
             return;
 
         $this.isRunning = false;
-        $this.hideTimer();
         clearInterval($this.intervalId);
         $this.intervalId = null;
 

@@ -90,15 +90,21 @@ function AsanaTimer() {
 
         var taskName = $this.currentTaskName();
 
-        var buttonObj = new TimerButton(currentTaskId, taskName);
-        ButtonList[currentTaskId] = buttonObj;
+        var buttonObj;
+        if (ButtonList[currentTaskId])
+            buttonObj = ButtonList[currentTaskId];
+        else
+        {
+            buttonObj = new TimerButton(currentTaskId, taskName);
+            ButtonList[currentTaskId] = buttonObj;
+        }
         buttonObj.insertInProgress = true;
 
         var div1 = $('<div/>', { 'class': 'loading-boundary hidden'});
         var div2 = $('<div/>', { 'class': 'redesign-timecamp-container'});
         var div3 = $('<div/>', { 'class': 'property tc flyout-owner'});
         var div4 = $('<div/>', { 'class': 'property-name', 'id':'lunaTC' });
-        var button = $('<span/>', { 'id': 'timecamp-track-button', 'data-taskId': currentTaskId, 'status': 'unknown', 'style':'position:relative' });
+        var button = $('<span/>', { 'class': 'timecamp-track-button', 'id': 'timecamp-track-button', 'data-taskId': currentTaskId, 'status': 'unknown', 'style':'position:relative' });
 
         this.button = button;
         div1.append(div2);
@@ -110,9 +116,6 @@ function AsanaTimer() {
         button.append($('<span/>', {'class': 'time'}).text("00:00").hide());
 
 
-        button.click(function () {
-            $this.buttonClick($this.currentTaskId(), null, function () { $this.button.children('.time').hide() });
-        });
         var buttonList = $('#right_pane').find('.toolbar-section.left').children().eq(1);
         div1.insertAfter(buttonList);
         buttonObj.insertInProgress = false;
@@ -124,11 +127,11 @@ function AsanaTimer() {
     };
 
     this.onSyncSuccess = function (response) {
-        if (this.isTimerRunning) {
+        if (response.isTimerRunning) {
             this.trackedTaskId = response.external_task_id;
             if (!this.trackedTaskId)
                 return;
-            var badges = $("#center_pane").find("textarea[id$='"+ this.trackedTaskId +"']").siblings('div');
+            var badges = $("#center_pane__contents").find("#item_row_view_"+ this.trackedTaskId +" .itemRowView-taskMetadata");
             if (badges.find("#tc-badge").length == 0) {
                 var badge = $("#tc-badge");
 
