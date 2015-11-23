@@ -1,35 +1,42 @@
-<div class="tc-sidebar collapsed">
-    <div class="tc-sidebar-header">
-        <div class="tc-sidebar-button-box">
-            {{>sidebarButton}}
+<div class="timecamp">
+    <div class="tc-sidebar collapsed">
+        <div class="tc-sidebar-header">
+            <div class="tc-sidebar-button-box">
+            </div>
         </div>
-    </div>
 
-    <div class="tc-sidebar-scrollable">
-        <div class="tc-sidebar-scrollable-inner right">
-            <div class="chart-icon"><i class="fa fa-2x fa-bar-chart"></i></div>
-            <div class="tc-charts">
-                <div class="tc-chart">
-                    <canvas id="tcBarChart" class="chart-canvas"></canvas>
+        <div class="tc-sidebar-scrollable">
+            <div class="tc-sidebar-scrollable-inner right">
+                <div class="tc-charts">
+                    <div class="chart-icon"><i class="fa fa-2x fa-bar-chart"></i></div>
+                    <div class="tc-chart">
+                        <canvas id="tcBarChart" class="chart-canvas"></canvas>
+                    </div>
+                </div>
+                <div class="tc-sidebar-time-details">
                 </div>
             </div>
-            <div class="tc-sidebar-time-details">
+        </div>
+        <div class="tc-sidebar-footer">
+            <a href="https://www.timecamp.com/app#/timesheets/timer" target="_blank">
+                <div class="tc-sidebar-footer-box tc-sidebar-footer-ts">
+                    <i class="fa fa-lg fa-fw fa-clock-o"></i>
+                </div>
+            </a>
+            <a href="https://www.timecamp.com/app#/reports/projects_and_tasks/projectsAndTasks" target="_blank">
+                <div class="tc-sidebar-footer-box tc-sidebar-footer-reports">
+                    <i class="fa fa-lg fa-fw fa-area-chart"></i>
+                </div>
+            </a>
+            <a href="https://www.timecamp.com/app#/invoices" target="_blank">
+                <div class="tc-sidebar-footer-box tc-sidebar-footer-invoicing">
+                    <i class="fa fa-lg fa-fw fa-usd"></i>
+                </div>
+            </a>
+            <div class="tc-sidebar-footer-box tc-sidebar-footer-tclogo">
+                <div class="tc-logo tc-logo-19"></div>
             </div>
         </div>
-    </div>
-    <div class="tc-sidebar-footer">
-        <div class="tc-sidebar-footer-box tc-sidebar-footer-ts">
-            <i class="fa fa-lg fa-fw fa-clock-o"></i>
-        </div>
-        <div class="tc-sidebar-footer-box tc-sidebar-footer-reports">
-            <i class="fa fa-lg fa-fw fa-area-chart"></i>
-        </div>
-        <div class="tc-sidebar-footer-box tc-sidebar-footer-invoicing">
-            <i class="fa fa-lg fa-fw fa-usd"></i>
-        </div>
-        <div class="tc-sidebar-footer-box tc-sidebar-footer-tclogo">
-            <div class="tc-logo tc-logo-19"></div>
-        </div>
-    </div>
 
+    </div>
 </div>

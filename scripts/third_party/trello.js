@@ -20,6 +20,65 @@
         }
     };
 
+    this.getParentId = function() {
+        var url = document.URL;
+        var reg = /trello\.com\/b\/(\w+)/g;
+        var MatchRes = reg.exec(url);
+
+        console.log('MatchRes', MatchRes);
+        if (MatchRes)
+            return MatchRes[1];
+
+        return null;
+    };
+
+    this.getSubtasks = function() {
+        var subtasks = [];
+        var links = $(".list-card-title");
+
+        console.log('links', links);
+        if (links.length)
+        {
+            $.each(links, function(key, el)
+            {
+                var reg = new RegExp("/c/([A-Za-z0-9]+)","g");
+                var href = $(el).attr("href");
+
+                console.log('reg', reg);
+                console.log('href', href);
+                var matchRes = reg.exec(href);
+                console.log('matchRes', matchRes);
+                if (!matchRes)
+                    return;
+
+                var taskId = matchRes[1];
+                var taskName = $(el).contents().filter(function(){return this.nodeType == Node.TEXT_NODE})[0].nodeValue;
+
+                var subtask = {
+                    taskId: taskId,
+                    taskName: taskName,
+                    DOMObj: el
+                };
+                subtasks.push(subtask);
+            });
+        }
+
+        console.log('subtasks', subtasks);
+
+        return subtasks;
+    };
+
+    this.currentTaskName = function () {
+
+        var el = $(".js-card-title.current");
+        if (el.length)
+            return el.contents().filter(function(){return this.nodeType == Node.TEXT_NODE})[0].nodeValue;
+
+        return false;
+    };
+
+
+
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
             this.trackedTaskId = response.external_task_id;
@@ -151,26 +210,6 @@
         buttonObj.insertInProgress = false;
     };
 
-    this.getParentId = function()
-    {
-        var a = $(".js-recent-boards").find('.sidebar-boards-list').find('a:first');
-        var href = a.prop('href');
-        if (href == this.lastData)
-            return this.lastParentId;
-
-        var pattern = /\/b\/([a-zA-z0-9]+)\//;
-        var res = pattern.exec(href);
-
-        if (res && res.length > 1)
-        {
-            this.lastData = href;
-            this.lastParentId = res[1];
-            return res[1];
-        }
-
-        return null;
-    };
-
     this.onTrackingDisabled = function() {
         var button = ButtonList[$this.currentTaskId()];
         if (!button || button.denied)
@@ -199,5 +238,22 @@
 
     this.bindEvents(this);
 }
-TrelloTimer.prototype = new TimerBase();
-timer = new TrelloTimer();
+$(document).ready(function () {
+    TrelloTimer.prototype = new TimerBase();
+    timer = new TrelloTimer();
+});
+
+Sidebar.cssUpdate = [
+    {
+        selector: "body",
+        property: "padding-left",
+        value: "50px"
+    },
+    {
+        selector: "#boards-drawer .boards-drawer",
+        property: "margin-left",
+        value: "50px"
+    }
+];
+Sidebar.clickBindSelector = ["body"];
+Sidebar.appendSelector = "body";

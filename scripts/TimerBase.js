@@ -15,13 +15,14 @@ function TimerBase() {
     this.taskDuration = {};
     this.taskDurationToday = {};
     this.trackableParents = false;
-    this.lastParentId = null;
+    this.lastParentTask = null;
+    this.lastTask = null;
     this.lastData = null;
     this.lastUrl = '';
 
     var $this = this;
 
-    this.canWatch = {'DOM': 0,'URL': 1, 'HISTORY': 2};
+    this.canWatch = {'DOM': 0,'URL': 1, 'HISTORY': 2, 'LOAD': 3};
     this.isWatching = this.canWatch.DOM;
 
     this.currentTaskId          = function () { return ''; };
@@ -41,11 +42,34 @@ function TimerBase() {
         return true;
     };
 
+    function parentsEquals(ParentA, ParentB)
+    {
+        if (ParentA.taskId != ParentB.taskId)
+            return false;
+
+        if (ParentA.subtasks.length != ParentB.subtasks.length)
+            return false;
+
+        return true;
+    }
+
+    function tasksEquals(TaskA, TaskB)
+    {
+        if (TaskA.taskId != TaskB.taskId)
+            return false;
+
+        if (TaskA.taskName != TaskB.taskName)
+            return false;
+
+        return true;
+    }
+
     this.isInfoInserted = function () {
         return true;
     };
 
     this.getParentId = function() {
+        console.log('geeeeeee');
         return false;
     };
 
@@ -73,11 +97,20 @@ function TimerBase() {
             return;
 
         console.log('ButtonList', ButtonList);
+
+        var params = $(this).data('params');
+        if (!params)
+            params = {};
+
         if (!ButtonList[taskId])
         {
             var button = new TimerButton(taskId);
             button.enabled = true;
             button.insertInProgress = false;
+
+            if (params.taskName)
+                button.taskName = params.taskName;
+
             ButtonList[taskId] = button;
         }
 
@@ -127,7 +160,13 @@ function TimerBase() {
                 externalParentId: $this.getParentId(),
                 subtasks: $this.getSubtasks()
             };
+
+            if ($this.lastParentTask && parentsEquals(args, $this.lastParentTask))
+                return;
+
             $(document).trigger('tcParentChangeDetected', args);
+            $this.lastParentTask = args;
+            $this.lastTask = null;
             return;
         }
 
@@ -135,6 +174,12 @@ function TimerBase() {
             externalTaskId: $this.currentTaskId(),
             taskName: $this.currentTaskName()
         };
+
+        if ($this.lastTask && tasksEquals(args, $this.lastTask))
+            return;
+
+        $this.lastTask = args;
+        $this.lastParentTask = null;
         $(document).trigger('tcTaskChangeDetected', args);
     };
 
@@ -161,7 +206,7 @@ function TimerBase() {
             if (!$this.canTrack())
                 $this.onTrackingDisabled();
 
-            $this.detectTaskIdChange();
+            setTimeout(function() {$this.detectTaskIdChange();});
         }
     };
 
@@ -301,6 +346,7 @@ function TimerBase() {
     this.URLWatcher = function ()
     {
         var url = document.URL;
+
         if (url != $this.lastUrl || ButtonList.length == 0)
         {
             $this.lastUrl = url;
@@ -396,7 +442,13 @@ function TimerBase() {
         switch ($this.isWatching)
         {
             case $this.canWatch.DOM:
-                document.addEventListener("DOMNodeInserted", $this.onDomModified);
+                document.addEventListener("DOMNodeInserted", function() {
+                    if ($this.DOMChangeTimeout)
+                    {
+                        clearTimeout($this.DOMChangeTimeout)
+                    }
+                    $this.DOMChangeTimeout = setTimeout($this.onDomModified, 100);
+                });
                 break;
             case $this.canWatch.URL:
                 setInterval($this.URLWatcher, 100);

@@ -23,40 +23,48 @@
             "matches": [
                 "*://*.trello.com/*"
             ],
-            "css": ["styles/sites/trello.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css",
+                "styles/sites/trello.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
+                "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
                 "scripts/third_party/trello.js"]
         },
         {
             "matches": [
                 "*://*.manageprojects.com/*"
             ],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
+                "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
                 "scripts/third_party/activecollab.js"]
         },
         {
             "matches": [
                 "*://*.podio.com/*"
             ],
-            "css": ["styles/sites/podio.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css",
+                "styles/sites/podio.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
+                "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
             "scripts/third_party/podio.js"]
         },
         {
             "matches": [
                 "*://*.pivotaltracker.com/*"
             ],
-            "css": ["styles/sites/pivotaltracker.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css",
+                "styles/sites/pivotaltracker.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
+                "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
             "scripts/third_party/pivotaltracker.js"]
         },
         {
             "matches": [
                 "*://*.asana.com/*"
             ],
-            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css",
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css",
                 "styles/sites/asana.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js", "scripts/lib/bootstrap.min.js",
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
                 "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
                 "scripts/third_party/asana.js"]
         },
@@ -64,16 +72,20 @@
             "matches": [
                 "*://*.teamwork.com/*"
             ],
-            "css": ["styles/sites/teamwork.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css",
+                "styles/sites/teamwork.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
+                "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
             "scripts/third_party/teamwork.js"]
         },
         {
             "matches": [
                 "*://*.insight.ly/*"
             ],
-            "css": ["styles/common.css", "styles/sites/insightly.css","styles/sidebar.css", "styles/font-awesome.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/ICanHaz.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css",
+                "styles/sites/insightly.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
+                "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
             "scripts/third_party/insightly.js"]
         }
     ],

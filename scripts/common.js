@@ -22,6 +22,10 @@ function bench(name)
     console.log(name, +moment());
 }
 
+String.prototype.capitalize = function() {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+}
+
 if (!String.format) {
     String.format = function(format) {
         var args = Array.prototype.slice.call(arguments, 1);

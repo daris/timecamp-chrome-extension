@@ -4,16 +4,18 @@
  */
 function Sidebar()
 {
-    this.marginSelector = null;
     this.appendSelector = null;
     this.sidebar = null;
     this.barChartSelector = '#tcBarChart';
     this.chartEntries = [];
+    this.clickBindSelector = [];
+    this.cssUpdate = [];
     this.isReady = false;
     this.isCollapsed = true;
     this.templates = {
-        "sidebarButton" :"sidebar_button",
-        "sidebarMain"   :"sidebar_main",
+        "sidebarStartButton":"sidebar_start_button",
+        "sidebarPickButton" :"sidebar_pick_button",
+        "sidebarMain"       :"sidebar_main",
         "sidebarDayHeader"  :"sidebar_day_header",
         "sidebarTotalTime"  :"sidebar_total_time",
         "sidebarEntry"      :"sidebar_entry",
@@ -72,7 +74,6 @@ function Sidebar()
     }
 
     function calculateDuration(row) {
-        console.log('row', row);
         var startHour = parseInt(row.find('.from.hours').val(), 10);
         var endHour = parseInt(row.find('.to.hours').val(), 10);
 
@@ -82,55 +83,45 @@ function Sidebar()
         var hDiff = endHour - startHour;
         var mDiff = endMinutes - startMinutes;
 
-        var result = hDiff * 3600 + mDiff * 60;
-
-        if (result < 0)
-        {
-            row.find('.time-input').addClass("invalid");
-            row.find('.add-entry-confirm').attr('disabled','disabled');
-        }
-        else
-        {
-            row.find('.time-input').removeClass("invalid");
-            row.find('.add-entry-confirm').removeAttr('disabled');
-        }
-
-        return result;
+        return result = hDiff * 3600 + mDiff * 60;
     }
 
     this.bindInternalEvents = function()
     {
-        $($this.marginSelector).on('click', $this.collapse);
+        $.each($this.clickBindSelector, function (key, el) { $(el).on('click', $this.collapse); });
+
         //$this.sidebar.on('mouseleave', $this.onMouseOut);
         $this.sidebar.on('click',       $this.onSidebarClick);
         $this.sidebar.on('mouseenter',  $this.onHover);
-        $this.sidebar.on('click',        '.update-entry-confirm',              $this.onEntryUpdateConfirm);
-        $this.sidebar.on('click',        '.update-entry-cancel',              $this.onEntryUpdateCancel);
+
+        $this.sidebar.on('click',       '.update-entry-confirm',    $this.onEntryUpdateConfirm);
+        $this.sidebar.on('click',       '.update-entry-cancel',     $this.onEntryUpdateCancel);
+        $this.sidebar.on('click',       '.add-entry-confirm',       $this.onEntryAddConfirm);
+        $this.sidebar.on('click',       '.add-entry-cancel',        $this.onEntryAddCancel);
         $this.sidebar.on('click',       '.add-time',                $this.onAddTimeClick);
         $this.sidebar.on('click',       '.tc-sidebar-entry-single', $this.onEntryClick);
-        $this.sidebar.on('click',       '#tc-sidebar-start-button', $this.onButtonClick);
+        $this.sidebar.on('click',       '#tc-sidebar-pick-button',  $this.onButtonClick);
         $this.sidebar.on('click',       '.billable-checkbox',       $this.onBillableClick);
         $this.sidebar.on('click',       '.tc-subtask-picker-entry', $this.onTaskSelected);
-        $this.sidebar.on('click',       '.note-placeholder a',      function(e) { e.stopPropagation(); });
-        $this.sidebar.on('click',       '.tc-subtask-picker-list-header',      function(e) { e.stopPropagation(); });
-        $this.sidebar.on('mouseenter',       '.tc-sidebar-header',      function(e) { e.stopPropagation(); });
+
+        $this.sidebar.on('click',       '.note-placeholder a',                  function(e) { e.stopPropagation(); });
+        $this.sidebar.on('click',       '.tc-subtask-picker-list-header',       function(e) { e.stopPropagation(); });
+        $this.sidebar.on('mouseenter',  '.tc-sidebar-header',                   function(e) { e.stopPropagation(); });
     };
 
     this.onButtonClick = function() {
-        if (!$this.templateData.sidebarButton.isSingle)
-        {
-            $this.sidebar.find('.tc-subtask-picker').toggle();
-        }
+        $this.sidebar.find('.tc-subtask-picker').toggle();
     };
 
     this.onAddTimeClick = function(e) {
         e.stopPropagation();
-        var DOMObj = $(this);
-        $(this).hide();
-        var date = DOMObj.attr('data-date');
 
+        var DOMObj = $(this);
+        DOMObj.hide();
+
+        var date = DOMObj.attr('data-date');
         var container = DOMObj.parents('.tc-sidebar-day-header');
-        var newRow = ich.sidebarAddEntry($this.templateData);
+        var newRow = ich.sidebarAddEntry({date: date});
 
         function makeTimePicker(input){
             if (input.is('.minutes'))
@@ -144,33 +135,34 @@ function Sidebar()
                 setTimeout(function() {element.select();});
             });
             input.on('keyup', function(event) {
-                console.log('$(this)', $(this));
+                if (event.keyCode == 9)
+                    event.preventDefault();
 
                 var max = parseInt($(this).attr('max'), 10);
                 var min = parseInt($(this).attr('min'), 10);
                 var val = parseInt($(this).val(), 10);
 
-                console.log('max', max);
-                console.log('min', min);
-
-                console.log('$(this).val()', val);
-
                 if (val > max)
-                {
-                    console.log('update');
                     $(this).val(max);
-                }
 
                 if (val < min)
-                {
-                    console.log('update');
                     $(this).val(min);
-                }
 
                 if ($(this).val().length == 2)
                     $(this).next().focus();
 
-                console.log('calculateDuration($(this))', calculateDuration(newRow));
+                var duration = calculateDuration(newRow);
+                if (duration < 0)
+                {
+                    newRow.find('.time-input').addClass("invalid");
+                    newRow.find('.btn-success').attr('disabled','disabled');
+                }
+                else
+                {
+                    newRow.find('.time-input').removeClass("invalid");
+                    newRow.find('.btn-success').removeAttr('disabled');
+                    newRow.find('.duration').html(formatHMS(duration));
+                }
             })
         }
 
@@ -179,6 +171,15 @@ function Sidebar()
         {
             makeTimePicker($(input));
         });
+
+        var dateElement = newRow.find('.date-input');
+        dateElement.datepicker(
+            {
+                dateFormat: "dd M, yy",
+                onSelect: function() { $(this).change(); }
+            });
+        dateElement.datepicker("setDate", moment(date).format("DD MMM, YYYY"));
+        dateElement.on('change', function () { moment($(this).val(), "DD MMM, YYYY").isValid() ? $(this).removeClass('invalid') : $(this).addClass('invalid');});
         container.after(newRow);
     };
 
@@ -228,8 +229,6 @@ function Sidebar()
 
     function collapseEntry(DOMObj, placeholder)
     {
-        console.log('DOMObj2', DOMObj);
-        console.log('DOMObj.find(.note-input-box).', DOMObj.find('.note-input-box'));
         if (placeholder)
             DOMObj.find('.note-placeholder').html(placeholder);
 
@@ -237,6 +236,61 @@ function Sidebar()
         DOMObj.find('.note-input-box').addClass('hidden');
         DOMObj.removeClass('active');
     }
+
+    this.onEntryAddConfirm = function (e)
+    {
+        e.stopPropagation();
+
+        var DOMObj = $(this);
+        if (DOMObj.is('[disabled]'))
+            return;
+
+        var container = DOMObj.parents('.tc-sidebar-entry-new');
+
+        var taskId = $this.templateData.sidebarButton.taskId;
+        var duration = calculateDuration(container);
+
+        if (duration <= 0)
+            return;
+
+        var date = container.find('.date-input').val();
+        var description = container.find('textarea').val();
+        var billable = container.find('.billable-checkbox').is(":checked");
+        var startTime = container.find('.from.hours').val()+":"+container.find('.from.minutes').val();
+        var endTime = container.find('.to.hours').val()+":"+container.find('.to.minutes').val();
+
+        var parsedDate = moment(date, "DD MMM, YYYY");
+
+        if (!parsedDate.isValid())
+        {
+            container.find('.date-input').addClass('invalid');
+            return;
+        }
+
+        var data = {
+            external_task_id: taskId,
+            duration: duration,
+            date: parsedDate.format('YYYY-MM-DD'),
+            description: description,
+            billable: billable,
+            start_time: startTime,
+            end_time: endTime
+        };
+
+
+        DOMObj.attr('disabled', 'disabled').html('Loading ...');
+        $.when(ApiService.Entries.post(data)).then(function() {timer.getEntries(taskId, true, false)});
+
+    };
+
+    this.onEntryAddCancel = function (e)
+    {
+        var DOMObj = $(this).parents('.tc-sidebar-entry-new');
+        DOMObj.remove();
+        DOMObj.find('.add-time').show();
+
+        e.stopPropagation();
+    };
 
     this.onEntryClick = function(e)
     {
@@ -286,39 +340,57 @@ function Sidebar()
 
     this.watch = function()
     {
-        if (!$this.marginSelector || !$this.appendSelector)
+        if (!$this.appendSelector)
             return null;
 
-        var marginObj = $($this.marginSelector);
         var appendObj = $($this.appendSelector);
-
-        if (marginObj.length == 0)
-            return null;
-
         if (appendObj.length == 0)
             return null;
 
+        for (i in $this.cssUpdate)
+        {
+            var cssUpdate = $this.cssUpdate[i];
+            var el = $(cssUpdate.selector);
+
+            if (el.length && el.css(cssUpdate.property) != cssUpdate.value)
+                    el.css(cssUpdate.property, cssUpdate.value);
+        }
+
         if (!$this.sidebar)
         {
-            $this.sidebar = ich.sidebarMain($this.templateData);
+            $this.sidebarMain =  ich.sidebarMain($this.templateData);
+            $this.sidebar = $this.sidebarMain.find('.tc-sidebar');
             $this.bindInternalEvents();
         }
 
-        if (marginObj.css("margin-left") != '50px')
-            marginObj.css('margin-left', '50px');
-        if (!$.contains(document.documentElement, $this.sidebar[0]))
+        if (!$.contains(document.documentElement, $this.sidebarMain[0]))
         {
-            appendObj.prepend($this.sidebar);
+            appendObj.prepend($this.sidebarMain);
             if ($this.eventStore['onEntriesLoaded'] != null)
             {
                 $this.onEntriesLoaded(null, $this.eventStore['onEntriesLoaded']);
                 $this.eventStore['onEntriesLoaded'] = null;
             }
+
+            if (!$this.templateData.sidebarButton.isSingle)
+                $this.renderSidebarPickButton($this.templateData.sidebarButton);
+            else
+                $this.renderSidebarStartButton($this.templateData.sidebarButton);
         }
     };
 
-    this.renderSidebarButton =  function(params) {
-        $('.tc-sidebar-button-box').html(ich.sidebarButton(params));
+    this.renderSidebarStartButton =  function(params) {
+        var button = ich.sidebarStartButton(params);
+        button.data('params',params);
+        $('.tc-sidebar-button-box').html(button);
+        console.log("$('.tc-sidebar-button-box')", $('.tc-sidebar-button-box'));
+    };
+
+    this.renderSidebarPickButton =  function(params) {
+        var button = ich.sidebarPickButton(params);
+        button.data('params',params);
+        $('.tc-sidebar-button-box').html(button);
+        console.log("$('.tc-sidebar-button-box')", $('.tc-sidebar-button-box'));
     };
 
     this.bindEvents = function()
@@ -372,14 +444,15 @@ function Sidebar()
             chart.destroy();
 
         var dataset = ChartService.prepareDataset('bar', tmpEntries);
-        chart = ChartService.renderChart($this.barChartSelector,'bar', dataset);
+        chart = ChartService.renderChart($this.barChartSelector, 'bar', dataset);
     };
 
-    this.renderEntriesDay = function(entries, date, isFirst) {
+    this.renderEntriesDay = function(entries, date, isFirst, isSingleTask) {
         var params = {
             date: moment(date,'YYYY-MM-DD').format("DD MMM"),
             rawDate: date,
-            isFirst: isFirst
+            isFirst: isFirst,
+            showAddTime:  isSingleTask
         };
 
         var sidebarTimeDetails = $('.tc-sidebar-time-details');
@@ -388,26 +461,12 @@ function Sidebar()
         for (i in entries)
         {
             var entry = entries[i];
-            var render = ich.sidebarEntry(entry);
-            render.data('entry', entry);
-            sidebarTimeDetails.append(render);
-        }
-    };
+            var render;
+            if (isSingleTask)
+                render = ich.sidebarEntry(entry);
+            else
+                render = ich.sidebarMultiEntry(entry);
 
-    this.renderMultiEntriesDay = function(entries, date) {
-        var params = {
-            date: moment(date,'YYYY-MM-DD').format("DD MMM"),
-            rawDate: date,
-            isFirst: false
-        };
-
-        var sidebarTimeDetails = $('.tc-sidebar-time-details');
-        sidebarTimeDetails.append(ich.sidebarDayHeader(params));
-
-        for (i in entries)
-        {
-            var entry = entries[i];
-            var render = ich.sidebarMultiEntry(entry);
             render.data('entry', entry);
             sidebarTimeDetails.append(render);
         }
@@ -471,7 +530,7 @@ function Sidebar()
                 if (a.start_time > b.start_time) return -1;
                 return 1;
             });
-            $this.renderEntriesDay(entriesByDays[day], day, first);
+            $this.renderEntriesDay(entriesByDays[day], day, first, true);
             first = false;
         }
         $this.renderTotalTime(totalTime, 0, params.external_task_id);
@@ -534,7 +593,7 @@ function Sidebar()
                 if (a.duration > b.duration) return -1;
                 return 1;
             });
-            $this.renderMultiEntriesDay(entriesByDays[day], day);
+            $this.renderEntriesDay(entriesByDays[day], day, false, false);
         }
         $this.renderTotalTime(totalTime, 0, params.external_task_id);
     }
@@ -556,11 +615,9 @@ function Sidebar()
         var buttonData = $this.templateData.sidebarButton;
         console.log('$this.templateData.sidebarButton.taskId', buttonData.taskId);
 
-        if (buttonData.isRunning && !buttonData.isSingle && params.external_task_id != buttonData.taskId)
+        if (buttonData.isRunning && params.external_task_id != buttonData.taskId)
         {
             $this.eventStore['onEntriesLoaded'] = eventData;
-            console.log('sotringDatatatatata',eventData);
-            console.log('sotringDatatatatata',$this.eventStore['onEntriesLoaded']);
             return;
         }
 
@@ -617,7 +674,7 @@ function Sidebar()
         }
 
         $this.templateData.sidebarButton = buttonData;
-        $this.renderSidebarButton(buttonData);
+        $this.renderSidebarStartButton(buttonData);
     };
 
     this.onParentChange = function(event, args)
@@ -641,7 +698,7 @@ function Sidebar()
         }
 
         $this.templateData.sidebarButton = buttonData;
-        $this.renderSidebarButton(buttonData);
+        $this.renderSidebarPickButton(buttonData);
     };
 
     this.onTimerStarted = function(event, eventData)
@@ -658,16 +715,17 @@ function Sidebar()
 
         pushRecentTask(taskId, taskName);
 
-        $this.renderSidebarButton($this.templateData.sidebarButton);
+        $this.renderSidebarStartButton($this.templateData.sidebarButton);
     };
 
     this.onTimerStopped = function (event, eventData)
     {
-        $this.templateData.sidebarButton.isRunning = false;
+        console.log('event', event);
+        console.log('eventData', eventData);
         if ($this.eventStore['onTaskChange'])
         {
             $this.templateData.sidebarButton = $this.eventStore['onTaskChange'];
-            $this.templateData.sidebarButton = params;
+            $this.eventStore['onTaskChange'] = null;
         }
         else
         {
@@ -677,8 +735,9 @@ function Sidebar()
             $this.templateData.sidebarButton.taskId = taskId;
             $this.templateData.sidebarButton.taskName = taskName;
         }
+        $this.templateData.sidebarButton.isRunning = false;
 
-        $this.renderSidebarButton($this.templateData.sidebarButton);
+        $this.renderSidebarStartButton($this.templateData.sidebarButton);
         if ($this.eventStore['onEntriesLoaded'])
         {
             $this.onEntriesLoaded(null, $this.eventStore['onEntriesLoaded']);
@@ -686,24 +745,17 @@ function Sidebar()
         }
     };
 
-    this.onSidebarClick = function(event)
+    this.onSidebarClick = function(e)
     {
-        if (event)
-        {
-            var target = $(event.originalEvent.target);
-            if (target.parents('#tc-sidebar-start-button').length)
-                return;
-        }
-
-        var entryObj = $this.sidebar.find('.tc-sidebar-entry.active');
-        if (entryObj.length)
-            collapseEntry(entryObj);
+        if (e)
+            e.stopPropagation();
 
         if (!$this.isCollapsed)
             return;
 
         $this.sidebar.removeClass('collapsed').addClass('expanded');
         $this.isCollapsed = false;
+
     };
 
     this.collapse = function()
@@ -712,6 +764,7 @@ function Sidebar()
             return;
 
         $this.sidebar.scrollTop(0).removeClass('expanded').addClass('collapsed');
+        $this.sidebar.find('.tc-subtask-picker').hide();
         $this.isCollapsed = true;
     };
 

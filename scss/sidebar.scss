@@ -1,0 +1,361 @@
+//colors
+$white: white;
+$color_alto_approx: #dddddd;
+$color_tundora_approx: #444444;
+$color_fuscous_gray_approx: rgb(83, 83, 83);
+$color_bon_jour_approx: rgb(225, 225, 225);
+$gray: #808080;
+$red: red;
+$color_mountain_mist_approx: #999;
+$color_mine_shaft_approx: #333;
+$black_15: rgba(0,0,0,.15);
+$black_17: rgba(0,0,0,.175);
+$color_shark_approx: #262626;
+
+//@extend-elements
+//original selectors
+//.tc-sidebar-entry input[type="text"], .tc-sidebar-entry textarea
+%extend_1 {
+  padding: 3px;
+  //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
+  border-radius: 3px;
+  border: 1px solid $gray;
+  background-color: $white;
+  height: 12px;
+  margin: 0;
+}
+.timecamp {
+
+
+  .tc-sidebar {
+    all: initial;
+    position: fixed;
+    height: 100%;
+    left: 0;
+    width: 280px;
+    z-index: 1000;
+    background-color: $white;
+    border-right: 2px solid $color_fuscous_gray_approx;
+    color: $color_fuscous_gray_approx;
+    font-size: 12px;
+    font-family: proxima-nova, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 12px;
+    //Instead of the line below you could use @include box-sizing($bs)
+    box-sizing: content-box;
+    .row {
+      margin: 0;
+      padding: 3px 5px 3px 0;
+    }
+    &.collapsed {
+      left: -230px;
+      .tc-sidebar-scrollable {
+        overflow: hidden;
+      }
+    }
+    &.expanded {
+      left: 0;
+      .chart-icon {
+        display: none;
+      }
+      .tc-sidebar-scrollable {
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+    }
+    .tc-charts {
+      position: relative;
+    }
+    .chart-icon {
+      height: 260px;
+      line-height: 260px;
+      position: absolute;
+      padding-right: 12px;
+      right: 0;
+      background: $white;
+      text-align: right;
+      width: 100px;
+    }
+    .fa {
+      vertical-align: middle;
+    }
+    .tc-logo {
+      vertical-align: middle;
+      display: inline-block;
+    }
+    .header {
+      font-weight: bold;
+      border-bottom: 2px solid $color_fuscous_gray_approx;
+      font-size: 14px;
+      margin-right: -5px;
+    }
+    .inline {
+      display: inline-block;
+    }
+    .right {
+      float: right;
+    }
+    .left {
+      padding-left: 5px;
+    }
+    .invalid {
+      border-color: $red;
+    }
+    .tc-chart {
+      padding: 0 5px;
+    }
+    .chart-canvas {
+      width: 260px;
+      height: 250px;
+    }
+    .tc-subtask-picker {
+      position: absolute;
+      top: 54px;
+      left: 7px;
+      width: 266px;
+      color: $color_mine_shaft_approx;
+      text-decoration: none;
+      display: none;
+      z-index: 1000;
+      ul {
+        float: left;
+        padding: 5px 0;
+        margin: 2px 0 0;
+        font-size: 14px;
+        text-align: left;
+        list-style: none;
+        background-color: $white;
+        //Instead of the line below you could use @include background-clip($clip)
+        background-clip: padding-box;
+        border: 1px solid $black_15;
+        //Instead of the line below you could use @include border-radius($radius, $vertical-radius)
+        border-radius: 4px;
+        //Instead of the line below you could use @include box-shadow($shadow-1, $shadow-2, $shadow-3, $shadow-4, $shadow-5, $shadow-6, $shadow-7, $shadow-8, $shadow-9, $shadow-10)
+        box-shadow: 0 6px 12px $black_17;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        width: 266px;
+        max-height: 700px;
+        overflow-y: scroll;
+      }
+    }
+    .tc-subtask-picker-entry {
+      padding: 3px 20px;
+      clear: both;
+      font-weight: 400;
+      line-height: 1.42857143;
+      color: $color_mine_shaft_approx;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      &:hover {
+        color: $color_shark_approx;
+        text-decoration: none;
+        background-color: $color_bon_jour_approx;
+      }
+    }
+    .tc-subtask-picker-list-header {
+      text-transform: uppercase;
+      border-bottom: 1px solid $color_fuscous_gray_approx;
+      font-weight: bold;
+      padding-left: 5px;
+      padding-top: 5px;
+    }
+    .add-time {
+      font-size: small;
+      padding: 5px 5px 5px 0;
+    }
+    .hidden {
+      display: none;
+    }
+  }
+  .tc-sidebar-header {
+    background-color: $white;
+    width: 280px;
+    float: right;
+    height: 62px;
+    .task-name {
+      max-width: 200px;
+      overflow: hidden;
+      display: inline-block;
+      text-overflow: ellipsis;
+      vertical-align: middle;
+    }
+  }
+  .tc-sidebar-footer {
+    position: absolute;
+    bottom: 0;
+    background-color: $white;
+    width: 280px;
+    float: right;
+    overflow: hidden;
+    a {
+      color: inherit;
+    }
+  }
+  .tc-sidebar-footer-box {
+    width: 76px;
+    height: 50px;
+    line-height: 50px;
+    display: inline-block;
+    float: left;
+    text-align: center;
+    cursor: pointer;
+    &:hover {
+      background-color: $color_alto_approx;
+      color: $color_tundora_approx;
+    }
+    .fa {
+      vertical-align: middle;
+      margin: auto;
+    }
+  }
+  .tc-sidebar-footer-tclogo {
+    width: 50px;
+    float: right;
+  }
+  .tc-sidebar-scrollable {
+    padding-bottom: 15px;
+    height: calc(100% - 143px );
+    width: 100%;
+  }
+  .tc-sidebar-scrollable-inner {
+    width: 100%;
+  }
+  .tc-sidebar-time-details {
+    width: 100%;
+  }
+  #tc-sidebar-start-button {
+    display: block;
+    text-align: left;
+    vertical-align: middle;
+    padding: 10px 12px;
+    font-weight: bold;
+    font-size: 15px;
+    text-transform: uppercase;
+    width: 246px;
+    margin: 5px auto;
+    height: 25px;
+    line-height: 25px;
+    //Instead of the line below you could use @include box-sizing($bs)
+    box-sizing: content-box;
+  }
+  #tc-sidebar-pick-button {
+    display: block;
+    text-align: left;
+    vertical-align: middle;
+    padding: 10px 12px;
+    font-weight: bold;
+    font-size: 15px;
+    text-transform: uppercase;
+    width: 246px;
+    margin: 5px auto;
+    height: 25px;
+    line-height: 25px;
+    //Instead of the line below you could use @include box-sizing($bs)
+    box-sizing: content-box;
+  }
+  .tc-timer-state-icon {
+    display: inline-block;
+    float: right;
+  }
+  .tc-sidebar-total-time {
+    font-weight: bold;
+    float: right;
+    border-top: 2px solid $color_fuscous_gray_approx;
+    width: 100%;
+    padding-top: 2px;
+    padding-right: 5px;
+    .total-label {
+      padding-right: 5px;
+    }
+  }
+  .tc-sidebar-entry {
+    padding: 5px 0;
+    cursor: pointer;
+    .row {
+      &:first-child {
+        padding-top: 0;
+      }
+      &:last-child {
+        padding-bottom: 0;
+      }
+    }
+    &.active {
+      background-color: $color_bon_jour_approx;
+    }
+    &:hover {
+      background-color: $color_bon_jour_approx;
+    }
+    .separator {
+      width: 4px;
+    }
+    .billable-checkbox {
+      vertical-align: middle;
+    }
+    .note-input-box {
+      padding-left: 5px;
+      textarea {
+        width: 100%;
+        height: 70px;
+      }
+    }
+    .time-input {
+      width: 15px;
+    }
+    .date-input {
+      width: 101px;
+    }
+    input[type="text"] {
+      @extend %extend_1;
+    }
+    textarea {
+      @extend %extend_1;
+      width: 98px;
+      box-sizing: border-box;
+    }
+    .note-placeholder {
+      padding: 0 5px;
+      font-style: italic;
+      color: $color_mountain_mist_approx;
+    }
+  }
+  .tc-sidebar-entry-single {
+    .time-from {
+      width: 30px;
+    }
+    .time-to {
+      width: 30px;
+    }
+    .billable {
+      margin-left: 50px;
+      width: 13px;
+    }
+  }
+  .tc-sidebar-day-header {
+    margin-top: 5px;
+    .billable-header {
+      padding-left: 60px;
+    }
+    .hours-header {
+      padding-right:5px;
+    }
+  }
+  .tc-sidebar-placeholder {
+    position: absolute;
+    top: 50%;
+    right: 32px;
+    //Instead of the line below you could use @include transform($scale, $rotate, $transx, $transy, $skewx, $skewy, $originx, $originy)
+    transform: rotate(-90deg);
+    //Instead of the line below you could use @include transform-origin($origin-x, $origin-y, $origin-z, $only3d)
+    transform-origin: top right;
+    font-size: 15px;
+    font-weight: bold;
+    width: auto;
+    height: auto;
+    margin-top: -60px;
+  }
+  .tc-sidebar-entry-new .billable {
+    margin-left: 21px;
+    width: 13px;
+  }
+}

@@ -10,8 +10,8 @@
             {{#isFirst}}Hours{{/isFirst}}
         </div>
     </div>
-    <div class="row">
-        <div class="add-time right btn btn-link" data-date="{{rawDate}}">Add time</div>
+    {{#showAddTime}}
+        <div class="add-time right btn btn-sm btn-link" data-date="{{rawDate}}">Add time</div>
         <div class="clearfix"></div>
-    </div>
+    {{/showAddTime}}
 </div>

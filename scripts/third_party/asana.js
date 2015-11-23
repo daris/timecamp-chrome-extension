@@ -207,5 +207,12 @@ $(document).ready(function () {
     timer = new AsanaTimer();
 });
 
-Sidebar.marginSelector = "#whole_page_container";
+Sidebar.cssUpdate = [
+    {
+        selector: "#whole_page_container",
+        property: "margin-left",
+        value: "50px"
+    }
+];
+Sidebar.clickBindSelector = ["body"];
 Sidebar.appendSelector = "body";

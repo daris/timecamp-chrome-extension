@@ -14,6 +14,7 @@ function InsightlyTimer() {
 
         var tasksPattern = /Tasks\/TaskDetails\/([0-9]+)/ig;
         var projectsPattern = /Projects\/Details\/([0-9]+)/ig;
+        var leadsPattern = /Leads\/Details\/([0-9]+)/ig;
         var opportunitiesPattern = /opportunities\/details\/([0-9]+)/ig;
 
         MatchRes = tasksPattern.exec(url);
@@ -28,8 +29,115 @@ function InsightlyTimer() {
         if (MatchRes)
             return "opp_"+MatchRes[1];
 
+        MatchRes = leadsPattern.exec(url);
+        if (MatchRes)
+            return "lead_"+MatchRes[1];
+
         return null;
     };
+
+    this.getParentId = function() {
+        var url = document.URL;
+        var reg = /\.insight\.ly\/([A-Za-z]+)/g;
+        var MatchRes = reg.exec(url);
+
+        if (MatchRes)
+            return MatchRes[1];
+
+        return null;
+    };
+
+    function findNonTasks() {
+        var result = [];
+        var parentName = $this.getParentId();
+        var find = new RegExp("/"+parentName+"/details/", "gi");
+        var links = $('a[href]').filter(function()
+        {
+            if (this.href.toLowerCase().search(find) == -1)
+                return false;
+
+            if ($(this).text().trim() == "")
+                return false;
+            return true;
+        });
+
+        if (links.length)
+        {
+            $.each(links, function(key, el)
+            {
+                var reg = new RegExp("/"+parentName+"/details/([0-9]+)","gi");
+                var matchRes = reg.exec($(el).attr("href").toLowerCase());
+                if (!matchRes)
+                    return;
+
+                var taskId = matchRes[1];
+                var taskName = $(el).text();
+
+                var subtask = {
+                    taskId: taskId,
+                    taskName: taskName,
+                    DOMObj: el
+                };
+                result.push(subtask);
+            });
+        }
+
+        return result;
+    }
+
+    function findTasks() {
+        var result = [];
+        var links = $(".subject a");
+
+        if (links.length)
+        {
+            $.each(links, function(key, el)
+            {
+                var reg = new RegExp("taskdetails/([0-9]+)","gi");
+                var matchRes = reg.exec($(el).attr("href").toLowerCase());
+                if (!matchRes)
+                    return;
+
+                var taskId = matchRes[1];
+                var taskName = $(el).text();
+
+                var subtask = {
+                    taskId: taskId,
+                    taskName: taskName,
+                    DOMObj: el
+                };
+                result.push(subtask);
+            });
+        }
+
+        return result;
+    }
+    this.getSubtasks = function() {
+
+        var listContent = $('#list-content');
+        var taskListContent = $('#tasklist-content');
+
+        var subtasks = [];
+
+        if (listContent.length)
+            subtasks = findNonTasks();
+        else if(taskListContent.length)
+            subtasks = findTasks();
+
+        console.log('subtasks', subtasks);
+
+        return subtasks;
+    };
+
+    this.currentTaskName = function () {
+
+        var el = $("#entityname");
+        if (el.length)
+            return el.html();
+
+        return false;
+    };
+
 
     this.isButtonInserted = function () {
         if (!this.currentTaskId())
@@ -245,27 +353,6 @@ function InsightlyTimer() {
             badge.remove();
     };
 
-    this.getParentId = function() {
-        var overview = $('#tab_overview');
-        if (!overview.length)
-            return null;
-
-        var link = overview.children('a:first').attr('href');
-        if (link == '' || link === undefined)
-            return null;
-        if (link == this.lastData)
-            return this.lastParentId;
-
-        var id = /projects\/([0-9]+)+-.*\/overview/.exec(link);
-
-        if (id.length < 2)
-            return null;
-
-        this.lastData = link;
-        this.lastParentId = id[1];
-        return id[1];
-    };
-
     this.onTrackingDisabled = function() {
         var button = ButtonList[this.currentTaskId()];
         if (!button || button.denied)
@@ -282,8 +369,19 @@ function InsightlyTimer() {
 
     this.bindEvents(this);
 }
-Sidebar.marginSelector = "#wrapper";
+
+$(document).ready(function () {
+    InsightlyTimer.prototype = new TimerBase();
+    timer = new InsightlyTimer();
+});
+
+Sidebar.cssUpdate = [
+    {
+        selector: "#wrapper",
+        property: "margin-left",
+        value   : "50px"
+    }
+];
+Sidebar.clickBindSelector = ["body"];
 Sidebar.appendSelector = "body";
 
-InsightlyTimer.prototype = new TimerBase();
-timer = new InsightlyTimer();

@@ -7,6 +7,7 @@ function TeamworkTimer() {
     Messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
     this.infoInsertingInProgress = false;
     var $this = this;
+    $this.isWatching = $this.canWatch.URL;
 
     this.currentTaskId = function () {
         var url = document.URL;
@@ -165,5 +166,18 @@ function TeamworkTimer() {
 
     this.bindEvents(this);
 }
-TeamworkTimer.prototype = new TimerBase();
-timer = new TeamworkTimer();
+
+$(document).ready(function () {
+    TeamworkTimer.prototype = new TimerBase();
+    timer = new TeamworkTimer();
+});
+
+Sidebar.cssUpdate = [
+    {
+        selector: "body",
+        property: "margin-left",
+        value   : "50px"
+    }
+];
+Sidebar.clickBindSelector = ["body"];
+Sidebar.appendSelector = "body";

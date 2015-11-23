@@ -1,261 +1,74 @@
-.tc-sidebar {
-    position: fixed;
-    height: 100%;
-    left: 0;
-    /*transition: left 1s ease-in-out;*/
-    /*transition: width 1s ease-in-out;*/
-    width: 280px;
-    z-index: 1000;
-    background-color: white;
-    font-size: 12px;
-    box-sizing: content-box;
-}
+.timecamp .tc-sidebar-entry input[type="text"], .timecamp .tc-sidebar-entry textarea {
+  padding: 3px;
+  border-radius: 3px;
+  border: 1px solid #808080;
+  background-color: white;
+  height: 12px;
+  margin: 0; }
 
-.tc-sidebar .row {
-    margin: 0px;
-    padding-right: 5px;
-}
-
-.tc-sidebar.collapsed {
-    left: -230px;
-    /*width: 50px;*/
-}
-
-.tc-sidebar.expanded {
-    left: 0;
-    /*width: 280px;*/
-}
-
-.tc-sidebar-header {
-    background-color: white;
-    width: 280px;
-    float: right;
-    height: 62px;
-    overflow: hidden;
-}
-
-.tc-sidebar-header .task-name {
-    max-width: 200px;
-    overflow: hidden;
-    display: inline-block;
-    text-overflow: ellipsis;
-    vertical-align: middle;
-}
-
-.tc-sidebar-footer {
-    position: absolute;
-    bottom: 0px;
-    background-color: white;
-    width: 280px;
-    float: right;
-    overflow: hidden;
-}
-
-.tc-sidebar-footer-box {
-    width: 76px;
-    height: 50px;
-    line-height: 50px;
-    display: inline-block;
-    float: left;
-    text-align: center;
-    cursor: pointer;
-}
-
-.tc-sidebar-footer-box:hover {
-    background-color: #dddddd;
-    color: #444444;
-}
-
-.tc-sidebar-footer-box .fa {
-    vertical-align: middle;
-    margin: auto;
-}
-
-.tc-sidebar-footer-tclogo {
-    width: 50px;
-    float: right;
-}
-
-.tc-sidebar-scrollable {
-    padding-bottom: 15px;
-    height: calc( 100% - 143px );
-    width: 100%;
-}
-
-.tc-sidebar-scrollable-inner {
-    width: 100%;
-}
-
-.tc-sidebar .chart-icon {
+.timecamp .tc-sidebar {
+  all: initial;
+  position: fixed;
+  height: 100%;
+  left: 0;
+  width: 280px;
+  z-index: 1000;
+  background-color: white;
+  border-right: 2px solid #535353;
+  color: #535353;
+  font-size: 12px;
+  font-family: proxima-nova, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 12px;
+  box-sizing: content-box; }
+  .timecamp .tc-sidebar .row {
+    margin: 0;
+    padding: 3px 5px 3px 0; }
+  .timecamp .tc-sidebar.collapsed {
+    left: -230px; }
+    .timecamp .tc-sidebar.collapsed .tc-sidebar-scrollable {
+      overflow: hidden; }
+  .timecamp .tc-sidebar.expanded {
+    left: 0; }
+    .timecamp .tc-sidebar.expanded .chart-icon {
+      display: none; }
+    .timecamp .tc-sidebar.expanded .tc-sidebar-scrollable {
+      overflow-y: auto;
+      overflow-x: hidden; }
+  .timecamp .tc-sidebar .tc-charts {
+    position: relative; }
+  .timecamp .tc-sidebar .chart-icon {
     height: 260px;
     line-height: 260px;
     position: absolute;
-    right: 12px;
+    padding-right: 12px;
+    right: 0;
     background: white;
     text-align: right;
-    width:100px;
-}
-
-.tc-sidebar.expanded .chart-icon {
-    display: none;
-}
-
-.tc-sidebar .fa {
+    width: 100px; }
+  .timecamp .tc-sidebar .fa {
+    vertical-align: middle; }
+  .timecamp .tc-sidebar .tc-logo {
     vertical-align: middle;
-}
-
-.tc-sidebar.expanded .tc-sidebar-scrollable {
-    overflow-y: auto;
-    overflow-x: hidden;
-}
-
-.tc-sidebar.collapsed .tc-sidebar-scrollable {
-    overflow: hidden;
-}
-
-.tc-sidebar-time-details {
-    width: 100%;
-}
-
-.tc-sidebar .tc-logo {
-    vertical-align: middle;
-    display: inline-block;
-}
-
-#tc-sidebar-start-button {
-    display: block;
-    text-align: left;
-    vertical-align: middle;
-    padding: 10px 12px;
+    display: inline-block; }
+  .timecamp .tc-sidebar .header {
     font-weight: bold;
-    font-size: 15px;
-    text-transform: uppercase;
-    width: 246px;
-    margin: 5px auto;
-    height: 25px;
-    line-height: 25px;
-    box-sizing: content-box
-}
-
-.tc-timer-state-icon {
-    display: inline-block;
-    float: right;
-}
-
-.header {
-    font-weight: bold;
-    border-bottom: 2px solid rgb(83, 83, 83);
+    border-bottom: 2px solid #535353;
     font-size: 14px;
-    margin-right: -5px;
-}
-
-.inline {
-    display: inline-block;
-}
-
-.right {
-    float: right;
-}
-
-.left {
-    padding-left: 5px;
-}
-
-.tc-sidebar-total-time {
-    font-weight: bold;
-    float: right;
-    border-top: 2px solid  rgb(83, 83, 83);
-    width: 100%;
-    padding-top: 2px;
-    padding-right: 5px;
-}
-
-.tc-sidebar-total-time .label{
-    padding-right: 5px;
-}
-
-.tc-sidebar-entry {
-    padding: 5px 0;
-    cursor: pointer;
-}
-
-.tc-sidebar-entry.active {
-    background-color: rgb(225, 225, 225);
-}
-
-.tc-sidebar-entry:hover
-{
-    background-color: rgb(225, 225, 225);
-}
-
-.tc-sidebar-entry-single .time-from {
-    width: 30px;
-}
-
-.tc-sidebar-entry-single .time-to {
-    width: 30px;
-}
-
-.tc-sidebar-entry .separator {
-    width: 4px;
-}
-
-
-.tc-sidebar-entry .billable {
-    position: absolute;
-    left: 128px;
-    width: 13px;
-}
-
-.tc-sidebar-entry .billable-checkbox {
-    vertical-align: middle;
-}
-
-.tc-sidebar-entry .note-input-box {
-    padding: 0 5px;
-}
-
-.tc-sidebar-entry .note-input-box textarea{
-    width: 100%;
-    padding: 3px;
-    height: 70px;
-}
-
-.tc-sidebar-entry .time-input{
-    padding: 3px;
-    width: 13px;
-    border-radius: 3px;
-    border: 1px solid #808080;
-}
-
-.tc-sidebar-entry .invalid{
-    border-color: red;
-}
-
-.tc-sidebar-entry .note-placeholder {
-    padding: 0 5px;
-    font-style: italic;
-    color: #999
-}
-
-.tc-sidebar-day-header {
-    margin-top: 5px;
-}
-
-.tc-sidebar-day-header .billable-header {
-    padding-left: 60px;
-}
-
-.tc-sidebar .tc-chart {
-    padding: 0 5px;
-}
-
-.tc-sidebar .chart-canvas {
+    margin-right: -5px; }
+  .timecamp .tc-sidebar .inline {
+    display: inline-block; }
+  .timecamp .tc-sidebar .right {
+    float: right; }
+  .timecamp .tc-sidebar .left {
+    padding-left: 5px; }
+  .timecamp .tc-sidebar .invalid {
+    border-color: red; }
+  .timecamp .tc-sidebar .tc-chart {
+    padding: 0 5px; }
+  .timecamp .tc-sidebar .chart-canvas {
     width: 260px;
-    height: 250px;
-}
-
-.tc-sidebar .tc-subtask-picker {
+    height: 250px; }
+  .timecamp .tc-sidebar .tc-subtask-picker {
     position: absolute;
     top: 54px;
     left: 7px;
@@ -263,68 +76,188 @@
     color: #333;
     text-decoration: none;
     display: none;
-    z-index: 1000;
-}
-
-.tc-sidebar .tc-subtask-picker ul {
-    float: left;
-    padding: 5px 0;
-    margin: 2px 0 0;
-    font-size: 14px;
-    text-align: left;
-    list-style: none;
-    background-color: #fff;
-    background-clip: padding-box;
-    border: 1px solid rgba(0,0,0,.15);
-    border-radius: 4px;
-    box-shadow: 0 6px 12px rgba(0,0,0,.175);
-    text-overflow: ellipsis;
-    overflow: hidden;
-    width: 266px;
-}
-
-.tc-sidebar .tc-subtask-picker-entry {
+    z-index: 1000; }
+    .timecamp .tc-sidebar .tc-subtask-picker ul {
+      float: left;
+      padding: 5px 0;
+      margin: 2px 0 0;
+      font-size: 14px;
+      text-align: left;
+      list-style: none;
+      background-color: white;
+      background-clip: padding-box;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      border-radius: 4px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+      text-overflow: ellipsis;
+      overflow: hidden;
+      width: 266px;
+      max-height: 700px;
+      overflow-y: scroll; }
+  .timecamp .tc-sidebar .tc-subtask-picker-entry {
     padding: 3px 20px;
     clear: both;
     font-weight: 400;
     line-height: 1.42857143;
     color: #333;
     white-space: nowrap;
-}
-
-.tc-sidebar .tc-subtask-picker-entry:hover {
-    color: #262626;
-    text-decoration: none;
-    background-color: rgb(225, 225, 225);
-}
-
-.tc-sidebar .tc-subtask-picker-list-header {
+    text-overflow: ellipsis;
+    overflow: hidden; }
+    .timecamp .tc-sidebar .tc-subtask-picker-entry:hover {
+      color: #262626;
+      text-decoration: none;
+      background-color: #e1e1e1; }
+  .timecamp .tc-sidebar .tc-subtask-picker-list-header {
     text-transform: uppercase;
-    border-bottom: 1px solid  rgb(83, 83, 83);
+    border-bottom: 1px solid #535353;
     font-weight: bold;
     padding-left: 5px;
-}
-
-.tc-sidebar-placeholder
-{
-    position: absolute;
-    top: 50%;
-    right: 32px;
-    transform: rotate(-90deg);
-    transform-origin: top right;
-    font-size: 15px;
-    font-weight: bold;
-    width: auto;
-    height: auto;
-    margin-top: -60px;
-}
-
-.tc-sidebar .add-time
-{
+    padding-top: 5px; }
+  .timecamp .tc-sidebar .add-time {
     font-size: small;
-    padding: 5px 0;
-}
+    padding: 5px 5px 5px 0; }
+  .timecamp .tc-sidebar .hidden {
+    display: none; }
+.timecamp .tc-sidebar-header {
+  background-color: white;
+  width: 280px;
+  float: right;
+  height: 62px; }
+  .timecamp .tc-sidebar-header .task-name {
+    max-width: 200px;
+    overflow: hidden;
+    display: inline-block;
+    text-overflow: ellipsis;
+    vertical-align: middle; }
+.timecamp .tc-sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  background-color: white;
+  width: 280px;
+  float: right;
+  overflow: hidden; }
+  .timecamp .tc-sidebar-footer a {
+    color: inherit; }
+.timecamp .tc-sidebar-footer-box {
+  width: 76px;
+  height: 50px;
+  line-height: 50px;
+  display: inline-block;
+  float: left;
+  text-align: center;
+  cursor: pointer; }
+  .timecamp .tc-sidebar-footer-box:hover {
+    background-color: #dddddd;
+    color: #444444; }
+  .timecamp .tc-sidebar-footer-box .fa {
+    vertical-align: middle;
+    margin: auto; }
+.timecamp .tc-sidebar-footer-tclogo {
+  width: 50px;
+  float: right; }
+.timecamp .tc-sidebar-scrollable {
+  padding-bottom: 15px;
+  height: calc(100% - 143px );
+  width: 100%; }
+.timecamp .tc-sidebar-scrollable-inner {
+  width: 100%; }
+.timecamp .tc-sidebar-time-details {
+  width: 100%; }
+.timecamp #tc-sidebar-start-button {
+  display: block;
+  text-align: left;
+  vertical-align: middle;
+  padding: 10px 12px;
+  font-weight: bold;
+  font-size: 15px;
+  text-transform: uppercase;
+  width: 246px;
+  margin: 5px auto;
+  height: 25px;
+  line-height: 25px;
+  box-sizing: content-box; }
+.timecamp #tc-sidebar-pick-button {
+  display: block;
+  text-align: left;
+  vertical-align: middle;
+  padding: 10px 12px;
+  font-weight: bold;
+  font-size: 15px;
+  text-transform: uppercase;
+  width: 246px;
+  margin: 5px auto;
+  height: 25px;
+  line-height: 25px;
+  box-sizing: content-box; }
+.timecamp .tc-timer-state-icon {
+  display: inline-block;
+  float: right; }
+.timecamp .tc-sidebar-total-time {
+  font-weight: bold;
+  float: right;
+  border-top: 2px solid #535353;
+  width: 100%;
+  padding-top: 2px;
+  padding-right: 5px; }
+  .timecamp .tc-sidebar-total-time .total-label {
+    padding-right: 5px; }
+.timecamp .tc-sidebar-entry {
+  padding: 5px 0;
+  cursor: pointer; }
+  .timecamp .tc-sidebar-entry .row:first-child {
+    padding-top: 0; }
+  .timecamp .tc-sidebar-entry .row:last-child {
+    padding-bottom: 0; }
+  .timecamp .tc-sidebar-entry.active {
+    background-color: #e1e1e1; }
+  .timecamp .tc-sidebar-entry:hover {
+    background-color: #e1e1e1; }
+  .timecamp .tc-sidebar-entry .separator {
+    width: 4px; }
+  .timecamp .tc-sidebar-entry .billable-checkbox {
+    vertical-align: middle; }
+  .timecamp .tc-sidebar-entry .note-input-box {
+    padding-left: 5px; }
+    .timecamp .tc-sidebar-entry .note-input-box textarea {
+      width: 100%;
+      height: 70px; }
+  .timecamp .tc-sidebar-entry .time-input {
+    width: 15px; }
+  .timecamp .tc-sidebar-entry .date-input {
+    width: 101px; }
+  .timecamp .tc-sidebar-entry textarea {
+    width: 98px;
+    box-sizing: border-box; }
+  .timecamp .tc-sidebar-entry .note-placeholder {
+    padding: 0 5px;
+    font-style: italic;
+    color: #999; }
+.timecamp .tc-sidebar-entry-single .time-from {
+  width: 30px; }
+.timecamp .tc-sidebar-entry-single .time-to {
+  width: 30px; }
+.timecamp .tc-sidebar-entry-single .billable {
+  margin-left: 50px;
+  width: 13px; }
+.timecamp .tc-sidebar-day-header {
+  margin-top: 5px; }
+  .timecamp .tc-sidebar-day-header .billable-header {
+    padding-left: 60px; }
+  .timecamp .tc-sidebar-day-header .hours-header {
+    padding-right: 5px; }
+.timecamp .tc-sidebar-placeholder {
+  position: absolute;
+  top: 50%;
+  right: 32px;
+  transform: rotate(-90deg);
+  transform-origin: top right;
+  font-size: 15px;
+  font-weight: bold;
+  width: auto;
+  height: auto;
+  margin-top: -60px; }
+.timecamp .tc-sidebar-entry-new .billable {
+  margin-left: 21px;
+  width: 13px; }
 
-.tc-sidebar .hidden {
-    display: none;
-}
+/*# sourceMappingURL=sidebar.css.map */
