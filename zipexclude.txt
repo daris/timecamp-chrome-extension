@@ -9,3 +9,4 @@ README.md
 package.zip
 atlassian-ide-plugin.xml
 zipit.sh
+scss
