@@ -27,7 +27,7 @@ function ApiService() {
         else
             method = method.toUpperCase();
 
-        data.service = timer.service;
+        data.service = Service;
 
         apiAddress = restUrl;
         url = apiAddress + url;

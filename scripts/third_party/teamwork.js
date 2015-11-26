@@ -1,13 +1,12 @@
 function TeamworkTimer() {
 
-    this.service = 'teamwork';
     Messages.set('synchronizing', 'SYNCING');
     Messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
     Messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
     Messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
     this.infoInsertingInProgress = false;
     var $this = this;
-    $this.isWatching = $this.canWatch.URL;
+    $this.isWatching = $this.canWatch.DOM;
 
     this.currentTaskId = function () {
         var url = document.URL;
@@ -19,6 +18,67 @@ function TeamworkTimer() {
         } else {
             return null;
         }
+    };
+
+    this.getParentId = function() {
+        var url = document.URL;
+        var reg = /teamwork\.com\/projects\/([0-9]+)/g;
+        var MatchRes = reg.exec(url);
+
+        if (MatchRes)
+            return MatchRes[1];
+
+        return null;
+    };
+
+    this.getSubtasks = function() {
+        var subtasks = [];
+
+        var tasksList = $("#TaskListsContent");
+
+        var regStr = "";
+        var links = [];
+
+        if (tasksList.length)
+        {
+            links = tasksList.find(".taskRHSText a.ql");
+            regStr = "tasks/([0-9]+)";
+        }
+
+        if (links.length)
+        {
+            $.each(links, function(key, el)
+            {
+                var reg = new RegExp(regStr,"g");
+                var href = $(el).attr("href");
+
+                var matchRes = reg.exec(href);
+                if (!matchRes)
+                    return;
+
+                var taskId = matchRes[1];
+                var taskName = $(el).children(".taskName").text();
+
+                var subtask = {
+                    taskId: taskId,
+                    taskName: taskName
+                };
+                subtasks.push(subtask);
+            });
+        }
+
+        console.log('subtasks', subtasks);
+
+        return subtasks;
+    };
+
+    this.currentTaskName = function () {
+
+        var el = $("#taskName"+$this.currentTaskId());
+        if (el.length)
+            return el.text();
+
+        return false;
     };
 
     this.isButtonInserted = function () {
@@ -38,10 +98,17 @@ function TeamworkTimer() {
 
         var parent = $('#Task').find('.titlecontent ul.options');
 
-
-        var buttonObj = new TimerButton(currentTaskId);
-        ButtonList[currentTaskId] = buttonObj;
+        var buttonObj;
+        if (ButtonList[currentTaskId])
+            buttonObj = ButtonList[currentTaskId];
+        else
+        {
+            buttonObj = new TimerButton(currentTaskId);
+            ButtonList[currentTaskId] = buttonObj;
+        }
         buttonObj.insertInProgress = true;
+        buttonObj.taskName = $this.currentTaskName();
+        console.log('buttonObj.taskName', buttonObj.taskName);
 
         var li = $('<li/>');
         var button = $('<button/>', { class:'btn btn-default', 'id': 'timecamp-track-button', 'data-taskId': currentTaskId });
@@ -52,20 +119,14 @@ function TeamworkTimer() {
         parent.prepend(li);
         button.append($('<img id="tc-logo" src="' + chrome.extension.getURL('images/icon-14.png') + '"/>'));
         button.append($('<span/>', { 'class': 'text' }).text(Messages.synchronizing));
-        button.append($('<span/>', { 'class': 'time' }).text("00:00").css({
-
-        }).hide());
-
-
-        button.click(function () {
-            $this.buttonClick($this.currentTaskId(), null, function () { $this.button.children('.time').hide() });
-        });
+        button.append($('<span/>', { 'class': 'time' }).text("00:00").hide());
 
         buttonObj.insertInProgress = false;
 
         $.when(this.updateButtonState()).always(function () {
             $this.buttonInsertionInProgress = false;
         });
+
     };
 
     this.onSyncSuccess = function (response) {
@@ -73,7 +134,7 @@ function TeamworkTimer() {
             this.trackedTaskId = response.external_task_id;
             if (!this.trackedTaskId)
                 return;
-            var id = "#task"+this.trackedTaskId;
+            var id = "#taskRHS"+this.trackedTaskId;
             var badges = $(id).find('.taskIcons');
             if (badges.find("#tc-badge").length == 0) {
                 var badge = $("#tc-badge");
@@ -98,18 +159,16 @@ function TeamworkTimer() {
         }
     };
 
-    this.updateTopMessage = function () {
-        var timecampTrackInfo = $('#timecamp-track-info');
-        var taskDuration = $this.taskDuration[$this.currentTaskId()];
-        if (!taskDuration)
-            taskDuration = 0;
+    this.updateTopMessage = function (taskId, duration) {
+        if (!$this.isInfoInserted())
+            return;
+        if (taskId != $this.currentTaskId())
+            return;
 
-        var duration = 0;
         if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
-            duration = moment().diff($this.startDate, 'seconds');
+            duration += moment().diff($this.startDate, 'seconds');
 
-        duration += taskDuration;
-
+        var timecampTrackInfo = $('#timecamp-track-info');
         if (duration == 0)
             timecampTrackInfo.html('');
         else
@@ -129,27 +188,6 @@ function TeamworkTimer() {
             badge.remove();
     };
 
-    this.getParentId = function() {
-        var overview = $('#tab_overview');
-        if (!overview.length)
-            return null;
-
-        var link = overview.children('a:first').attr('href');
-        if (link == '' || link === undefined)
-            return null;
-        if (link == this.lastData)
-            return this.lastParentId;
-
-        var id = /projects\/([0-9]+)+-.*\/overview/.exec(link);
-
-        if (id.length < 2)
-            return null;
-
-        this.lastData = link;
-        this.lastParentId = id[1];
-        return id[1];
-    };
-
     this.onTrackingDisabled = function() {
         var button = ButtonList[$this.currentTaskId()];
         if (!button || button.denied)
@@ -159,13 +197,21 @@ function TeamworkTimer() {
             'html':'Current settings of the integration in TimeCamp don\'t allow time tracking for this tasks. <a href="https://www.timecamp.com/addons/teamwork/index/'+this.lastParentId+'" target="_blank">Synchronize this project</a> to start tracking time.'});
 
         button.denied = true;
-        button.uiElement.off('click').children().css({'opacity': '0.6'});
+        button.uiElement.children().css({'opacity': '0.6'});
         $("#tc-logo").css({'-webkit-filter':'saturate(0%)'});
         $('#TaskContent').find('.taskList').before(notice);
     };
 
     this.bindEvents(this);
 }
+
+$(document).on('scroll', function () {setTimeout(function () {
+    var sd = $(".sidebarHolder");
+    if (sd.css('position') == 'fixed')
+        sd.css('margin-left','50px');
+    else
+        sd.css('margin-left','0');
+})});
 
 $(document).ready(function () {
     TeamworkTimer.prototype = new TimerBase();
@@ -177,7 +223,14 @@ Sidebar.cssUpdate = [
         selector: "body",
         property: "margin-left",
         value   : "50px"
+    },
+    {
+        selector: "sidebarHolder",
+        property: "left",
+        value   : "50px"
     }
 ];
 Sidebar.clickBindSelector = ["body"];
 Sidebar.appendSelector = "body";
+
+Service = "teamwork";

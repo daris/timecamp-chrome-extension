@@ -6,6 +6,10 @@
   height: 12px;
   margin: 0; }
 
+.timecamp .monospaced {
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  letter-spacing: -1px; }
 .timecamp .tc-sidebar {
   all: initial;
   position: fixed;
@@ -20,6 +24,8 @@
   font-family: proxima-nova, 'Helvetica Neue', Arial, sans-serif;
   line-height: 12px;
   box-sizing: content-box; }
+  .timecamp .tc-sidebar .fa {
+    vertical-align: middle; }
   .timecamp .tc-sidebar .row {
     margin: 0;
     padding: 3px 5px 3px 0; }
@@ -37,18 +43,20 @@
   .timecamp .tc-sidebar .tc-charts {
     position: relative; }
   .timecamp .tc-sidebar .chart-icon {
-    height: 260px;
-    line-height: 260px;
+    height: 250px;
     position: absolute;
     padding-right: 12px;
     right: 0;
     background: white;
     text-align: right;
     width: 100px; }
-  .timecamp .tc-sidebar .fa {
-    vertical-align: middle; }
+    .timecamp .tc-sidebar .chart-icon .fa {
+      vertical-align: middle;
+      line-height: 260px; }
   .timecamp .tc-sidebar .tc-logo {
-    vertical-align: middle;
+    height: 50px;
+    background-position: center center;
+    background-repeat: no-repeat;
     display: inline-block; }
   .timecamp .tc-sidebar .header {
     font-weight: bold;
@@ -64,15 +72,16 @@
   .timecamp .tc-sidebar .invalid {
     border-color: red; }
   .timecamp .tc-sidebar .tc-chart {
+    margin-top: 10px;
     padding: 0 5px; }
   .timecamp .tc-sidebar .chart-canvas {
     width: 260px;
     height: 250px; }
   .timecamp .tc-sidebar .tc-subtask-picker {
     position: absolute;
-    top: 54px;
-    left: 7px;
-    width: 266px;
+    top: 50px;
+    left: 5px;
+    width: 268px;
     color: #333;
     text-decoration: none;
     display: none;
@@ -91,7 +100,7 @@
       box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
       text-overflow: ellipsis;
       overflow: hidden;
-      width: 266px;
+      width: 100%;
       max-height: 700px;
       overflow-y: scroll; }
   .timecamp .tc-sidebar .tc-subtask-picker-entry {
@@ -119,6 +128,9 @@
   .timecamp .tc-sidebar .hidden {
     display: none; }
 .timecamp .tc-sidebar-header {
+  z-index: 999999;
+  position: fixed;
+  top: 0;
   background-color: white;
   width: 280px;
   float: right;
@@ -130,7 +142,7 @@
     text-overflow: ellipsis;
     vertical-align: middle; }
 .timecamp .tc-sidebar-footer {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   background-color: white;
   width: 280px;
@@ -151,14 +163,17 @@
     color: #444444; }
   .timecamp .tc-sidebar-footer-box .fa {
     vertical-align: middle;
-    margin: auto; }
+    margin: auto;
+    line-height: 50px; }
 .timecamp .tc-sidebar-footer-tclogo {
   width: 50px;
   float: right; }
 .timecamp .tc-sidebar-scrollable {
+  position: fixed;
+  top: 60px;
   padding-bottom: 15px;
-  height: calc(100% - 143px );
-  width: 100%; }
+  height: calc(100% - 142px );
+  width: 280px; }
 .timecamp .tc-sidebar-scrollable-inner {
   width: 100%; }
 .timecamp .tc-sidebar-time-details {
@@ -167,7 +182,7 @@
   display: block;
   text-align: left;
   vertical-align: middle;
-  padding: 10px 12px;
+  padding: 10px 12px !important;
   font-weight: bold;
   font-size: 15px;
   text-transform: uppercase;
@@ -180,7 +195,7 @@
   display: block;
   text-align: left;
   vertical-align: middle;
-  padding: 10px 12px;
+  padding: 10px 12px !important;
   font-weight: bold;
   font-size: 15px;
   text-transform: uppercase;
@@ -192,11 +207,15 @@
 .timecamp .tc-timer-state-icon {
   display: inline-block;
   float: right; }
+  .timecamp .tc-timer-state-icon .fa {
+    line-height: 25px; }
 .timecamp .tc-sidebar-total-time {
   font-weight: bold;
   float: right;
   border-top: 2px solid #535353;
-  width: 100%;
+  position: fixed;
+  bottom: 50px;
+  width: 276px;
   padding-top: 2px;
   padding-right: 5px; }
   .timecamp .tc-sidebar-total-time .total-label {
@@ -215,7 +234,10 @@
   .timecamp .tc-sidebar-entry .separator {
     width: 4px; }
   .timecamp .tc-sidebar-entry .billable-checkbox {
-    vertical-align: middle; }
+    vertical-align: middle !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important; }
   .timecamp .tc-sidebar-entry .note-input-box {
     padding-left: 5px; }
     .timecamp .tc-sidebar-entry .note-input-box textarea {

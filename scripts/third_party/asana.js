@@ -1,6 +1,5 @@
 function AsanaTimer() {
 
-    this.service = 'asana';
     Messages.set('synchronizing', 'SYNCING');
     Messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
     Messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
@@ -83,18 +82,23 @@ function AsanaTimer() {
         this.buttonInsertionInProgress = true;
         console.log('Inserting button into page...');
         var currentTaskId = $this.currentTaskId();
+        if (!currentTaskId)
+        {
+            this.buttonInsertionInProgress = false;
+            return;
+        }
 
         var dueDate = $(".property.due_date.flyout-owner").eq(0);
         if (dueDate.css('margin-right') == '7px')
             dueDate.css('margin-right','0px');
 
-        var taskName = $this.currentTaskName();
 
         var buttonObj;
         if (ButtonList[currentTaskId])
             buttonObj = ButtonList[currentTaskId];
         else
         {
+            var taskName = $this.currentTaskName();
             buttonObj = new TimerButton(currentTaskId, taskName);
             ButtonList[currentTaskId] = buttonObj;
         }
@@ -104,7 +108,7 @@ function AsanaTimer() {
         var div2 = $('<div/>', { 'class': 'redesign-timecamp-container'});
         var div3 = $('<div/>', { 'class': 'property tc flyout-owner'});
         var div4 = $('<div/>', { 'class': 'property-name', 'id':'lunaTC' });
-        var button = $('<span/>', { 'class': 'timecamp-track-button', 'id': 'timecamp-track-button', 'data-taskId': currentTaskId, 'status': 'unknown', 'style':'position:relative' });
+        var button = $('<span/>', { 'class': 'timecamp-track-button', 'id': 'timecamp-track-button', 'data-taskId': currentTaskId, 'style':'position:relative' });
 
         this.button = button;
         div1.append(div2);
@@ -178,6 +182,10 @@ function AsanaTimer() {
     };
 
     this.insertInfoIntoPage = function () {
+        var taskId = $this.currentTaskId();
+        if (!taskId)
+            return;
+
         this.infoInsertingInProgress = true;
         var infoTop = $('#right_pane').find('.small-feed-story-group').eq(0);
         var feedStory = $('<div>', {'class' : 'feed-story'});
@@ -185,10 +193,8 @@ function AsanaTimer() {
         feedStory.prepend(info);
         infoTop.prepend(feedStory);
 
-        $.when($this.getTrackedTime())
-            .then(function () {
-                $this.updateTopMessage();
-            });
+        $this.getTrackedTime();
+
 
         this.infoInsertingInProgress = false;
     };
@@ -216,3 +222,4 @@ Sidebar.cssUpdate = [
 ];
 Sidebar.clickBindSelector = ["body"];
 Sidebar.appendSelector = "body";
+Service = "asana";

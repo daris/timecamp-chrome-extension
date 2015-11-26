@@ -44,7 +44,6 @@ function chartService() {
     function formatRange(unit, startOf, endOf) {
         var label = null;
         switch(unit) {
-            case 'hour' : label = startOf.format('HH:00'); break;
             case 'day' : label = startOf.format('ddd'); break;
             case 'isoweek' :
             case 'week' :
@@ -178,9 +177,7 @@ function chartService() {
 
         var unit = "day";
 
-        if(range.diff('days') == 0)
-            unit = 'hour';
-        else if (range.diff('days') <= 6)
+        if (range.diff('days') <= 6)
             unit = 'day';
         else if (range.diff('week') <= 5)
             unit = 'week';
@@ -208,26 +205,6 @@ function chartService() {
                 unit = 'isoweek';
             subRanges.push(formatRange(unit,moment().startOf(unit), moment().endOf(unit)));
         }
-
-        //if (unit == 'hour')
-        //{
-        //    var newEntries = [];
-        //    for(var i in entries)
-        //    {
-        //        var datetime = entries[i].date + " " + entries[i].start_time;
-        //        var m = moment(datetime, 'YYYY-MM-DD HH:mm:ss');
-        //
-        //        var hourEnd = moment(m).endOf('hour');
-        //        var diff = m.diff(hourEnd, 'second');
-        //        var durationLeft = parseInt(entries[i].duration, 10);
-        //
-        //
-        //        if (diff < durationLeft)
-        //        {
-        //
-        //        }
-        //    }
-        //}
 
         var maxTotalTime = 0;
         for(var i in entries)

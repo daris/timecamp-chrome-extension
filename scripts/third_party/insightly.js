@@ -1,6 +1,5 @@
 function InsightlyTimer() {
 
-    this.service = 'insightly';
     Messages.set('synchronizing', 'SYNCING');
     Messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
     Messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
@@ -163,9 +162,17 @@ function InsightlyTimer() {
         }
 
         var parent = $('#content').find('[class^="header-toolbar"] .btn-toolbar');
-        var buttonObj = new TimerButton(currentTaskId);
 
-        ButtonList[currentTaskId] = buttonObj;
+        var buttonObj;
+        if (ButtonList[currentTaskId])
+            buttonObj = ButtonList[currentTaskId];
+        else
+        {
+            var taskName = $this.currentTaskName();
+            buttonObj = new TimerButton(currentTaskId, taskName);
+            ButtonList[currentTaskId] = buttonObj;
+        }
+
         buttonObj.insertInProgress = true;
 
         var containter = $('<div/>',{class:'btn-group'});
@@ -253,24 +260,6 @@ function InsightlyTimer() {
         return '2014-07-01';
     };
 
-    this.updateTopMessage = function () {
-        var timecampTrackInfo = $('#timecamp-track-info');
-        var taskDuration = $this.taskDuration[$this.currentTaskId()];
-        if (!taskDuration)
-            taskDuration = 0;
-
-        var duration = 0;
-        if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
-            duration = moment().diff($this.startDate, 'seconds');
-
-        duration += taskDuration;
-
-        if (duration == 0)
-            timecampTrackInfo.html('');
-        else
-            timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task');
-    };
-
     this.isInfoInserted = function () {
         if (!this.currentTaskId())
             return true;
@@ -288,33 +277,20 @@ function InsightlyTimer() {
         return false;
     };
 
-    this.updateTopMessage = function () {
-        var currentTaskId = $this.currentTaskId();
-        if (!currentTaskId)
+    this.updateTopMessage = function (taskId, duration) {
+        if (!$this.isInfoInserted())
+            return;
+        if (taskId != $this.currentTaskId())
             return;
 
+        if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
+            duration += moment().diff($this.startDate, 'seconds');
+
         var timecampTrackInfo = $('#timecamp-track-info');
-
-        var taskDuration = $this.taskDuration[currentTaskId];
-        if (!taskDuration)
-            taskDuration = 0;
-
-        var taskDurationToday = $this.taskDurationToday[currentTaskId];
-        if (!taskDurationToday)
-            taskDurationToday = 0;
-
-        var duration = 0;
-
-        if ($this.startDate && $this.trackedTaskId == currentTaskId)
-            duration = moment().diff($this.startDate, 'seconds');
-
-        var durationToday = duration + taskDurationToday;
-        duration += taskDuration;
-
         if (duration == 0)
             timecampTrackInfo.html('No time tracked yet');
         else
-            timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task ('+$this.getElapsedTime(durationToday)+ ' today)');
+            timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task');
     };
 
     this.insertInfoIntoPage = function () {
@@ -325,24 +301,22 @@ function InsightlyTimer() {
         this.infoInsertingInProgress = true;
         console.log('Inserting info...');
 
-        $.when($this.getTrackedTime())
-            .then(function () {
-                $this.updateTopMessage();
-        });
-
         var container = $(".entity-detail").find(".property-table");
 
+
         var tr = $('<tr/>');
+
         var tdTitle = $('<td/>', {class:'ralign'});
         var tdValue = $('<td/>');
         var title = $('<span />', {class: 'title', html:'TimeCamp'});
         var value = $('<div/>', { 'class': 'info', 'id': 'timecamp-track-info', 'text' : 'No data yet'});
-
         tdTitle.append(title);
+
         tdValue.append(value);
         tr.append(tdTitle);
         tr.append(tdValue);
         container.prepend(tr);
+        $this.getTrackedTime();
 
         this.infoInsertingInProgress = false;
     };
@@ -385,3 +359,4 @@ Sidebar.cssUpdate = [
 Sidebar.clickBindSelector = ["body"];
 Sidebar.appendSelector = "body";
 
+Service = "insightly";

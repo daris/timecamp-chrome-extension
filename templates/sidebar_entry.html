@@ -1,14 +1,8 @@
 <div class="tc-sidebar-entry tc-sidebar-entry-single" data-entryId="{{id}}">
     <div class="row">
-        <div class="time-from inline left">
-            {{start_time_formatted}}
-        </div>
-        <div class="separator inline">
-            -
-        </div>
-        <div class="time-to inline">
-            {{end_time_formatted}}
-        </div>
+        <div class="time-from inline left monospaced">{{start_time_formatted}}</div>
+        <div class="separator inline">-</div>
+        <div class="time-to inline monospaced">{{end_time_formatted}}</div>
         <div class="billable inline">
             {{#isBillable}}
                 <input type="checkbox" class="billable-checkbox" name="billable" value="1" checked/>
@@ -18,7 +12,7 @@
             {{/isBillable}}
         </div>
         <div class="duration right">
-            {{duration_formatted}}
+            <span class="monospaced">{{duration_formatted.hours}}</span>:<span class="monospaced">{{duration_formatted.minutes}}</span>:<span class="monospaced">{{duration_formatted.seconds}}</span>
         </div>
     </div>
     <div class="row">

@@ -65,35 +65,14 @@ function formatHMS(seconds)
     return duration.hours() + ":" + zeroFill(duration.minutes(), 2) + ":" + zeroFill(duration.seconds(), 2);
 }
 
-function getColor(id)
+function formatHMSObj(seconds)
 {
-    id = id % 16 + 1;
-    var colors = ["#8ec888", "#ffb980", "#69C466", "#74bbc2", "#54A18C", "#6BCFB6",
-              "#83C7C9", "#79C276", "#BF7972", "#D2907D", "#95A3D2", "#F1AB64",
-              "#CF828B", "#72BFA5", "#97B4D1", "#8C95CD"
-    ];
-
-    return colors[id];
-}
-
-function colorLuminance(hex, lum) {
-
-    // validate hex string
-    hex = String(hex).replace(/[^0-9a-f]/gi, '');
-    if (hex.length < 6) {
-        hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-    }
-    lum = lum || 0;
-
-    // convert to decimal and change luminosity
-    var rgb = "#", c, i;
-    for (i = 0; i < 3; i++) {
-        c = parseInt(hex.substr(i*2,2), 16);
-        c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
-        rgb += ("00"+c).substr(c.length);
-    }
-
-    return rgb;
+    var duration = moment.duration(seconds, 'seconds');
+    return {
+        hours: duration.hours(),
+        minutes: zeroFill(duration.minutes(), 2),
+        seconds: zeroFill(duration.seconds(), 2)
+    };
 }
 
 $(document).ready(function() {
@@ -133,5 +112,6 @@ var ApiService      = new ApiService();
 var ChartService    = new chartService();
 var Sidebar         = new Sidebar();
 var ButtonList      = {};
+var Service         = "";
 
 $.when(TokenManager.getToken()).then(function (token) {ApiService.setToken(token);});

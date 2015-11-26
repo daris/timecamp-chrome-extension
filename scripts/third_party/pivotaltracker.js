@@ -2,7 +2,6 @@
  * Created by m.dybizbanski on 22.11.13.
  */
 function PivotalTrackerTimer() {
-    this.service = 'pivotaltracker';
     this.multiButton = true;
     Messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED');
     Messages.set('buttonTimerStarted', 'EMPTY_MESSAGE');
@@ -165,21 +164,24 @@ function PivotalTrackerTimer() {
                 return;
         }
 
+        var buttonObj;
+        if (ButtonList[taskId])
+            buttonObj = ButtonList[taskId];
+        else
+        {
+            var taskName = $this.currentTaskName();
+            buttonObj = new TimerButton(taskId, taskName);
+            ButtonList[currentTaskId] = buttonObj;
+        }
 
-
-        var buttonObj = new TimerButton(taskId);
         buttonObj.insertInProgress = true;
-        ButtonList[taskId] = buttonObj;
 
         console.log('Inserting button into page...', taskId);
-        var button = $('<label/>', { 'class': 'tc-button', 'id': 'timecamp-track-button-'+taskId, style:''});
+        var button = $('<label/>', { 'class': 'tc-button timecamp-track-button', "data-taskId": taskId, style:''});
         this.button = button;
         button.append($('<span/>', { 'class': 'text'}).text(Messages.synchronizing));
         button.append($('<span/>', { 'class': 'time'}).text("00:00").css({ padding: "0px 2px 2px"}).hide());
 
-        button.click(function () {
-            $this.buttonClick(taskId);
-        });
 
         if ($(parentElement).is('.info'))
         {
@@ -202,3 +204,5 @@ function PivotalTrackerTimer() {
 }
 PivotalTrackerTimer.prototype = new TimerBase();
 timer = new PivotalTrackerTimer();
+
+Service = "pivotaltracker";

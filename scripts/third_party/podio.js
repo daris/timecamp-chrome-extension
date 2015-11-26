@@ -2,7 +2,6 @@
  * Created by m.dybizbanski on 22.11.13.
  */
 function PodioTimer() {
-    this.service = 'podio';
     var $this = this;
 
     this.currentTaskId = function () {
@@ -36,6 +35,44 @@ function PodioTimer() {
             return  'i'+ share.data('id');
         }
         return null;
+    };
+
+
+    this.getParentId = function() {
+        var DOMObj = $("#wrapper");
+
+        return DOMObj.attr('data-context-type') + "_" + DOMObj.attr('data-context-id');
+    };
+
+    this.getSubtasks = function()
+    {
+        var subtasks = [];
+
+        var appsList = $("#space-navigation").find('ul.app-list').find('li.app');
+        if (appsList.length)
+        {
+            $.each(appsList, function (key, el) {
+
+                var subtask = {
+                    taskId  : "a"+$(el).attr('data-app-id'),
+                    taskName: $(el).find('.title').text()
+                }
+                subtasks.push(subtask);
+            });
+        }
+
+        console.log('subtasks', subtasks);
+
+        return subtasks;
+    };
+
+    this.currentTaskName = function () {
+
+        var el = $("#taskName"+$this.currentTaskId());
+        if (el.length)
+            return el.text();
+
+        return false;
     };
 
     this.onSyncSuccess = function (response) {
@@ -73,19 +110,19 @@ function PodioTimer() {
         }
     };
 
-    this.onTrackingDisabled = function () {
-        var button = ButtonList[this.currentTaskId()];
-        if (!button || button.denied)
-            return;
-        button.denied = true;
-        button.uiElement.parent().off('click');
-
-        var notice = $('<div/>', {'style': 'margin-left: 10px;', 'class': 'icon-16 icon-help balloon-visible','title':'Current settings of the integration don\'t allow time tracking for this task. Click the settings icon on the left to change them.'});
-        $("#timecamp-track-info").hide().after(notice);
-        $("#tc-logo").css({'opacity': '0.5', '-webkit-filter':'saturate(0%)'});
-        $("#timecamp-track-button").children('.text').css({'opacity': '0.4'});
-
-    };
+    //this.onTrackingDisabled = function () {
+    //    var button = ButtonList[this.currentTaskId()];
+    //    if (!button || button.denied)
+    //        return;
+    //    button.denied = true;
+    //    button.uiElement.parent().off('click');
+    //
+    //    var notice = $('<div/>', {'style': 'margin-left: 10px;', 'class': 'icon-16 icon-help balloon-visible','title':'Current settings of the integration don\'t allow time tracking for this task. Click the settings icon on the left to change them.'});
+    //    $("#timecamp-track-info").hide().after(notice);
+    //    $("#tc-logo").css({'opacity': '0.5', '-webkit-filter':'saturate(0%)'});
+    //    $("#timecamp-track-button").children('.text').css({'opacity': '0.4'});
+    //
+    //};
 
     this.onSyncFailure = function () {
         var badge = $("#tc-badge");
@@ -93,23 +130,23 @@ function PodioTimer() {
             badge.remove();
     };
 
-    this.updateTopMessage = function ()
-    {
-        var timecampTrackInfo = $('#timecamp-track-info');
-        var taskDuration = $this.taskDuration[$this.currentTaskId()];
-        if (!taskDuration)
-            taskDuration = 0;
+    this.updateTopMessage = function (taskId, duration) {
+        if (!$this.isInfoInserted())
+            return;
+        if (taskId != $this.currentTaskId())
+            return;
 
-        var duration = 0;
+        console.log('taskId', taskId);
+        console.log('duration', duration);
+
         if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
-            duration = moment().diff($this.startDate, 'seconds');
+            duration += moment().diff($this.startDate, 'seconds');
 
-        duration += taskDuration;
-
+        var timecampTrackInfo = $('#timecamp-track-info');
         if (duration == 0)
             timecampTrackInfo.html('No data yet');
         else
-            timecampTrackInfo.html('You spent ' + $this.getElapsedTime(duration) + ' doing this task');
+            timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task');
     };
 
     this.isButtonInserted = function () {
@@ -140,10 +177,7 @@ function PodioTimer() {
 
         this.infoInsertingInProgress = true;
         console.log('Inserting info...');
-        $.when($this.getTrackedTime())
-            .then(function (sum) {
-                $this.updateTopMessage();
-            });
+
 
         var addDiv = false;
         var infoTop = $('ul.app-fields-list');
@@ -182,33 +216,38 @@ function PodioTimer() {
         }
 
         infoTop.prepend(info);
+        $this.getTrackedTime();
         this.infoInsertingInProgress = false;
     };
 
     this.insertButtonIntoPage = function () {
-        var taskId = $this.currentTaskId();
-        if (!taskId)
+        var currentTaskId = $this.currentTaskId();
+        if (!currentTaskId)
             return;
 
-        var buttonObj = new TimerButton(taskId);
-        ButtonList[taskId] = buttonObj;
+        var buttonObj;
+        if (ButtonList[currentTaskId])
+            buttonObj = ButtonList[currentTaskId];
+        else
+        {
+            var taskName = $this.currentTaskName();
+            buttonObj = new TimerButton(currentTaskId, taskName);
+            ButtonList[currentTaskId] = buttonObj;
+        }
         buttonObj.insertInProgress = true;
 
         this.buttonInsertionInProgress = true;
         console.log('Inserting button into page...');
         var button = $('<div/>', {'class': ' tc button-new silver','style':'display: inline-block;'}).width('auto');
-        var a = $('<a/>', { 'class': 'button-link', 'id': 'timecamp-track-button', 'status': 'unknown' });
+        var a = $('<a/>', { 'class': 'button-link', 'id': 'timecamp-track-button', 'data-taskId' : currentTaskId});
         buttonObj.uiElement = a;
 
         this.button = a;
         button.append(a);
         a.append($('<img src="' + chrome.extension.getURL('images/icon-16.png') + '" id="tc-logo" style="vertical-align:text-bottom;"/>'));
-        a.append($('<span/>', { 'class': 'text', 'style':'float: right; margin-left: 5px;' }).text(Mmessages.synchronizing));
+        a.append($('<span/>', { 'class': 'text', 'style':'float: right; margin-left: 5px;' }).text(Messages.synchronizing));
         a.append($('<span/>', { 'class': 'time' }).text("00:00").css({ padding: "0px 2px 2px", 'margin-left': '5px'}).hide());
 
-        button.click(function () {
-            $this.buttonClick($this.currentTaskId());
-        });
         var buttonList = $(".preview-panel").find('.action-bar').find('ul').eq(0);
         if (buttonList.length == 0)
             buttonList = $("#timecamp-container").find('.frame-content').eq(0);
@@ -224,64 +263,38 @@ function PodioTimer() {
 
     };
 
-    this.getParentId = function()
-    {
-        var dataBox = $('#bootstrap-data-TaskView');
-        if (dataBox.length > 0)
-        {
-            var content = dataBox.html();
-            if (content === undefined)
-                return null;
-            if (content == this.lastData)
-                return $this.lastParentId;
-
-            var data = $.parseJSON(content);
-            var res = ""+data['ref']['data']['app']['app_id'];
-
-            $this.lastData = content;
-            $this.lastParentId = res;
-
-            return res;
-        }
-
-        dataBox = $('#bootstrap-data-item');
-        if (dataBox.length > 0)
-        {
-            content = dataBox.html();
-            if (content === undefined)
-                return null;
-            if (content == this.lastData)
-                return this.lastParentId;
-
-            data = $.parseJSON(content);
-            res = ""+data['app']['app_id'];
-
-            $this.lastData = content;
-            $this.lastParentId = res;
-
-            return res;
-        }
-        dataBox = $('.searchform');
-        dataBox.each(function (key, obj)
-        {
-            var url = $(obj).attr('action');
-            var pattern = /apps\/([0-9]+)+\/search/g;
-            var res = pattern.exec(url);
-
-            if (!res || res.length < 2)
-                return null;
-
-            $this.lastParentId = res[1];
-            return res[1];
-        });
-
-
-
-
-        return $this.lastParentId;
-    };
 
     this.bindEvents(this);
 }
-PodioTimer.prototype = new TimerBase();
-timer = new PodioTimer();
+
+$(document).ready(function () {
+    PodioTimer.prototype = new TimerBase();
+    timer = new PodioTimer();
+});
+
+Sidebar.cssUpdate = [
+    {
+        selector: "#global-container",
+        property: "margin-left",
+        value   : "50px"
+    },
+    {
+        selector: "#header-global",
+        property: "margin-left",
+        value   : "50px"
+    },
+    {
+        selector: ".space-switcher-sidebar",
+        property: "margin-left",
+        value   : "50px"
+    },
+    {
+        selector: ".item-topbar",
+        property: "left",
+        value   : "50px"
+    }
+];
+Sidebar.clickBindSelector = [".global-container",'body'];
+Sidebar.appendSelector = "body";
+
+Service = "podio";

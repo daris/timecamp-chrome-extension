@@ -1,5 +1,4 @@
 ﻿function ActiveCollabTimer() {
-    this.service = 'activecollab';
     var $this = this;
 
 
@@ -49,23 +48,20 @@
             badge.remove();
     };
 
-    this.updateTopMessage = function ()
-    {
-        var timecampTrackInfo = $('#timecamp-track-info');
-        var taskDuration = $this.taskDuration[$this.currentTaskId()];
-        if (!taskDuration)
-            taskDuration = 0;
+    this.updateTopMessage = function (taskId, duration) {
+        if (!$this.isInfoInserted())
+            return;
+        if (taskId != $this.currentTaskId())
+            return;
 
-        var duration = 0;
         if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
-            duration = moment().diff($this.startDate, 'seconds');
+            duration += moment().diff($this.startDate, 'seconds');
 
-        duration += taskDuration;
-
+        var timecampTrackInfo = $('#timecamp-track-info');
         if (duration == 0)
-            timecampTrackInfo.html('No data yet');
+            timecampTrackInfo.html('');
         else
-            timecampTrackInfo.html('You spent ' + $this.getElapsedTime(duration) + ' doing this task');
+            timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task');
     };
 
     this.isButtonInserted = function () {
@@ -77,32 +73,46 @@
     };
 
     this.insertInfoIntoPage = function () {
+        var taskId = $this.currentTaskId();
+        if (!taskId)
+            return;
         console.log('Inserting info...');
 
         this.infoInsertingInProgress = true;
-        $.when($this.getTrackedTime())
-            .then(function (sum) {
-                $this.updateTopMessage();
-            });
-
         var infoTop = $('.objects_list_details_single_wrapper').find('.properties');
+
         var info = $('<div/>', { 'class': 'property', 'id': 'timecamp-track-info-container' });
         info.append($('<div/>', { 'class': 'label', 'text':'TimeCamp' }));
         info.append($('<div/>', { 'class': 'content', 'id': 'timecamp-track-info', 'text' : 'No data yet' }));
         infoTop.append(info);
+        $this.getTrackedTime();
         this.infoInsertingInProgress = false;
     };
 
     this.insertButtonIntoPage = function () {
+        this.buttonInsertionInProgress = true;
         console.log('Inserting button into page...');
+        var currentTaskId = $this.currentTaskId();
+        if (!currentTaskId)
+        {
+            this.buttonInsertionInProgress = false;
+            return;
+        }
 
-        var buttonObj = new TimerButton($this.currentTaskId());
-        ButtonList[$this.currentTaskId()] = buttonObj;
+        var buttonObj;
+        if (ButtonList[currentTaskId])
+            buttonObj = ButtonList[currentTaskId];
+        else
+        {
+            var taskName = $this.currentTaskName();
+            buttonObj = new TimerButton(currentTaskId, taskName);
+            ButtonList[currentTaskId] = buttonObj;
+        }
+
         buttonObj.insertInProgress = true;
 
-        this.buttonInsertionInProgress = true;
         var button = $('<li/>');
-        var a = $('<a/>', { 'class': 'button-link', 'id': 'timecamp-track-button', 'status': 'unknown' });
+        var a = $('<a/>', { 'class': 'button-link', 'id': 'timecamp-track-button', 'data-taskId': currentTaskId });
         this.button = a;
         button.append(a);
         a.append($('<img src="' + chrome.extension.getURL('images/icon-16.png') + '" style="vertical-align:middle; margin-top:-4px;"/>'));
@@ -133,3 +143,4 @@
 }
 ActiveCollabTimer.prototype = new TimerBase();
 timer = new ActiveCollabTimer();
+Service = "activecollab";

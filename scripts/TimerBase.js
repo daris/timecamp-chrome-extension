@@ -3,7 +3,6 @@
  */
 
 function TimerBase() {
-    this.service = '';
     this.buttonInsertionInProgress = false;
     this.infoInsertingInProgress = false;
     this.pushInterval = 30000;
@@ -47,7 +46,7 @@ function TimerBase() {
         if (ParentA.taskId != ParentB.taskId)
             return false;
 
-        if (ParentA.subtasks.length != ParentB.subtasks.length)
+        if (!ParentB.subtasks.length && ParentA.subtasks.length)
             return false;
 
         return true;
@@ -91,60 +90,64 @@ function TimerBase() {
         entries: {}
     };
 
-    this.buttonClick = function () {
-        var taskId = $(this).attr('data-taskId');
-        if (!taskId)
-            return;
-
-        console.log('ButtonList', ButtonList);
+    this.buttonClick = function (e)
+    {
+        console.log('e', e);
+        if (e)
+            e.stopPropagation();
 
         var params = $(this).data('params');
         if (!params)
             params = {};
 
-        if (!ButtonList[taskId])
-        {
-            var button = new TimerButton(taskId);
-            button.enabled = true;
-            button.insertInProgress = false;
+        var taskId = $(this).attr('data-taskId');
+        if (!taskId)
+            taskId = params.taskId;
 
-            if (params.taskName)
-                button.taskName = params.taskName;
-
-            ButtonList[taskId] = button;
-        }
+        if (!taskId)
+            return;
 
         if (!ButtonList[taskId].isEnabled())
             return;
 
-        ButtonList[taskId].enabled = false;
+        var button;
+        if (!ButtonList[taskId])
+        {
+            button = new TimerButton(taskId);
+            button.enabled = true;
+            button.insertInProgress = false;
+        }
+        else
+            button = ButtonList[taskId];
+
+        if (params.taskName)
+            button.taskName = params.taskName;
+
+        button.enabled = false;
 
         var always = function() {
             $this.updateButtonState();
-            $.when($this.getEntries(taskId, true)).then(function () {
-                $.when($this.getTrackedTime()).then(function () {
-                    $this.updateTopMessage();
-                });
-            });
+            $this.getEntries(taskId, true);
         };
 
         var now = moment().format("YYYY-MM-DD HH:mm:ss");
         if ($this.isTimerRunning && $this.trackedTaskId == taskId)
         {
-            ButtonList[taskId].hideTimer().setButtonText(Messages.buttonTimerStopping);
+            button.hideTimer().setButtonText(Messages.buttonTimerStopping);
             $.when(ApiService.Timer.stop(now)).then(function () {
-                ButtonList[taskId].stop();
+                button.stop();
                 always();
             });
         }
         else
         {
-            ButtonList[taskId].setButtonText(Messages.buttonTimerStarting);
+            button.setButtonText(Messages.buttonTimerStarting);
             $.when(ApiService.Timer.start(taskId, now)).then(function (data) {
-                ButtonList[taskId].start(now, data.entry_id);
+                button.start(now, data.entry_id);
                 always();
             });
         }
+        ButtonList[taskId] = button;
     };
 
     this.detectTaskIdChange = function()
@@ -154,7 +157,10 @@ function TimerBase() {
         if (!$this.isTaskSelected())
         {
             if (!$this.isParentSelected())
+            {
+                $(document).trigger('tcNothingSelected');
                 return;
+            }
 
             args = {
                 externalParentId: $this.getParentId(),
@@ -229,11 +235,18 @@ function TimerBase() {
             }
             else
             {
-                //if ($this.trackedTaskId == response.external_task_id)
-                //    return;
-
                 $this.trackedTaskId = response.external_task_id;
                 $this.startDate = moment(response.start_time);
+
+                if (!ButtonList[$this.trackedTaskId])
+                {
+                    var button = new TimerButton($this.trackedTaskId);
+                    button.enabled = true;
+                    button.insertInProgress = false;
+                    button.taskName = response.name;
+                    ButtonList[$this.trackedTaskId] = button;
+                    $this.getEntries($this.trackedTaskId, false, false);
+                }
 
                 for (var i in ButtonList)
                 {
@@ -245,8 +258,6 @@ function TimerBase() {
             }
 
             $this.isTimerRunning = response.isTimerRunning;
-            $this.updateTopMessage();
-
         }).fail(function (reason) {
             $this.onSyncFailure(reason);
 
@@ -309,23 +320,8 @@ function TimerBase() {
 
     this.getTrackedTime = function()
     {
-        return $.Deferred(function (dfd) {
-
-            var taskId = $this.currentTaskId();
-
-            if ($this.taskDuration[taskId] !== undefined)
-            {
-                dfd.resolve($this.taskDuration[taskId], $this.taskDurationToday[taskId]);
-                return;
-            }
-
-            $this.taskDuration[taskId] = 0;
-            $this.taskDurationToday[taskId] = 0;
-
-            $.when($this.getEntries(taskId)).then(function(sum, sumToday) {
-                dfd.resolve(sum, sumToday);
-            }).fail(function () {dfd.reject();});
-        });
+        var taskId = $this.currentTaskId();
+        $this.getEntries(taskId);
     };
 
     this.getElapsedTime = function (timeInSeconds)
@@ -427,6 +423,8 @@ function TimerBase() {
     };
 
     this.bindEvents = function ($that) {
+        console.log('here');
+
         $this = $that;
         setInterval($this.updateButtonState, $this.pushInterval);
         setTimeout($this.updateButtonState, 3000);
@@ -437,6 +435,7 @@ function TimerBase() {
         $(document).on('tcTimerStarted', $this.onTimerStarted);
         $(document).on('tcTimerStopped', $this.onTimerStopped);
         $(document).on('click', '.timecamp-track-button', $this.buttonClick);
+        $(document).on('click', '#timecamp-track-button', $this.buttonClick);
         $(document).on('click', '#tc-sidebar-start-button', $this.buttonClick);
 
         switch ($this.isWatching)
@@ -471,7 +470,7 @@ function TimerBase() {
                 url: restUrl+'/can_track/format/json',
                 data: {
                     api_token: token,
-                    service: $this.service
+                    service: Service
                 },
                 type: 'GET'
             }).done(function (response) {

@@ -21,19 +21,25 @@ function Sidebar()
         "sidebarEntry"      :"sidebar_entry",
         "sidebarAddEntry"   :"sidebar_add_entry",
         "sidebarMultiEntry" :"sidebar_multi_entry",
-        "sidebarPlaceholder":"sidebar_placeholder"
+        "sidebarPlaceholder":"sidebar_placeholder",
+        "sidebarPleaseSelect":"sidebar_please_select"
     };
 
-    this.templateData = {};
-    this.templateData.sidebarButton = {};
-    this.templateData.sidebarButton.isSingle = true;
-    this.templateData.sidebarButton.taskName = false;
-    this.templateData.sidebarButton.isRunning = false;
-    this.templateData.sidebarButton.taskId = false;
-    this.templateData.sidebarButton.hasRecent = false;
-    this.templateData.sidebarButton.recent = [];
+    this.startButton = {
+        taskName: false,
+        taskId: false
+    };
 
+    this.pickButton = {
+        hasRecent: false,
+        recent: [],
+        hasSubtasks: false,
+        subtasks: []
+    };
+
+    this.isRunning = false;
     this.eventStore = {};
+    this.currentTaskId = false;
 
     $this = this;
 
@@ -44,26 +50,31 @@ function Sidebar()
     function pushRecentTask(taskId, taskName)
     {
         var found = false;
-        var recentList = $this.templateData.sidebarButton.recent;
+        var recentList = $this.pickButton.recent;
+        console.log('recentList1', recentList);
         for (i in recentList)
         {
             var entry = recentList[i];
             if (entry.taskId == taskId)
             {
                 var sub = recentList.splice(i, 1);
+                console.log('recentList2', recentList);
                 recentList.splice(0, 0, sub[0]);
                 found = true;
                 break;
             }
         }
+        console.log('recentList3', recentList);
 
         if (!found)
             recentList.push({taskId: taskId, taskName: taskName});
 
         recentList.slice(0, 4);
 
-        $this.templateData.sidebarButton.hasRecent = recentList.length > 0;
-        $this.templateData.sidebarButton.recent = recentList;
+        console.log('recentList4', recentList);
+
+        $this.pickButton.hasRecent = recentList.length > 0;
+        $this.pickButton.recent = recentList;
 
         chrome.storage.sync.set({recentTasks: recentList});
     }
@@ -92,7 +103,7 @@ function Sidebar()
 
         //$this.sidebar.on('mouseleave', $this.onMouseOut);
         $this.sidebar.on('click',       $this.onSidebarClick);
-        $this.sidebar.on('mouseenter',  $this.onHover);
+        $this.sidebar.on('mouseenter',  '.tc-sidebar-scrollable',   $this.onHover);
 
         $this.sidebar.on('click',       '.update-entry-confirm',    $this.onEntryUpdateConfirm);
         $this.sidebar.on('click',       '.update-entry-cancel',     $this.onEntryUpdateCancel);
@@ -100,7 +111,8 @@ function Sidebar()
         $this.sidebar.on('click',       '.add-entry-cancel',        $this.onEntryAddCancel);
         $this.sidebar.on('click',       '.add-time',                $this.onAddTimeClick);
         $this.sidebar.on('click',       '.tc-sidebar-entry-single', $this.onEntryClick);
-        $this.sidebar.on('click',       '#tc-sidebar-pick-button',  $this.onButtonClick);
+        $this.sidebar.on('click',       '#tc-sidebar-pick-button',  $this.onPickerClick);
+        $this.sidebar.on('click',       '#tc-sidebar-start-button', $this.onStartClick);
         $this.sidebar.on('click',       '.billable-checkbox',       $this.onBillableClick);
         $this.sidebar.on('click',       '.tc-subtask-picker-entry', $this.onTaskSelected);
 
@@ -109,8 +121,17 @@ function Sidebar()
         $this.sidebar.on('mouseenter',  '.tc-sidebar-header',                   function(e) { e.stopPropagation(); });
     };
 
-    this.onButtonClick = function() {
+    this.onPickerClick = function() {
         $this.sidebar.find('.tc-subtask-picker').toggle();
+        if ($this.isCollapsed)
+            $this.expand();
+    };
+
+    this.onStartClick = function() {
+        var baseFA = ($this.isRunning ? '.fa-stop' : '.fa-play');
+        $this.sidebar.find(baseFA).removeClass(baseFA).addClass('fa-spinner').addClass('fa-spin');
+        if ($this.isCollapsed)
+            $this.expand();
     };
 
     this.onAddTimeClick = function(e) {
@@ -212,7 +233,7 @@ function Sidebar()
             refType: "entry",
             refId: entry.id,
             parentType: "task",
-            parentId: $this.templateData.sidebarButton.taskId,
+            parentId: $this.currentTaskId,
             data: entryDiff,
             source: "sidebar"
         };
@@ -247,7 +268,7 @@ function Sidebar()
 
         var container = DOMObj.parents('.tc-sidebar-entry-new');
 
-        var taskId = $this.templateData.sidebarButton.taskId;
+        var taskId = $this.currentTaskId;
         var duration = calculateDuration(container);
 
         if (duration <= 0)
@@ -322,7 +343,7 @@ function Sidebar()
         var eventData = {
             refType: "entry",
             refId: entry.id,
-            parentId: $this.templateData.sidebarButton.taskId,
+            parentId: $this.currentTaskId,
             data: entryDiff,
             source: "sidebar"
         };
@@ -372,25 +393,25 @@ function Sidebar()
                 $this.eventStore['onEntriesLoaded'] = null;
             }
 
-            if (!$this.templateData.sidebarButton.isSingle)
-                $this.renderSidebarPickButton($this.templateData.sidebarButton);
+            if (!$this.isSingleTask)
+                $this.renderSidebarPickButton();
             else
-                $this.renderSidebarStartButton($this.templateData.sidebarButton);
+                $this.renderSidebarStartButton();
         }
     };
 
     this.renderSidebarStartButton =  function(params) {
-        var button = ich.sidebarStartButton(params);
-        button.data('params',params);
+        var templateData = $.extend(true, {}, $this.startButton, params, {isRunning: $this.isRunning});
+        var button = ich.sidebarStartButton(templateData);
+        button.data('params',templateData);
         $('.tc-sidebar-button-box').html(button);
-        console.log("$('.tc-sidebar-button-box')", $('.tc-sidebar-button-box'));
     };
 
     this.renderSidebarPickButton =  function(params) {
-        var button = ich.sidebarPickButton(params);
-        button.data('params',params);
+        var templateData = $.extend(true, {}, $this.pickButton, params);
+        var button = ich.sidebarPickButton(templateData);
+        button.data('params',templateData);
         $('.tc-sidebar-button-box').html(button);
-        console.log("$('.tc-sidebar-button-box')", $('.tc-sidebar-button-box'));
     };
 
     this.bindEvents = function()
@@ -400,6 +421,7 @@ function Sidebar()
         $(document).on('tcTimerTick', $this.onTimerTick);
         $(document).on('tcTaskChangeDetected', $this.onTaskChange);
         $(document).on('tcParentChangeDetected', $this.onParentChange);
+        $(document).on('tcNothingSelected', $this.onNothingSelected);
         $(document).on('tcEntriesLoaded', $this.onEntriesLoaded);
     };
 
@@ -408,7 +430,7 @@ function Sidebar()
         var entryId = eventData.entryId;
         var elapsed = eventData.elapsed;
 
-        if (taskId != $this.templateData.sidebarButton.taskId)
+        if (taskId != $this.startButton.taskId)
             return;
 
         var entryElement = $this.sidebar.find('[data-entryid="'+entryId+'"]');
@@ -477,7 +499,7 @@ function Sidebar()
         var sidebarFooter = $('.tc-sidebar-footer');
 
         var params = {
-            totalTime   : formatHMS(totalTime + elapsed),
+            totalTime   : formatHMSObj(totalTime + elapsed),
             taskId      : taskId
         };
 
@@ -509,8 +531,7 @@ function Sidebar()
             entry.end_time_formatted = entry.end_time.substr(0, 5);
 
             var duration = moment.duration(parseInt(entry.duration, 10), 'seconds');
-            entry.duration_formatted = duration.hours() + ":" + zeroFill(duration.minutes(), 2) + ":" +
-                                       zeroFill(duration.seconds(), 2);
+            entry.duration_formatted = formatHMSObj(parseInt(entry.duration, 10));
             entry.isBillable = entry.billable == 1;
             if (!entriesByDays[entry['date']])
                 entriesByDays[entry['date']] = [];
@@ -572,14 +593,14 @@ function Sidebar()
                     duration: parseInt(entry.duration, 10),
                     taskId: taskId
                 };
-                row.duration_formatted = formatHMS(row.duration);
+                row.duration_formatted = formatHMSObj(row.duration);
 
                 entriesByDays[date].push(row);
             }
             else
             {
                 entriesByDays[date][idx].duration += parseInt(entry.duration, 10);
-                entriesByDays[date][idx].duration_formatted = formatHMS(entriesByDays[date][idx].duration);
+                entriesByDays[date][idx].duration_formatted = formatHMSObj(entriesByDays[date][idx].duration);
             }
             totalTime += parseInt(entry['duration'], 10);
         }
@@ -612,10 +633,9 @@ function Sidebar()
         }
 
         console.log('params.external_task_id', params.external_task_id);
-        var buttonData = $this.templateData.sidebarButton;
-        console.log('$this.templateData.sidebarButton.taskId', buttonData.taskId);
+        console.log('$this.templateData.sidebarButton.taskId', $this.currentTaskId);
 
-        if (buttonData.isRunning && params.external_task_id != buttonData.taskId)
+        if ($this.isRunning && params.external_task_id != $this.currentTaskId)
         {
             $this.eventStore['onEntriesLoaded'] = eventData;
             return;
@@ -647,16 +667,16 @@ function Sidebar()
 
     this.onHover = function ()
     {
-        hoverTimerId = setTimeout($this.onSidebarClick, 300);
+        hoverTimerId = setTimeout($this.expand, 300);
         clearTimeout(mouseoutTimerId);
         mouseoutTimerId = null;
     };
 
     this.onTaskChange = function(event, args)
     {
-        var buttonData = JSON.parse(JSON.stringify($this.templateData.sidebarButton));
+        var buttonData = JSON.parse(JSON.stringify($this.startButton));
 
-        buttonData.isSingle = true;
+        $this.isSingleTask = true;
         if (args['taskName'])
             buttonData.taskName = args['taskName'];
         else
@@ -673,15 +693,27 @@ function Sidebar()
             return;
         }
 
-        $this.templateData.sidebarButton = buttonData;
-        $this.renderSidebarStartButton(buttonData);
+        $this.currentTaskId = buttonData.taskId;
+        $this.startButton = buttonData;
+        $this.renderSidebarStartButton();
+    };
+
+    this.onNothingSelected = function(event)
+    {
+        console.log('event', event);
+        if (chart)
+            chart.destroy();
+
+        clearEntriesBox();
+        $this.renderSidebarPickButton({hasSubtasks: false});
+        $('.tc-sidebar-time-details').append(ich.sidebarPleaseSelect());
     };
 
     this.onParentChange = function(event, args)
     {
-        var buttonData = JSON.parse(JSON.stringify($this.templateData.sidebarButton));
+        var buttonData = JSON.parse(JSON.stringify($this.pickButton));
 
-        buttonData.isSingle = false;
+        $this.isSingleTask = false;
         if (args['subtasks'])
             buttonData.subtasks = args['subtasks'];
         else
@@ -697,8 +729,9 @@ function Sidebar()
             return;
         }
 
-        $this.templateData.sidebarButton = buttonData;
-        $this.renderSidebarPickButton(buttonData);
+        $this.currentTaskId = buttonData.taskId;
+        $this.pickButton = buttonData;
+        $this.renderSidebarPickButton();
     };
 
     this.onTimerStarted = function(event, eventData)
@@ -709,13 +742,14 @@ function Sidebar()
         var taskId = eventData['taskId'];
         var taskName = eventData['taskName'];
 
-        $this.templateData.sidebarButton.taskId = taskId;
-        $this.templateData.sidebarButton.taskName = taskName;
-        $this.templateData.sidebarButton.isRunning = true;
+        $this.startButton.taskId = taskId;
+        $this.startButton.taskName = taskName;
+        $this.isRunning = true;
+        $this.currentTaskId = taskId;
 
         pushRecentTask(taskId, taskName);
 
-        $this.renderSidebarStartButton($this.templateData.sidebarButton);
+        $this.renderSidebarStartButton();
     };
 
     this.onTimerStopped = function (event, eventData)
@@ -724,7 +758,7 @@ function Sidebar()
         console.log('eventData', eventData);
         if ($this.eventStore['onTaskChange'])
         {
-            $this.templateData.sidebarButton = $this.eventStore['onTaskChange'];
+            $this.startButton = $this.eventStore['onTaskChange'];
             $this.eventStore['onTaskChange'] = null;
         }
         else
@@ -732,12 +766,12 @@ function Sidebar()
             var taskId = eventData['taskId'];
             var taskName = eventData['taskName'];
 
-            $this.templateData.sidebarButton.taskId = taskId;
-            $this.templateData.sidebarButton.taskName = taskName;
+            $this.startButton.taskId = taskId;
+            $this.startButton.taskName = taskName;
         }
-        $this.templateData.sidebarButton.isRunning = false;
+        $this.isRunning = false;
 
-        $this.renderSidebarStartButton($this.templateData.sidebarButton);
+        $this.renderSidebarStartButton();
         if ($this.eventStore['onEntriesLoaded'])
         {
             $this.onEntriesLoaded(null, $this.eventStore['onEntriesLoaded']);
@@ -747,19 +781,29 @@ function Sidebar()
 
     this.onSidebarClick = function(e)
     {
-        if (e)
-            e.stopPropagation();
+        var target = $(e.target);
+        if (target.is("#tc-sidebar-start-button") || $.contains($("#tc-sidebar-start-button")[0], $target[0]))
+            return;
 
+        $this.expand();
+    };
+
+    this.expand = function()
+    {
         if (!$this.isCollapsed)
             return;
 
         $this.sidebar.removeClass('collapsed').addClass('expanded');
         $this.isCollapsed = false;
-
     };
 
-    this.collapse = function()
+    this.collapse = function(e)
     {
+        var target = $(e.target);
+        var startButton = $("#tc-sidebar-start-button");
+        if (target.is("#tc-sidebar-start-button") || startButton.length && $.contains(startButton[0], target[0]))
+            return;
+
         if ($this.isCollapsed)
             return;
 
@@ -779,16 +823,16 @@ function Sidebar()
     setInterval($this.watch, 100);
     this.loadTemplates();
     this.bindEvents();
-    chrome.storage.sync.get({recentTasks:[]}, function (items) {
-        var recent = items.recentTasks;
+
+    var storageDefaults = {};
+    storageDefaults["recentTasks_"+Service] = [];
+    chrome.storage.sync.get(storageDefaults, function (items) {
+        var recent = items["recentTasks_"+Service];
         if (!recent)
-        {
-            $this.templateData.sidebarButton.recent = [];
-            $this.templateData.sidebarButton.hasRecent = false;
-            return;
-        }
-        $this.templateData.sidebarButton.recent = recent;
-        $this.templateData.sidebarButton.hasRecent = recent.length > 0;
+            recent = [];
+
+        $this.pickButton.recent = recent;
+        $this.pickButton.hasRecent = recent.length > 0;
     });
 
     Chart.defaults.global.animation = false;
