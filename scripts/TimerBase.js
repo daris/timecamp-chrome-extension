@@ -46,7 +46,7 @@ function TimerBase() {
         if (ParentA.taskId != ParentB.taskId)
             return false;
 
-        if (!ParentB.subtasks.length && ParentA.subtasks.length)
+        if (ParentB.subtasks.length < ParentA.subtasks.length)
             return false;
 
         return true;

@@ -130,8 +130,6 @@ function Sidebar()
     this.onStartClick = function() {
         var baseFA = ($this.isRunning ? '.fa-stop' : '.fa-play');
         $this.sidebar.find(baseFA).removeClass(baseFA).addClass('fa-spinner').addClass('fa-spin');
-        if ($this.isCollapsed)
-            $this.expand();
     };
 
     this.onAddTimeClick = function(e) {
@@ -201,6 +199,8 @@ function Sidebar()
             });
         dateElement.datepicker("setDate", moment(date).format("DD MMM, YYYY"));
         dateElement.on('change', function () { moment($(this).val(), "DD MMM, YYYY").isValid() ? $(this).removeClass('invalid') : $(this).addClass('invalid');});
+        dateElement.on('click', function (e) {e.stopPropagation()});
+        container.on('click', function (e) {e.stopPropagation()});
         container.after(newRow);
     };
 
@@ -276,7 +276,7 @@ function Sidebar()
 
         var date = container.find('.date-input').val();
         var description = container.find('textarea').val();
-        var billable = container.find('.billable-checkbox').is(":checked");
+        var billable = container.find('.new-billable-checkbox').is(":checked");
         var startTime = container.find('.from.hours').val()+":"+container.find('.from.minutes').val();
         var endTime = container.find('.to.hours').val()+":"+container.find('.to.minutes').val();
 
@@ -307,8 +307,8 @@ function Sidebar()
     this.onEntryAddCancel = function (e)
     {
         var DOMObj = $(this).parents('.tc-sidebar-entry-new');
+        DOMObj.prev(".tc-sidebar-day-header").find('.add-time').show();
         DOMObj.remove();
-        DOMObj.find('.add-time').show();
 
         e.stopPropagation();
     };
@@ -701,6 +701,13 @@ function Sidebar()
     this.onNothingSelected = function(event)
     {
         console.log('event', event);
+        if ($this.isRunning)
+        {
+            $this.eventStore['onTaskChange'] = {hasSubtasks: false};
+            return;
+        }
+
+
         if (chart)
             chart.destroy();
 
@@ -723,7 +730,7 @@ function Sidebar()
         buttonData.taskId = args['externalParentId'];
         buttonData.taskName = "Select task";
 
-        if (buttonData.isRunning)
+        if ($this.isRunning)
         {
             $this.eventStore['onTaskChange'] = buttonData;
             return;
@@ -782,10 +789,18 @@ function Sidebar()
     this.onSidebarClick = function(e)
     {
         var target = $(e.target);
-        if (target.is("#tc-sidebar-start-button") || $.contains($("#tc-sidebar-start-button")[0], $target[0]))
+        var button;
+
+        button = $("#tc-sidebar-start-button");
+        if (target.is(button) || button.length && $.contains(button[0], target[0]))
+            return;
+
+        button = $("#tc-sidebar-pick-button");
+        if (target.is(button) || button.length && $.contains(button[0], target[0]))
             return;
 
         $this.expand();
+
     };
 
     this.expand = function()

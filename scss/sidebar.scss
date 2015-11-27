@@ -29,9 +29,7 @@ $sidebarExpandedWidth: 280px;
 .timecamp {
 
   .monospaced {
-    font-family: "Courier New", monospace;
-    font-weight: bold;
-    letter-spacing: -1px;
+    font-family: Arial, monospace !important;
   }
 
   .tc-sidebar {
@@ -177,8 +175,9 @@ $sidebarExpandedWidth: 280px;
       padding-top: 5px;
     }
     .add-time {
-      font-size: small;
-      padding: 5px 5px 5px 0;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 5px 5px 5px 0 !important;
     }
     .hidden {
       display: none;
@@ -293,7 +292,7 @@ $sidebarExpandedWidth: 280px;
     padding-top: 2px;
     padding-right: 5px;
     .total-label {
-      padding-right: 5px;
+      padding-right: 8px;
     }
   }
   .tc-sidebar-entry {

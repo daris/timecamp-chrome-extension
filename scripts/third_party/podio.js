@@ -48,17 +48,47 @@ function PodioTimer() {
     {
         var subtasks = [];
 
-        var appsList = $("#space-navigation").find('ul.app-list').find('li.app');
-        if (appsList.length)
+        if ($("body").is('.spaces'))
         {
-            $.each(appsList, function (key, el) {
+            var appsList = $("#space-navigation").find('ul.app-list').find('li.app');
+            if (appsList.length)
+            {
+                $.each(appsList, function (key, el) {
 
-                var subtask = {
-                    taskId  : "a"+$(el).attr('data-app-id'),
-                    taskName: $(el).find('.title').text()
-                }
-                subtasks.push(subtask);
-            });
+                    var subtask = {
+                        taskId  : "a"+$(el).attr('data-app-id'),
+                        taskName: $(el).find('.title').text()
+                    };
+                    subtasks.push(subtask);
+                });
+            }
+        }
+        else if ($("body").is('.apps'))
+        {
+            var itemsListBadge = $(".items-list").find('a.badge-component');
+            var itemsListActivity = $(".items-list").find('li.object');
+            if (itemsListBadge.length)
+            {
+                $.each(itemsListBadge, function (key, el)
+                {
+                    var subtask = {
+                        taskId: "i"+$(el).attr('data-id'),
+                        taskName: $(el).find('.app-badge-header').text()
+                    };
+                    subtasks.push(subtask);
+                });
+            }
+            else if (itemsListActivity.length) {
+                $.each(itemsListActivity, function (key, el)
+                {
+                    var subtask = {
+                        taskId: "i"+$(el).attr('data-ref-id'),
+                        taskName: $(el).attr('data-ref-title')
+                    };
+                    subtasks.push(subtask);
+                });
+            }
+
         }
 
         console.log('subtasks', subtasks);
