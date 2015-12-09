@@ -49,6 +49,9 @@ function Sidebar()
 
     function pushRecentTask(taskId, taskName)
     {
+        if (!taskId || !taskName)
+            return;
+
         var found = false;
         var recentList = $this.pickButton.recent;
         console.log('recentList1', recentList);
@@ -76,7 +79,12 @@ function Sidebar()
         $this.pickButton.hasRecent = recentList.length > 0;
         $this.pickButton.recent = recentList;
 
-        chrome.storage.sync.set({recentTasks: recentList});
+        var rStorage = {};
+        rStorage["recentTasks_"+Service] = recentList;
+        chrome.storage.sync.set(rStorage, function() {
+            console.log('saved');
+        });
+        console.log('rStorage', rStorage);
     }
 
     function clearEntriesBox() {
@@ -368,6 +376,7 @@ function Sidebar()
         if (appendObj.length == 0)
             return null;
 
+
         for (i in $this.cssUpdate)
         {
             var cssUpdate = $this.cssUpdate[i];
@@ -382,6 +391,19 @@ function Sidebar()
             $this.sidebarMain =  ich.sidebarMain($this.templateData);
             $this.sidebar = $this.sidebarMain.find('.tc-sidebar');
             $this.bindInternalEvents();
+
+            var storageDefaults = {};
+            storageDefaults["recentTasks_"+Service] = [];
+            chrome.storage.sync.get(storageDefaults, function (items) {
+                var recent = items["recentTasks_"+Service];
+                console.log('recent', recent);
+                console.log('items', items);
+                if (!recent)
+                    recent = [];
+
+                $this.pickButton.recent = recent;
+                $this.pickButton.hasRecent = recent.length > 0;
+            });
         }
 
         if (!$.contains(document.documentElement, $this.sidebarMain[0]))
@@ -564,14 +586,13 @@ function Sidebar()
         var totalTime = 0;
         $this.chartEntries = entries;
 
-        var dataset = ChartService.prepareDataset('pie', $this.chartEntries);
-        chart = ChartService.renderChart($this.barChartSelector, 'pie', dataset);
+
 
         for (i in entries)
         {
             var entry = entries[i];
             var date = entry.date;
-            var taskId = entry.taskId;
+            var taskId = entry.task_id;
             var idx = -1;
 
             if (!entriesByDays[date])
@@ -579,7 +600,7 @@ function Sidebar()
 
             for (j in entriesByDays[date])
             {
-                if (entriesByDays[date].taskId == taskId)
+                if (entriesByDays[date][j].taskId == taskId)
                 {
                     idx = j;
                     break;
@@ -594,7 +615,6 @@ function Sidebar()
                     taskId: taskId
                 };
                 row.duration_formatted = formatHMSObj(row.duration);
-
                 entriesByDays[date].push(row);
             }
             else
@@ -617,6 +637,9 @@ function Sidebar()
             $this.renderEntriesDay(entriesByDays[day], day, false, false);
         }
         $this.renderTotalTime(totalTime, 0, params.external_task_id);
+
+        var dataset = ChartService.prepareDataset('pie', $this.chartEntries);
+        chart = ChartService.renderChart($this.barChartSelector, 'pie', dataset);
     }
 
     this.onEntriesLoaded = function(event, eventData) {
@@ -687,7 +710,7 @@ function Sidebar()
         else
             buttonData.taskId = false;
 
-        if (buttonData.isRunning)
+        if ($this.isRunning)
         {
             $this.eventStore['onTaskChange'] = buttonData;
             return;
@@ -800,7 +823,6 @@ function Sidebar()
             return;
 
         $this.expand();
-
     };
 
     this.expand = function()
@@ -815,8 +837,14 @@ function Sidebar()
     this.collapse = function(e)
     {
         var target = $(e.target);
-        var startButton = $("#tc-sidebar-start-button");
-        if (target.is("#tc-sidebar-start-button") || startButton.length && $.contains(startButton[0], target[0]))
+        var button;
+
+        button = $("#tc-sidebar-start-button");
+        if (target.is(button) || button.length && $.contains(button[0], target[0]))
+            return;
+
+        button = $("#tc-sidebar-pick-button");
+        if (target.is(button) || button.length && $.contains(button[0], target[0]))
             return;
 
         if ($this.isCollapsed)
@@ -838,17 +866,6 @@ function Sidebar()
     setInterval($this.watch, 100);
     this.loadTemplates();
     this.bindEvents();
-
-    var storageDefaults = {};
-    storageDefaults["recentTasks_"+Service] = [];
-    chrome.storage.sync.get(storageDefaults, function (items) {
-        var recent = items["recentTasks_"+Service];
-        if (!recent)
-            recent = [];
-
-        $this.pickButton.recent = recent;
-        $this.pickButton.hasRecent = recent.length > 0;
-    });
 
     Chart.defaults.global.animation = false;
     Chart.defaults.global.maintainAspectRatio = true;

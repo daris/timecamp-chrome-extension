@@ -211,6 +211,7 @@ function AsanaTimer() {
 $(document).ready(function () {
     AsanaTimer.prototype = new TimerBase();
     timer = new AsanaTimer();
+    timer.timeFetchMethod = timer.timeFetchMethods.FOR_SUBTASKS;
 });
 
 Sidebar.cssUpdate = [

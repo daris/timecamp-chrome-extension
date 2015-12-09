@@ -41,7 +41,14 @@ function PodioTimer() {
     this.getParentId = function() {
         var DOMObj = $("#wrapper");
 
-        return DOMObj.attr('data-context-type') + "_" + DOMObj.attr('data-context-id');
+        var prefix = "";
+        switch (DOMObj.attr('data-context-type')) {
+            case "space" : prefix = 's'; break;
+            case "app" : prefix = 'a'; break;
+            case "item" : prefix = 'i'; break;
+        }
+
+        return prefix+DOMObj.attr('data-context-id');
     };
 
     this.getSubtasks = function()
@@ -315,6 +322,11 @@ Sidebar.cssUpdate = [
     },
     {
         selector: ".space-switcher-sidebar",
+        property: "margin-left",
+        value   : "50px"
+    },
+    {
+        selector: ".footer-global",
         property: "margin-left",
         value   : "50px"
     },

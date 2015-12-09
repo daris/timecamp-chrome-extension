@@ -12,12 +12,8 @@ function TeamworkTimer() {
         var url = document.URL;
 
         var MatchRes = /tasks\/([0-9]+)/g.exec(url);
-        if (MatchRes) {
-            var id = MatchRes[1];
-            return id;
-        } else {
-            return null;
-        }
+        if (MatchRes)
+            return "task_"+ MatchRes[1];
     };
 
     this.getParentId = function() {
@@ -26,7 +22,12 @@ function TeamworkTimer() {
         var MatchRes = reg.exec(url);
 
         if (MatchRes)
-            return MatchRes[1];
+            return "project_"+MatchRes[1];
+
+        reg = /teamwork\.com\/tasklists\/([0-9]+)/g;
+        MatchRes = reg.exec(url);
+        if (MatchRes)
+            return "list_"+MatchRes[1];
 
         return null;
     };
@@ -56,7 +57,7 @@ function TeamworkTimer() {
                 if (!matchRes)
                     return;
 
-                var taskId = matchRes[1];
+                var taskId = "task_"+matchRes[1];
                 var taskName = $(el).children(".taskName").text();
 
                 var subtask = {

@@ -14,7 +14,9 @@ function InsightlyTimer() {
         var tasksPattern = /Tasks\/TaskDetails\/([0-9]+)/ig;
         var projectsPattern = /Projects\/Details\/([0-9]+)/ig;
         var leadsPattern = /Leads\/Details\/([0-9]+)/ig;
+        var contactsPattern = /Contacts\/Details\/([0-9]+)/ig;
         var opportunitiesPattern = /opportunities\/details\/([0-9]+)/ig;
+        var organizationsPattern = /Organisations\/details\/([0-9]+)/ig;
 
         MatchRes = tasksPattern.exec(url);
         if (MatchRes)
@@ -32,6 +34,14 @@ function InsightlyTimer() {
         if (MatchRes)
             return "lead_"+MatchRes[1];
 
+        MatchRes = contactsPattern.exec(url);
+        if (MatchRes)
+            return "contact_"+MatchRes[1];
+
+        MatchRes = organizationsPattern.exec(url);
+        if (MatchRes)
+            return "organisation_"+MatchRes[1];
+
         return null;
     };
 
@@ -40,6 +50,7 @@ function InsightlyTimer() {
         var reg = /\.insight\.ly\/([A-Za-z]+)/g;
         var MatchRes = reg.exec(url);
 
+        console.log('MatchRes', MatchRes);
         if (MatchRes)
             return MatchRes[1];
 
@@ -50,7 +61,7 @@ function InsightlyTimer() {
         var result = [];
         var parentName = $this.getParentId();
         var find = new RegExp("/"+parentName+"/details/", "gi");
-        var links = $('a[href]').filter(function()
+        var links = $('a.noselect[href]').filter(function()
         {
             if (this.href.toLowerCase().search(find) == -1)
                 return false;
@@ -62,6 +73,17 @@ function InsightlyTimer() {
 
         if (links.length)
         {
+            var prefix = "";
+
+            switch (parentName.toLowerCase())
+            {
+                case "leads": prefix = "lead_"; break;
+                case "contacts":    prefix = "contact_"; break;
+                case "organisations":    prefix = "organisation_"; break;
+                case "projects":    prefix = "project_"; break;
+                case "opportunities":    prefix = "opp_"; break;
+            }
+
             $.each(links, function(key, el)
             {
                 var reg = new RegExp("/"+parentName+"/details/([0-9]+)","gi");
@@ -73,7 +95,7 @@ function InsightlyTimer() {
                 var taskName = $(el).text();
 
                 var subtask = {
-                    taskId: taskId,
+                    taskId: prefix+taskId,
                     taskName: taskName,
                     DOMObj: el
                 };
@@ -254,10 +276,6 @@ function InsightlyTimer() {
         {
             this.onSyncFailure();
         }
-    };
-
-    this.getEntriesStartTime = function () {
-        return '2014-07-01';
     };
 
     this.isInfoInserted = function () {

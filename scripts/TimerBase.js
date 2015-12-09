@@ -11,17 +11,16 @@ function TimerBase() {
     this.button = null;
     this.startDate = null;
     this.multiButton = false;
-    this.taskDuration = {};
-    this.taskDurationToday = {};
     this.trackableParents = false;
     this.lastParentTask = null;
     this.lastTask = null;
-    this.lastData = null;
     this.lastUrl = '';
 
     var $this = this;
 
     this.canWatch = {'DOM': 0,'URL': 1, 'HISTORY': 2, 'LOAD': 3};
+    this.timeFetchMethods = {'FOR_SUBTASKS': 0 , "FOR_PARENT": 1};
+    this.timeFetchMethod = this.timeFetchMethods.FOR_PARENT;
     this.isWatching = this.canWatch.DOM;
 
     this.currentTaskId          = function () { return ''; };
@@ -46,7 +45,7 @@ function TimerBase() {
         if (ParentA.taskId != ParentB.taskId)
             return false;
 
-        if (ParentB.subtasks.length < ParentA.subtasks.length)
+        if (ParentA.subtasks.length != ParentB.subtasks.length)
             return false;
 
         return true;
@@ -107,9 +106,6 @@ function TimerBase() {
         if (!taskId)
             return;
 
-        if (!ButtonList[taskId].isEnabled())
-            return;
-
         var button;
         if (!ButtonList[taskId])
         {
@@ -119,6 +115,9 @@ function TimerBase() {
         }
         else
             button = ButtonList[taskId];
+
+        if (!button.isEnabled())
+            return;
 
         if (params.taskName)
             button.taskName = params.taskName;
@@ -158,10 +157,13 @@ function TimerBase() {
         {
             if (!$this.isParentSelected())
             {
-                $(document).trigger('tcNothingSelected');
+                if ($this.lastTask || $this.lastParentTask)
+                    $(document).trigger('tcNothingSelected');
+
+                $this.lastTask = null;
+                $this.lastParentTask = null;
                 return;
             }
-
             args = {
                 externalParentId: $this.getParentId(),
                 subtasks: $this.getSubtasks()
@@ -175,7 +177,6 @@ function TimerBase() {
             $this.lastTask = null;
             return;
         }
-
         args = {
             externalTaskId: $this.currentTaskId(),
             taskName: $this.currentTaskName()
@@ -370,7 +371,7 @@ function TimerBase() {
         console.log('event', event);
         console.log('eventData', eventData);
 
-        if (eventData.subtasks)
+        if ($this.timeFetchMethod == $this.timeFetchMethods.FOR_SUBTASKS && eventData.subtasks)
         {
             var ids = [];
             for (i in eventData.subtasks)
@@ -382,7 +383,8 @@ function TimerBase() {
             if (ids.length)
                 $this.getEntries(ids.join(','), false, true);
         }
-
+        else if ($this.timeFetchMethod == $this.timeFetchMethods.FOR_PARENT)
+            $this.getEntries(eventData.externalParentId, false, true);
     };
 
     this.onTaskChangeDetected = function(event, eventData) {

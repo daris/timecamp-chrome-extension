@@ -237,6 +237,7 @@
 $(document).ready(function () {
     TrelloTimer.prototype = new TimerBase();
     timer = new TrelloTimer();
+    timer.timeFetchMethod = timer.timeFetchMethods.FOR_SUBTASKS;
 });
 
 Sidebar.cssUpdate = [
@@ -251,7 +252,7 @@ Sidebar.cssUpdate = [
         value: "50px"
     }
 ];
-Sidebar.clickBindSelector = ["body"];
-Sidebar.appendSelector = "body";
+Sidebar.clickBindSelector = ["#surface"];
+Sidebar.appendSelector = "#surface";
 
 Service = "trello";
