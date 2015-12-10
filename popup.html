@@ -4,7 +4,6 @@
     <title></title>
     <style type="text/css">
         body {
-            margin:0;
             padding:0;
             background-color: transparent;
             height:300px;
@@ -34,7 +33,6 @@
             background-color: rgba(79,181,65,1);
             color: white;
             border: 1px solid rgba(50,160,50,0.6);
-            font-weight: normal;
             letter-spacing: 1px;
             box-shadow: none;
             text-shadow: 0 -1px 0 rgba(0,0,0,0.25);
@@ -47,8 +45,6 @@
             top: -1px;
 
             text-decoration: none;
-
-            background-image: url(images/36px-blended.png);
             background-origin: padding-box;
             background-position: 0 0;
         }
@@ -71,12 +67,24 @@
 
             text-align: center;
         }
+
+        .noselect {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
     </style>
     <script src="scripts/lib/jquery-2.1.1.min.js"></script>
     <script src="scripts/config.js"></script>
     <script src="scripts/TokenManager.js"></script>
+    <script src="scripts/ApiService.js"></script>
+    <script src="scripts/ChartService.js"></script>
+    <script src="scripts/sidebar.js"></script>
+    <script src="scripts/TokenManager.js"></script>
     <script src="scripts/common.js"></script>
-    <script src="scripts/services/popup.js"></script>
+    <script src="scripts/third_party/popup.js"></script>
 </head>
 <body>
     <div id="status" style="display:none">
@@ -86,7 +94,7 @@
         <img src="images/logo-transparent.png" style="height: 50px;" />
         <p>
             This plugin allows you track time within popular project management software, like 
-            Trello, Basecamp, Asana and Podio.
+            Trello, Asana and Podio.
         </p>	
         <div style="text-align:center;">
             <a href="javascript:void(0);" id="tc-button">LogIn</a>
@@ -94,6 +102,11 @@
         <p style="color: #aaa;" id="tc-signup">
             Or if you don't have account? <a href="http://www.timecamp.com" target="_blank" style="color: #aaa; font-weight: bold;">Sign up</a>.
         </p>
+
+        <div style="text-align:center;margin-top: 20px;">
+            <input id="displaySidebarCheckbox" type="checkbox" checked="" name="sidebar" value="show" style="vertical-align: bottom;">
+            <label for="displaySidebarCheckbox" class="noselect">Display sidebar</label>
+        </div>
     </div>
 </body>
 </html>

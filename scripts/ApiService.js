@@ -14,10 +14,24 @@ function ApiService() {
 
     this.call = function (url, data, method) {
         if (url == undefined)
-            return null;
+        {
+            return $.Deferred(function (dfd)
+            {
+                console.log('ApiService.ApiToken', ApiService.ApiToken);
+                if (ApiService.ApiToken == null)
+                    dfd.reject({message:"not_logged_in"});
+            });
+        }
 
         if (!this.ApiToken)
-            return null;
+        {
+            return $.Deferred(function (dfd)
+            {
+                console.log('ApiService.ApiToken', ApiService.ApiToken);
+                if (ApiService.ApiToken == null)
+                    dfd.reject({message:"not_logged_in"});
+            });
+        }
 
         if (data == undefined)
             data = {};
@@ -52,7 +66,7 @@ function ApiService() {
         }
 
         return $.Deferred(function (dfd)
-        {
+        {   
             $.ajax(params).success(function (data) {
                 dfd.resolve(data);
             }).error(function (data) {
@@ -136,7 +150,6 @@ function ApiService() {
     };
 
     this.Entries = new ApiResource('/entries', ["get","post", "put"]);
-    this.Tasks = new ApiResource('/tasks', ["get"]);
 }
 
 

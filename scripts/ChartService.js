@@ -2,7 +2,7 @@
  * Created by mdybizbanski on 02.11.15.
  */
 
-function chartService() {
+function ChartService() {
 
     this.prepareDataset = function (chartType, entries)
     {

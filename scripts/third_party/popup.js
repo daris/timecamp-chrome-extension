@@ -54,6 +54,20 @@ $(document).ready(function () {
         params[tmparr[0]] = tmparr[1];
     }
     var text = "";
+
+    $('#displaySidebarCheckbox').unbind('click').click(function () {
+        toggleSidebarEnabled($(this).is(":checked"));
+        refreshPopup(chrome.i18n.getMessage("PLEASE_REFRESH"));
+    });
+
+    chrome.storage.sync.get({"isSidebarEnabled": true}, function (items)
+    {
+        if (!items['isSidebarEnabled'])
+            $('#displaySidebarCheckbox').removeAttr('checked');
+        else
+            $('#displaySidebarCheckbox').attr('checked','checked');
+    });
+
     if (params.status != undefined) {
         //----------We are in iframe!!!-----------
         if (params.status == "1") {
@@ -72,6 +86,4 @@ $(document).ready(function () {
     } else {
         refreshPopup();
     }
-
-    
 });

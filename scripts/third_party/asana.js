@@ -13,6 +13,7 @@ function AsanaTimer() {
         var reg = /0\/([0-9]+)\/([0-9]+)/g;
         var MatchRes = reg.exec(url);
 
+        console.log('MatchRes', MatchRes);
         if (MatchRes && MatchRes.length >= 3)
             return MatchRes[2];
 
@@ -24,6 +25,7 @@ function AsanaTimer() {
         var reg = /0\/([0-9]+)/g;
         var MatchRes = reg.exec(url);
 
+        console.log('MatchRes', MatchRes);
         if (MatchRes && MatchRes.length >= 2)
             return MatchRes[1];
 
@@ -33,7 +35,7 @@ function AsanaTimer() {
     this.getSubtasks = function() {
         var subtasks = [];
 
-        $(".item-list-groups").find('.task-row').each(function(i, el){
+        $('.task-row').each(function(i, el){
             var arr = $(el).attr('id').split('_');
             var taskId = arr[3];
 

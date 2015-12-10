@@ -92,6 +92,14 @@ $(document).ready(function() {
     document.body.appendChild(interceptor);
 });
 
+toggleSidebarEnabled = function(value)
+{
+    chrome.storage.sync.set({"isSidebarEnabled": value});
+};
+
+
+
+
 Messages = {
     buttonTimerStopping                 : chrome.i18n.getMessage('BUTTON_TIMER_STOPPING'),
     buttonTimerStarting                 : chrome.i18n.getMessage('BUTTON_TIMER_STARTING'),
@@ -102,6 +110,7 @@ Messages = {
     buttonConnectionError               : chrome.i18n.getMessage('BUTTON_CONNECTION_ERROR'),
     synchronizing                       : chrome.i18n.getMessage('SYNCHRONIZING'),
     badgeTimerRunning                   : chrome.i18n.getMessage('BADGE_TIMER_RUNNING'),
+    pleaseRefresh                       : chrome.i18n.getMessage('PLEASE_REFRESH'),
     set: function (key, value) {
         Messages[key] = chrome.i18n.getMessage(value);
     }
@@ -109,7 +118,7 @@ Messages = {
 
 var TokenManager    = new TokenManager();
 var ApiService      = new ApiService();
-var ChartService    = new chartService();
+var ChartService    = new ChartService();
 var Sidebar         = new Sidebar();
 var ButtonList      = {};
 var Service         = "";

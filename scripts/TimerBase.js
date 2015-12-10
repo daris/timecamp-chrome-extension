@@ -312,6 +312,7 @@ function TimerBase() {
         }
 
         $.when(ApiService.Entries.get(params)).then(function (data) {
+            console.log('data', data);
             if (data.lenght)
                 data.reverse();
             storage.entries[taskId] = data;

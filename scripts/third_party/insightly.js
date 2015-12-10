@@ -52,7 +52,16 @@ function InsightlyTimer() {
 
         console.log('MatchRes', MatchRes);
         if (MatchRes)
-            return MatchRes[1];
+        {
+            var parent =MatchRes[1];
+
+            if (parent == 'tasks')
+                timer.timeFetchMethod = timer.timeFetchMethods.FOR_SUBTASKS;
+            else
+                timer.timeFetchMethod = timer.timeFetchMethods.FOR_PARENT;
+
+            return parent;
+        }
 
         return null;
     };

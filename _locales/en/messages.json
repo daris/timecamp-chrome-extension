@@ -78,6 +78,10 @@
     "EMPTY_MESSAGE":
     {
         "message": ""
+    },
+    "PLEASE_REFRESH":
+    {
+        "message": "Please refresh the page to apply changes"
     }
 
 }

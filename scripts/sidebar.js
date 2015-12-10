@@ -24,6 +24,7 @@ function Sidebar()
         "sidebarPlaceholder":"sidebar_placeholder",
         "sidebarPleaseSelect":"sidebar_please_select"
     };
+    this.isSidebarEnabled = false;
 
     this.startButton = {
         taskName: false,
@@ -369,6 +370,8 @@ function Sidebar()
 
     this.watch = function()
     {
+        if (!$this.isSidebarEnabled)
+            return;
         if (!$this.appendSelector)
             return null;
 
@@ -862,6 +865,18 @@ function Sidebar()
             });
         });
     };
+
+    this.toggleEnabled = function()
+    {
+        console.log('toggle');
+
+        chrome.storage.sync.set({"isSidebarEnabled": !$this.isSidebarEnabled});
+    };
+
+    chrome.storage.sync.get({"isSidebarEnabled": true}, function (items)
+    {
+        $this.isSidebarEnabled = items["isSidebarEnabled"];
+    });
 
     setInterval($this.watch, 100);
     this.loadTemplates();
