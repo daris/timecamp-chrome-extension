@@ -150,6 +150,7 @@ function ApiService() {
     };
 
     this.Entries = new ApiResource('/entries', ["get","post", "put"]);
+    this.me = new ApiResource('/me', ["get"]);
 }
 
 

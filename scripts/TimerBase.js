@@ -15,6 +15,7 @@ function TimerBase() {
     this.lastParentTask = null;
     this.lastTask = null;
     this.lastUrl = '';
+    this.me = null;
 
     var $this = this;
 
@@ -40,12 +41,15 @@ function TimerBase() {
         return true;
     };
 
-    function parentsEquals(ParentA, ParentB)
+    function parentsEquals(newParent, oldParent)
     {
-        if (ParentA.taskId != ParentB.taskId)
+        if (newParent.taskId != oldParent.taskId)
             return false;
 
-        if (ParentA.subtasks.length != ParentB.subtasks.length)
+        if (!newParent.subtasks.length)
+            return true;
+
+        if (newParent.subtasks.length != oldParent.subtasks.length)
             return false;
 
         return true;
@@ -469,6 +473,11 @@ function TimerBase() {
 
         $.when(TokenManager.getToken()).then(function (token)
         {
+            $.when(ApiService.me.get()).then(function (data) {
+                $this.me = data;
+                $(document).trigger('tcMeLoaded', {params: {}, data: data});
+            });
+
             $.ajax({
                 url: restUrl+'/can_track/format/json',
                 data: {

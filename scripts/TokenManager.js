@@ -44,11 +44,7 @@ function TokenManager() {
     };
 
     this.removeStoredToken = function () {
-        chrome.storage.sync.remove('token', function () {
-            if (chrome.runtime.lastError) {
-                console.log(chrome.runtime.lastError.message);
-            }
-        });
+        chrome.storage.sync.clear();
         chrome.storage.sync.set({ 'removed': true }, function () {
             if (chrome.runtime.lastError) {
                 console.log(chrome.runtime.lastError.message);

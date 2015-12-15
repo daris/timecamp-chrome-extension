@@ -13,16 +13,17 @@ function Sidebar()
     this.isReady = false;
     this.isCollapsed = true;
     this.templates = {
-        "sidebarStartButton":"sidebar_start_button",
-        "sidebarPickButton" :"sidebar_pick_button",
-        "sidebarMain"       :"sidebar_main",
-        "sidebarDayHeader"  :"sidebar_day_header",
-        "sidebarTotalTime"  :"sidebar_total_time",
-        "sidebarEntry"      :"sidebar_entry",
-        "sidebarAddEntry"   :"sidebar_add_entry",
-        "sidebarMultiEntry" :"sidebar_multi_entry",
-        "sidebarPlaceholder":"sidebar_placeholder",
-        "sidebarPleaseSelect":"sidebar_please_select"
+        "sidebarStartButton":"start_button",
+        "sidebarPickButton" :"pick_button",
+        "sidebarMain"       :"main",
+        "sidebarFooter"     :"footer",
+        "sidebarDayHeader"  :"day_header",
+        "sidebarTotalTime"  :"total_time",
+        "sidebarEntry"      :"entry",
+        "sidebarAddEntry"   :"add_entry",
+        "sidebarMultiEntry" :"multi_entry",
+        "sidebarPlaceholder":"placeholder",
+        "sidebarPleaseSelect":"please_select"
     };
     this.isSidebarEnabled = false;
 
@@ -41,6 +42,8 @@ function Sidebar()
     this.isRunning = false;
     this.eventStore = {};
     this.currentTaskId = false;
+
+    this.sidebarFooter = { invoicingEnabled: false };
 
     $this = this;
 
@@ -82,9 +85,7 @@ function Sidebar()
 
         var rStorage = {};
         rStorage["recentTasks_"+Service] = recentList;
-        chrome.storage.sync.set(rStorage, function() {
-            console.log('saved');
-        });
+        chrome.storage.sync.set(rStorage);
         console.log('rStorage', rStorage);
     }
 
@@ -110,9 +111,8 @@ function Sidebar()
     {
         $.each($this.clickBindSelector, function (key, el) { $(el).on('click', $this.collapse); });
 
-        //$this.sidebar.on('mouseleave', $this.onMouseOut);
+        $this.sidebar.on('mouseleave', $this.onMouseOut);
         $this.sidebar.on('click',       $this.onSidebarClick);
-        $this.sidebar.on('mouseenter',  '.tc-sidebar-scrollable',   $this.onHover);
 
         $this.sidebar.on('click',       '.update-entry-confirm',    $this.onEntryUpdateConfirm);
         $this.sidebar.on('click',       '.update-entry-cancel',     $this.onEntryUpdateCancel);
@@ -124,6 +124,8 @@ function Sidebar()
         $this.sidebar.on('click',       '#tc-sidebar-start-button', $this.onStartClick);
         $this.sidebar.on('click',       '.billable-checkbox',       $this.onBillableClick);
         $this.sidebar.on('click',       '.tc-subtask-picker-entry', $this.onTaskSelected);
+        $this.sidebar.on('mouseenter',  '.tc-sidebar-scrollable',   $this.onHover);
+        $this.sidebar.on('DOMMouseScroll mousewheel', '.tc-sidebar-scrollable', $this.onSidebarScroll);
 
         $this.sidebar.on('click',       '.note-placeholder a',                  function(e) { e.stopPropagation(); });
         $this.sidebar.on('click',       '.tc-subtask-picker-list-header',       function(e) { e.stopPropagation(); });
@@ -134,6 +136,35 @@ function Sidebar()
         $this.sidebar.find('.tc-subtask-picker').toggle();
         if ($this.isCollapsed)
             $this.expand();
+    };
+
+    this.onSidebarScroll = function (ev)
+    {
+        var $this = $('.tc-sidebar-scrollable'),
+            scrollTop = $this[0].scrollTop,
+            scrollHeight = $this[0].scrollHeight,
+            height = $this.height(),
+            delta = (ev.type == 'DOMMouseScroll' ?
+                     ev.originalEvent.detail * -40 :
+                     ev.originalEvent.wheelDelta),
+            up = delta > 0;
+
+        var prevent = function() {
+            ev.stopPropagation();
+            ev.preventDefault();
+            ev.returnValue = false;
+            return false;
+        };
+
+        if (!up && -delta > scrollHeight - height - scrollTop) {
+            // Scrolling down, but this will take us past the bottom.
+            $this.scrollTop(scrollHeight);
+            return prevent();
+        } else if (up && delta > scrollTop) {
+            // Scrolling up, but this will take us past the top.
+            $this.scrollTop(0);
+            return prevent();
+        }
     };
 
     this.onStartClick = function() {
@@ -231,6 +262,7 @@ function Sidebar()
     this.onBillableClick = function(e) {
         e.stopPropagation();
 
+        var value = $(this).is(':checked');
         var DOMObj = $(this).parents('.tc-sidebar-entry');
         var entry = DOMObj.data('entry');
         var entryDiff = {billable: value};
@@ -363,7 +395,6 @@ function Sidebar()
 
     this.onEntryUpdateCancel = function(e) {
         var DOMObj = $(this).parents('.tc-sidebar-entry');
-        console.log('DOMObj', DOMObj);
         collapseEntry(DOMObj);
         e.stopPropagation();
     };
@@ -393,6 +424,7 @@ function Sidebar()
         {
             $this.sidebarMain =  ich.sidebarMain($this.templateData);
             $this.sidebar = $this.sidebarMain.find('.tc-sidebar');
+            $this.renderFooter();
             $this.bindInternalEvents();
 
             var storageDefaults = {};
@@ -425,22 +457,35 @@ function Sidebar()
         }
     };
 
+    this.renderFooter =  function(params) {
+        if (!params)
+            params = {};
+        var templateData = $.extend(true, {}, $this.sidebarFooter, params);
+        var content = ich.sidebarFooter(templateData);
+        $('.tc-sidebar-footer').html(content);
+    };
+
     this.renderSidebarStartButton =  function(params) {
+        if (!params)
+            params = {};
         var templateData = $.extend(true, {}, $this.startButton, params, {isRunning: $this.isRunning});
-        var button = ich.sidebarStartButton(templateData);
-        button.data('params',templateData);
-        $('.tc-sidebar-button-box').html(button);
+        var content = ich.sidebarStartButton(templateData);
+        content.data('params',templateData);
+        $('.tc-sidebar-button-box').html(content);
     };
 
     this.renderSidebarPickButton =  function(params) {
+        if (!params)
+            params = {};
         var templateData = $.extend(true, {}, $this.pickButton, params);
-        var button = ich.sidebarPickButton(templateData);
-        button.data('params',templateData);
-        $('.tc-sidebar-button-box').html(button);
+        templateData.isEmpty = !(templateData.hasSubtasks || templateData.hasRecent);
+        var content = ich.sidebarPickButton(templateData);
+        $('.tc-sidebar-button-box').html(content);
     };
 
     this.bindEvents = function()
     {
+        $(document).on('tcMeLoaded', $this.onMeLoaded);
         $(document).on('tcTimerStarted', $this.onTimerStarted);
         $(document).on('tcTimerStopped', $this.onTimerStopped);
         $(document).on('tcTimerTick', $this.onTimerTick);
@@ -448,6 +493,10 @@ function Sidebar()
         $(document).on('tcParentChangeDetected', $this.onParentChange);
         $(document).on('tcNothingSelected', $this.onNothingSelected);
         $(document).on('tcEntriesLoaded', $this.onEntriesLoaded);
+    };
+    this.onMeLoaded = function(event, eventData) {
+        $this.sidebarFooter.invoicingEnabled = eventData['data']['permissions']['can_view_rates'];
+        $this.renderFooter();
     };
 
     this.onTimerTick = function(event, eventData) {
@@ -839,17 +888,15 @@ function Sidebar()
 
     this.collapse = function(e)
     {
-        var target = $(e.target);
-        var button;
+        if (e)
+        {
+            var target = $(e.target);
+            var button;
 
-        button = $("#tc-sidebar-start-button");
-        if (target.is(button) || button.length && $.contains(button[0], target[0]))
-            return;
-
-        button = $("#tc-sidebar-pick-button");
-        if (target.is(button) || button.length && $.contains(button[0], target[0]))
-            return;
-
+            button = $(".tc-sidebar");
+            if (target.is(button) || button.length && $.contains(button[0], target[0]))
+                return;
+        }
         if ($this.isCollapsed)
             return;
 
@@ -860,7 +907,7 @@ function Sidebar()
 
     this.loadTemplates = function() {
         $.each($this.templates, function (name, url) {
-            $.get(chrome.extension.getURL("templates/"+url+".html"), function (data) {
+            $.get(chrome.extension.getURL("templates/sidebar/"+url+".html"), function (data) {
                 ich.addTemplate(name,data);
             });
         });

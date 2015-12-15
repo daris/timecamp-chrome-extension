@@ -2,10 +2,10 @@
 .idea
 firefox
 .gitignore
+scss
 zip.vbs
 zipit.cmd
 zipexclude.txt
 README.md
-package.zip
-atlassian-ide-plugin.xml
+pack.zip
 zipit.sh
