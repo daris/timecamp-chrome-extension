@@ -110,14 +110,14 @@ function AsanaTimer() {
         var div2 = $('<div/>', { 'class': 'redesign-timecamp-container'});
         var div3 = $('<div/>', { 'class': 'property tc flyout-owner'});
         var div4 = $('<div/>', { 'class': 'property-name', 'id':'lunaTC' });
-        var button = $('<span/>', { 'class': 'timecamp-track-button', 'id': 'timecamp-track-button', 'data-taskId': currentTaskId, 'style':'position:relative' });
+        var button = $('<div/>', { 'class': 'timecamp-track-button', 'id': 'timecamp-track-button', 'data-taskId': currentTaskId, 'style':'position:relative' });
 
         this.button = button;
         div1.append(div2);
         div2.append(div3);
         div3.append(div4);
         div4.append(button);
-        button.append($('<img />', {"src": chrome.extension.getURL('images/icon-14.png'), "id" : "tc-logo"}));
+        button.append($('<img />', {"src": chrome.extension.getURL('images/icon-16.png'), "id" : "tc-logo"}));
         button.append($('<span/>', {'class': 'text'}).text(Messages.synchronizing));
         button.append($('<span/>', {'class': 'time'}).text("00:00").hide());
 
