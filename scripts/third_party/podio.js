@@ -314,6 +314,10 @@ Sidebar.cssUpdate = [
         selector: "#global-container",
         property: "margin-left",
         value   : "50px"
+    },{
+        selector: ".global-container",
+        property: "margin-left",
+        value   : "50px"
     },
     {
         selector: "#header-global",
