@@ -1,12 +1,11 @@
 ﻿function TrelloTimer() {
 
-    this.service = 'trello';
     var $this = this;
 
-	this.messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
-    this.messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
-    this.messages.set('synchronizing', 'SYNCING');
-    this.messages.set('buttonTimerStopping', 'BUTTON_TIMER_STOPPING_SHORT');
+	Messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
+    Messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
+    Messages.set('synchronizing', 'SYNCING');
+    Messages.set('buttonTimerStopping', 'BUTTON_TIMER_STOPPING_SHORT');
 
 
     this.currentTaskId = function () {
@@ -19,6 +18,65 @@
             return null;
         }
     };
+
+    this.getParentId = function() {
+        var url = document.URL;
+        var reg = /trello\.com\/b\/(\w+)/g;
+        var MatchRes = reg.exec(url);
+
+        console.log('MatchRes', MatchRes);
+        if (MatchRes)
+            return MatchRes[1];
+
+        return null;
+    };
+
+    this.getSubtasks = function() {
+        var subtasks = [];
+        var links = $(".list-card-title");
+
+        console.log('links', links);
+        if (links.length)
+        {
+            $.each(links, function(key, el)
+            {
+                var reg = new RegExp("/c/([A-Za-z0-9]+)","g");
+                var href = $(el).attr("href");
+
+                console.log('reg', reg);
+                console.log('href', href);
+                var matchRes = reg.exec(href);
+                console.log('matchRes', matchRes);
+                if (!matchRes)
+                    return;
+
+                var taskId = matchRes[1];
+                var taskName = $(el).contents().filter(function(){return this.nodeType == Node.TEXT_NODE})[0].nodeValue;
+
+                var subtask = {
+                    taskId: taskId,
+                    taskName: taskName,
+                    DOMObj: el
+                };
+                subtasks.push(subtask);
+            });
+        }
+
+        console.log('subtasks', subtasks);
+
+        return subtasks;
+    };
+
+    this.currentTaskName = function () {
+
+        var el = $(".js-card-title.current");
+        if (el.length)
+            return el.contents().filter(function(){return this.nodeType == Node.TEXT_NODE})[0].nodeValue;
+
+        return false;
+    };
+
+
 
     this.onSyncSuccess = function (response) {
         if (this.isTimerRunning) {
@@ -37,7 +95,7 @@
                             id:         "tc-badge",
                             class:    "badge",
                             src:        chrome.extension.getURL('images/icon-14.png'),
-                            title:      this.messages.badgeTimerRunning
+                            title:      Messages.badgeTimerRunning
                         });
                 badges.append(badge);
             }
@@ -54,25 +112,20 @@
             badge.remove();
     };
 
-    this.updateTopMessage = function () {
-        var timecampTrackInfo = $('#timecamp-track-info');
-        var taskDuration = $this.taskDuration[$this.currentTaskId()];
-        if (!taskDuration)
-            taskDuration = 0;
+    this.updateTopMessage = function (taskId, duration) {
+        if (!$this.isInfoInserted())
+            return;
+        if (taskId != $this.currentTaskId())
+            return;
 
-        var duration = 0;
         if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
-            duration = moment().diff($this.startDate, 'seconds');
+            duration += moment().diff($this.startDate, 'seconds');
 
-        duration += taskDuration;
-
-        if (duration > 0) {
-            timecampTrackInfo.text('(You spent ' + $this.getElapsedTime(duration) + ' doing this task)');
-        }
+        var timecampTrackInfo = $('#timecamp-track-info');
+        if (duration == 0)
+            timecampTrackInfo.html('');
         else
-        {
-            timecampTrackInfo.text('');
-        }
+            timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task');
     };
 
     this.isButtonInserted = function () {
@@ -105,36 +158,41 @@
         console.log('Inserting Info into page...');
         this.infoInsertingInProgress = true;
 
-        $.when($this.getTrackedTime())
-            .then(function (sum) {
-                $this.updateTopMessage();
-            });
-
         var infoTop = $('.quiet.hide-on-edit.window-header-inline-content.js-current-list');
+
+
         var info = $('<span/>', { 'id': 'timecamp-track-info' });
         infoTop.append(info);
+        $this.getTrackedTime();
         this.infoInsertingInProgress = false;
     };
 
     this.insertButtonIntoPage = function () {
-        if (!$this.currentTaskId())
+        var currentTaskId = $this.currentTaskId();
+        if (!currentTaskId)
             return;
         console.log('Inserting button into page...');
 
+        var buttonObj;
+        if (ButtonList[currentTaskId])
+            buttonObj = ButtonList[currentTaskId];
+        else
+        {
+            var taskName = $this.currentTaskName();
+            buttonObj = new TimerButton(currentTaskId, taskName);
+            ButtonList[currentTaskId] = buttonObj;
+        }
 
-        var buttonObj = new TimerButton($this.currentTaskId());
-        this.buttons[$this.currentTaskId()] = buttonObj;
         buttonObj.insertInProgress = true;
 
         this.buttonInsertionInProgress = true;
-        var button = $('<a/>', { 'class': 'button-link', 'id': 'timecamp-track-button', 'status': 'unknown' });
+        var button = $('<a/>', { 'class': 'button-link', 'id': 'timecamp-track-button', 'data-taskId': currentTaskId, 'status': 'unknown' });
 
         buttonObj.uiElement = button;
         this.button = button;
         button.append($('<img id="tc-logo" src="' + chrome.extension.getURL('images/icon-16.png') + '" />'));
-        button.append($('<span/>', { 'class': 'text' }).text(this.messages.synchronizing));
+        button.append($('<span/>', { 'class': 'text' }).text(Messages.synchronizing));
         button.append($('<span/>', { 'class': 'time' }).text("00:00").hide());
-
 
         $.when(this.updateButtonState())
             .always(function () {
@@ -142,37 +200,14 @@
             });
 
 
-        button.click(function () {
-            $this.buttonClick($this.currentTaskId());
-        });
         var buttonList = $('.window-module.other-actions.u-clearfix .u-clearfix');
         buttonList.prepend(button);
         $('<hr />').insertBefore('.js-move-card');
         buttonObj.insertInProgress = false;
     };
 
-    this.getParentId = function()
-    {
-        var a = $(".js-recent-boards").find('.sidebar-boards-list').find('a:first');
-        var href = a.prop('href');
-        if (href == this.lastData)
-            return this.lastParentId;
-
-        var pattern = /\/b\/([a-zA-z0-9]+)\//;
-        var res = pattern.exec(href);
-
-        if (res && res.length > 1)
-        {
-            this.lastData = href;
-            this.lastParentId = res[1];
-            return res[1];
-        }
-
-        return null;
-    };
-
     this.onTrackingDisabled = function() {
-        var button = this.buttons[this.currentTaskId()];
+        var button = ButtonList[$this.currentTaskId()];
         if (!button || button.denied)
             return;
 
@@ -199,5 +234,25 @@
 
     this.bindEvents(this);
 }
-TrelloTimer.prototype = new TimerBase();
-timer = new TrelloTimer();
+$(document).ready(function () {
+    TrelloTimer.prototype = new TimerBase();
+    timer = new TrelloTimer();
+    timer.timeFetchMethod = timer.timeFetchMethods.FOR_SUBTASKS;
+});
+
+Sidebar.cssUpdate = [
+    {
+        selector: "body",
+        property: "padding-left",
+        value: "50px"
+    },
+    {
+        selector: "#boards-drawer .boards-drawer",
+        property: "margin-left",
+        value: "50px"
+    }
+];
+Sidebar.clickBindSelector = ["#surface"];
+Sidebar.appendSelector = "#surface";
+
+Service = "trello";

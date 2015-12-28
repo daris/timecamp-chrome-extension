@@ -1,10 +1,9 @@
-function TeamworkTimer() {
+function InsightlyTimer() {
 
-    this.service = 'insightly';
-    this.messages.set('synchronizing', 'SYNCING');
-    this.messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
-    this.messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
-    this.messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
+    Messages.set('synchronizing', 'SYNCING');
+    Messages.set('buttonTimerStopTrackingAnotherTask', 'BUTTON_TIMER_STOPPED_SHORT');
+    Messages.set('buttonTimerStopped', 'BUTTON_TIMER_STOPPED_SHORT');
+    Messages.set('buttonTimerStarted', 'BUTTON_TIMER_STARTED_SHORT');
     this.infoInsertingInProgress = false;
     this.isWatching = this.canWatch.DOM;
     var $this = this;
@@ -14,7 +13,10 @@ function TeamworkTimer() {
 
         var tasksPattern = /Tasks\/TaskDetails\/([0-9]+)/ig;
         var projectsPattern = /Projects\/Details\/([0-9]+)/ig;
+        var leadsPattern = /Leads\/Details\/([0-9]+)/ig;
+        var contactsPattern = /Contacts\/Details\/([0-9]+)/ig;
         var opportunitiesPattern = /opportunities\/details\/([0-9]+)/ig;
+        var organizationsPattern = /Organisations\/details\/([0-9]+)/ig;
 
         MatchRes = tasksPattern.exec(url);
         if (MatchRes)
@@ -28,8 +30,144 @@ function TeamworkTimer() {
         if (MatchRes)
             return "opp_"+MatchRes[1];
 
+        MatchRes = leadsPattern.exec(url);
+        if (MatchRes)
+            return "lead_"+MatchRes[1];
+
+        MatchRes = contactsPattern.exec(url);
+        if (MatchRes)
+            return "contact_"+MatchRes[1];
+
+        MatchRes = organizationsPattern.exec(url);
+        if (MatchRes)
+            return "organisation_"+MatchRes[1];
+
         return null;
     };
+
+    this.getParentId = function() {
+        var url = document.URL;
+        var reg = /\.insight\.ly\/([A-Za-z]+)/g;
+        var MatchRes = reg.exec(url);
+
+        console.log('MatchRes', MatchRes);
+        if (MatchRes)
+        {
+            var parent =MatchRes[1];
+
+            if (parent == 'tasks')
+                timer.timeFetchMethod = timer.timeFetchMethods.FOR_SUBTASKS;
+            else
+                timer.timeFetchMethod = timer.timeFetchMethods.FOR_PARENT;
+
+            return parent;
+        }
+
+        return null;
+    };
+
+    function findNonTasks() {
+        var result = [];
+        var parentName = $this.getParentId();
+        var find = new RegExp("/"+parentName+"/details/", "gi");
+        var links = $('a.noselect[href]').filter(function()
+        {
+            if (this.href.toLowerCase().search(find) == -1)
+                return false;
+
+            if ($(this).text().trim() == "")
+                return false;
+            return true;
+        });
+
+        if (links.length)
+        {
+            var prefix = "";
+
+            switch (parentName.toLowerCase())
+            {
+                case "leads": prefix = "lead_"; break;
+                case "contacts":    prefix = "contact_"; break;
+                case "organisations":    prefix = "organisation_"; break;
+                case "projects":    prefix = "project_"; break;
+                case "opportunities":    prefix = "opp_"; break;
+            }
+
+            $.each(links, function(key, el)
+            {
+                var reg = new RegExp("/"+parentName+"/details/([0-9]+)","gi");
+                var matchRes = reg.exec($(el).attr("href").toLowerCase());
+                if (!matchRes)
+                    return;
+
+                var taskId = matchRes[1];
+                var taskName = $(el).text();
+
+                var subtask = {
+                    taskId: prefix+taskId,
+                    taskName: taskName,
+                    DOMObj: el
+                };
+                result.push(subtask);
+            });
+        }
+
+        return result;
+    }
+
+    function findTasks() {
+        var result = [];
+        var links = $(".subject a");
+
+        if (links.length)
+        {
+            $.each(links, function(key, el)
+            {
+                var reg = new RegExp("taskdetails/([0-9]+)","gi");
+                var matchRes = reg.exec($(el).attr("href").toLowerCase());
+                if (!matchRes)
+                    return;
+
+                var taskId = matchRes[1];
+                var taskName = $(el).text();
+
+                var subtask = {
+                    taskId: taskId,
+                    taskName: taskName,
+                    DOMObj: el
+                };
+                result.push(subtask);
+            });
+        }
+
+        return result;
+    }
+    this.getSubtasks = function() {
+
+        var listContent = $('#list-content');
+        var taskListContent = $('#tasklist-content');
+
+        var subtasks = [];
+
+        if (listContent.length)
+            subtasks = findNonTasks();
+        else if(taskListContent.length)
+            subtasks = findTasks();
+
+        console.log('subtasks', subtasks);
+
+        return subtasks;
+    };
+
+    this.currentTaskName = function () {
+
+        var el = $("#entityname");
+        if (el.length)
+            return el.html();
+
+        return false;
+    };
+
 
     this.isButtonInserted = function () {
         if (!this.currentTaskId())
@@ -55,15 +193,23 @@ function TeamworkTimer() {
         }
 
         var parent = $('#content').find('[class^="header-toolbar"] .btn-toolbar');
-        var buttonObj = new TimerButton(currentTaskId);
 
-        this.buttons[currentTaskId] = buttonObj;
+        var buttonObj;
+        if (ButtonList[currentTaskId])
+            buttonObj = ButtonList[currentTaskId];
+        else
+        {
+            var taskName = $this.currentTaskName();
+            buttonObj = new TimerButton(currentTaskId, taskName);
+            ButtonList[currentTaskId] = buttonObj;
+        }
+
         buttonObj.insertInProgress = true;
 
         var containter = $('<div/>',{class:'btn-group'});
         var button = $('<button/>', { class:'btn btn-default', 'id': 'timecamp-track-button', 'data-taskId': currentTaskId });
         button.append($('<img id="tc-logo" src="' + chrome.extension.getURL('images/icon-14.png') + '"/>'));
-        button.append($('<span/>', { 'class': 'text' }).text(this.messages.synchronizing));
+        button.append($('<span/>', { 'class': 'text' }).text(Messages.synchronizing));
         button.append($('<span/>', { 'class': 'time' }).text("00:00").css({}).hide());
 
         this.button = button;
@@ -130,7 +276,7 @@ function TeamworkTimer() {
                             id:         "tc-badge",
                             style:      "margin-top: -2px;",
                             src:        chrome.extension.getURL('images/icon-14.png'),
-                            title:      this.messages.badgeTimerRunning
+                            title:      Messages.badgeTimerRunning
                         });
                 badges.parent().append(badge);
             }
@@ -139,28 +285,6 @@ function TeamworkTimer() {
         {
             this.onSyncFailure();
         }
-    };
-
-    this.getEntriesStartTime = function () {
-        return '2014-07-01';
-    };
-
-    this.updateTopMessage = function () {
-        var timecampTrackInfo = $('#timecamp-track-info');
-        var taskDuration = $this.taskDuration[$this.currentTaskId()];
-        if (!taskDuration)
-            taskDuration = 0;
-
-        var duration = 0;
-        if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
-            duration = moment().diff($this.startDate, 'seconds');
-
-        duration += taskDuration;
-
-        if (duration == 0)
-            timecampTrackInfo.html('');
-        else
-            timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task');
     };
 
     this.isInfoInserted = function () {
@@ -180,33 +304,20 @@ function TeamworkTimer() {
         return false;
     };
 
-    this.updateTopMessage = function () {
-        var currentTaskId = $this.currentTaskId();
-        if (!currentTaskId)
+    this.updateTopMessage = function (taskId, duration) {
+        if (!$this.isInfoInserted())
+            return;
+        if (taskId != $this.currentTaskId())
             return;
 
+        if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
+            duration += moment().diff($this.startDate, 'seconds');
+
         var timecampTrackInfo = $('#timecamp-track-info');
-
-        var taskDuration = $this.taskDuration[currentTaskId];
-        if (!taskDuration)
-            taskDuration = 0;
-
-        var taskDurationToday = $this.taskDurationToday[currentTaskId];
-        if (!taskDurationToday)
-            taskDurationToday = 0;
-
-        var duration = 0;
-
-        if ($this.startDate && $this.trackedTaskId == currentTaskId)
-            duration = moment().diff($this.startDate, 'seconds');
-
-        var durationToday = duration + taskDurationToday;
-        duration += taskDuration;
-
         if (duration == 0)
             timecampTrackInfo.html('No time tracked yet');
         else
-            timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task ('+$this.getElapsedTime(durationToday)+ ' today)');
+            timecampTrackInfo.html('<b>You</b> spent ' + $this.getElapsedTime(duration) + ' doing this task');
     };
 
     this.insertInfoIntoPage = function () {
@@ -217,24 +328,22 @@ function TeamworkTimer() {
         this.infoInsertingInProgress = true;
         console.log('Inserting info...');
 
-        $.when($this.getTrackedTime())
-            .then(function () {
-                $this.updateTopMessage();
-        });
-
         var container = $(".entity-detail").find(".property-table");
 
+
         var tr = $('<tr/>');
+
         var tdTitle = $('<td/>', {class:'ralign'});
         var tdValue = $('<td/>');
         var title = $('<span />', {class: 'title', html:'TimeCamp'});
         var value = $('<div/>', { 'class': 'info', 'id': 'timecamp-track-info', 'text' : 'No data yet'});
-
         tdTitle.append(title);
+
         tdValue.append(value);
         tr.append(tdTitle);
         tr.append(tdValue);
         container.prepend(tr);
+        $this.getTrackedTime();
 
         this.infoInsertingInProgress = false;
     };
@@ -245,29 +354,8 @@ function TeamworkTimer() {
             badge.remove();
     };
 
-    this.getParentId = function() {
-        var overview = $('#tab_overview');
-        if (!overview.length)
-            return null;
-
-        var link = overview.children('a:first').attr('href');
-        if (link == '' || link === undefined)
-            return null;
-        if (link == this.lastData)
-            return this.lastParentId;
-
-        var id = /projects\/([0-9]+)+-.*\/overview/.exec(link);
-
-        if (id.length < 2)
-            return null;
-
-        this.lastData = link;
-        this.lastParentId = id[1];
-        return id[1];
-    };
-
     this.onTrackingDisabled = function() {
-        var button = this.buttons[this.currentTaskId()];
+        var button = ButtonList[this.currentTaskId()];
         if (!button || button.denied)
             return;
 
@@ -282,5 +370,20 @@ function TeamworkTimer() {
 
     this.bindEvents(this);
 }
-TeamworkTimer.prototype = new TimerBase();
-timer = new TeamworkTimer();
+
+$(document).ready(function () {
+    InsightlyTimer.prototype = new TimerBase();
+    timer = new InsightlyTimer();
+});
+
+Sidebar.cssUpdate = [
+    {
+        selector: "#wrapper",
+        property: "margin-left",
+        value   : "50px"
+    }
+];
+Sidebar.clickBindSelector = ["body"];
+Sidebar.appendSelector = "body";
+
+Service = "insightly";

@@ -1,6 +1,6 @@
 {
     "name": "__MSG_NAME__",
-    "version": "1.2.1",
+    "version": "1.3.2",
     "manifest_version": 2,
     "description": "__MSG_DESCRIPTION__",
     "icons": {
@@ -23,57 +23,69 @@
             "matches": [
                 "*://*.trello.com/*"
             ],
-            "css": ["styles/sites/trello.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-                "scripts/services/trello.js"]
-        },
-        {
-            "matches": [
-                "*://*.manageprojects.com/*"
+            "exclude_matches" : [
+                "*://blog.trello.com/*",
+                "*://help.trello.com/*"
             ],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-                "scripts/services/activecollab.js"]
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css",
+                "styles/sites/trello.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
+                "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+                "scripts/third_party/trello.js"]
         },
         {
             "matches": [
                 "*://*.podio.com/*"
             ],
-            "css": ["styles/sites/podio.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-            "scripts/services/podio.js"]
+            "exclude_matches" : [
+                "*://*.podio.com/",
+                "*://podio.com/site/*",
+                "*://podio.com/login*"
+            ],
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css",
+                "styles/sites/podio.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
+                "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "scripts/third_party/podio.js"]
         },
         {
             "matches": [
-                "*://*.pivotaltracker.com/*"
+                "*://app.asana.com/*"
             ],
-            "css": ["styles/sites/pivotaltracker.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-            "scripts/services/pivotaltracker.js"]
-        },
-        {
-            "matches": [
-                "*://*.asana.com/*"
-            ],
-            "css": ["styles/sites/asana.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-
-            "scripts/services/asana.js"]
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css",
+                "styles/sites/asana.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
+                "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+                "scripts/third_party/asana.js"]
         },
         {
             "matches": [
                 "*://*.teamwork.com/*"
             ],
-            "css": ["styles/sites/teamwork.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-            "scripts/services/teamwork.js"]
+            "exclude_matches" : [
+                "*://www.teamwork.com/*",
+                "*://happines.teamwork.com/*",
+                "*://developer.teamwork.com/*"
+            ],
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css",
+                "styles/sites/teamwork.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
+                "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "scripts/third_party/teamwork.js"]
         },
         {
             "matches": [
                 "*://*.insight.ly/*"
             ],
-            "css": ["styles/sites/insightly.css"],
-            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/moment.min.js", "scripts/config.js", "scripts/TokenManager.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
-            "scripts/services/insightly.js"]
+            "exclude_matches" : [
+                "*://api.insight.ly/*",
+                "*://support.insight.ly/*"
+            ],
+            "css": ["styles/common.css", "styles/sidebar.css", "styles/font-awesome.css", "styles/bootstrap.min.css", "styles/jquery-ui.structure.min.css", "styles/jquery-ui.theme.min.css",
+                "styles/sites/insightly.css"],
+            "js": ["scripts/lib/jquery-2.1.1.min.js", "scripts/lib/jquery-ui.min.js", "scripts/lib/moment.min.js", "scripts/lib/moment-range.min.js", "scripts/lib/Chart.js", "scripts/lib/ICanHaz.min.js",
+                "scripts/config.js", "scripts/TokenManager.js", "scripts/ApiService.js", "scripts/ChartService.js", "scripts/sidebar.js", "scripts/common.js", "scripts/TimerBase.js","scripts/TimerButton.js",
+            "scripts/third_party/insightly.js"]
         }
     ],
     "homepage_url": "http://www.timecamp.com/",
@@ -90,12 +102,9 @@
         "persistent": false
     },
     "web_accessible_resources": [
-        "images/icon-14.png",
-        "images/icon-16.png",
-        "images/icon-19.png",
-        "images/icon-38.png",
-        "images/icon-48.png",
-        "images/icon-128.png",
-        "scripts/interceptHistoryChanges.js"
+        "images/*.png",
+        "scripts/interceptHistoryChanges.js",
+        "templates/*",
+        "fonts/*"
     ]
 }

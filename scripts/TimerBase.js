@@ -3,51 +3,37 @@
  */
 
 function TimerBase() {
-    this.service = '';
-    this.oneSecondIntervalId = null;
     this.buttonInsertionInProgress = false;
     this.infoInsertingInProgress = false;
     this.pushInterval = 30000;
     this.isTimerRunning = false;
     this.trackedTaskId = "";
     this.button = null;
-    this.syncing = false;
     this.startDate = null;
     this.multiButton = false;
-    this.taskDuration = {};
-    this.taskDurationToday = {};
-    this.buttons = {};
     this.trackableParents = false;
-    this.lastParentId = null;
-    this.lastData = null;
+    this.lastParentTask = null;
+    this.lastTask = null;
     this.lastUrl = '';
+    this.me = null;
 
     var $this = this;
 
-    this.messages = {
-        buttonTimerStopping                 : chrome.i18n.getMessage('BUTTON_TIMER_STOPPING'),
-        buttonTimerStarting                 : chrome.i18n.getMessage('BUTTON_TIMER_STARTING'),
-        buttonTimerStopTrackingAnotherTask  : chrome.i18n.getMessage('BUTTON_TIMER_STOP_TRACKING_ANOTHER_TASK'),
-        buttonTimerStarted                  : chrome.i18n.getMessage('BUTTON_TIMER_STARTED'),
-        buttonTimerStopped                  : chrome.i18n.getMessage('BUTTON_TIMER_STOPPED'),
-        buttonLogIn                         : chrome.i18n.getMessage('BUTTON_LOG_IN'),
-        buttonConnectionError               : chrome.i18n.getMessage('BUTTON_CONNECTION_ERROR'),
-        synchronizing                       : chrome.i18n.getMessage('SYNCHRONIZING'),
-        badgeTimerRunning                   : chrome.i18n.getMessage('BADGE_TIMER_RUNNING'),
-        set: function (key, value) {
-            $this.messages[key] = chrome.i18n.getMessage(value);
-        }
-    };
-
-    this.canWatch = {'DOM': 0,'URL': 1, 'HISTORY': 2};
+    this.canWatch = {'DOM': 0,'URL': 1, 'HISTORY': 2, 'LOAD': 3};
+    this.timeFetchMethods = {'FOR_SUBTASKS': 0 , "FOR_PARENT": 1};
+    this.timeFetchMethod = this.timeFetchMethods.FOR_PARENT;
     this.isWatching = this.canWatch.DOM;
 
     this.currentTaskId          = function () { return ''; };
+    this.isTaskSelected         = function () { return !!$this.currentTaskId() };
+    this.currentTaskName        = function () { return false; };
+    this.isParentSelected       = function () { return !!$this.getParentId() };
+    this.getSubtasks            = function () { return [] };
     this.onSyncSuccess          = function (response) {};
     this.onSyncFailure          = function (reason) {};
     this.insertButtonIntoPage   = function () {};
     this.insertInfoIntoPage     = function () {};
-    this.updateTopMessage       = function (startDate) {};
+    this.updateTopMessage       = function (taskId, duration) {};
     this.getAvailableButtons    = function () {};
     this.onTrackingDisabled     = function () {};
 
@@ -55,11 +41,37 @@ function TimerBase() {
         return true;
     };
 
+    function parentsEquals(newParent, oldParent)
+    {
+        if (newParent.taskId != oldParent.taskId)
+            return false;
+
+        if (!newParent.subtasks.length)
+            return true;
+
+        if (newParent.subtasks.length != oldParent.subtasks.length)
+            return false;
+
+        return true;
+    }
+
+    function tasksEquals(TaskA, TaskB)
+    {
+        if (TaskA.taskId != TaskB.taskId)
+            return false;
+
+        if (TaskA.taskName != TaskB.taskName)
+            return false;
+
+        return true;
+    }
+
     this.isInfoInserted = function () {
         return true;
     };
 
     this.getParentId = function() {
+        console.log('geeeeeee');
         return false;
     };
 
@@ -77,56 +89,109 @@ function TimerBase() {
         return false;
     };
 
-    this.runTimer = function (startDate, button) {
-        return setInterval(function () {
-            var diff = moment().diff(startDate,'seconds');
-            if (button)
-                button.setButtonTime(diff);
-            if ($this.trackedTaskId == $this.currentTaskId())
-                $this.updateTopMessage();
-        }, 1000);
+    var storage = {
+        entries: {}
     };
 
-    this.buttonClick = function (taskId, onStart, onStop) {
+    this.buttonClick = function (e)
+    {
+        console.log('e', e);
+        if (e)
+            e.stopPropagation();
+
+        var params = $(this).data('params');
+        if (!params)
+            params = {};
+
+        var taskId = $(this).attr('data-taskId');
+        if (!taskId)
+            taskId = params.taskId;
+
         if (!taskId)
             return;
-        if (!$this.buttons[taskId])
+
+        var button;
+        if (!ButtonList[taskId])
+        {
+            button = new TimerButton(taskId);
+            button.enabled = true;
+            button.insertInProgress = false;
+        }
+        else
+            button = ButtonList[taskId];
+
+        if (!button.isEnabled())
             return;
-        if (!$this.buttons[taskId].isEnabled())
+
+        if (params.taskName)
+            button.taskName = params.taskName;
+
+        button.enabled = false;
+
+        var always = function() {
+            $this.updateButtonState();
+            $this.getEntries(taskId, true);
+        };
+
+        var now = moment().format("YYYY-MM-DD HH:mm:ss");
+        if ($this.isTimerRunning && $this.trackedTaskId == taskId)
+        {
+            button.hideTimer().setButtonText(Messages.buttonTimerStopping);
+            $.when(ApiService.Timer.stop(now)).then(function () {
+                button.stop();
+                always();
+            });
+        }
+        else
+        {
+            button.setButtonText(Messages.buttonTimerStarting);
+            $.when(ApiService.Timer.start(taskId, now)).then(function (data) {
+                button.start(now, data.entry_id);
+                always();
+            });
+        }
+        ButtonList[taskId] = button;
+    };
+
+    this.detectTaskIdChange = function()
+    {
+        var args;
+
+        if (!$this.isTaskSelected())
+        {
+            if (!$this.isParentSelected())
+            {
+                if ($this.lastTask || $this.lastParentTask)
+                    $(document).trigger('tcNothingSelected');
+
+                $this.lastTask = null;
+                $this.lastParentTask = null;
+                return;
+            }
+            args = {
+                externalParentId: $this.getParentId(),
+                subtasks: $this.getSubtasks()
+            };
+
+            if ($this.lastParentTask && parentsEquals(args, $this.lastParentTask))
+                return;
+
+            $(document).trigger('tcParentChangeDetected', args);
+            $this.lastParentTask = args;
+            $this.lastTask = null;
+            return;
+        }
+        args = {
+            externalTaskId: $this.currentTaskId(),
+            taskName: $this.currentTaskName()
+        };
+
+        if ($this.lastTask && tasksEquals(args, $this.lastTask))
             return;
 
-        $.when(TokenManager.getToken())
-            .then(function (token) {
-                var payload = {};
-                if ($this.isTimerRunning && $this.trackedTaskId == taskId) {
-                    payload = {"stopped_at": moment().format("YYYY-MM-DD HH:mm:ss"), "action":"stop"};
-                    $this.buttons[taskId].setButtonTime(0).hideTimer().setButtonText($this.messages.buttonTimerStopping);
-                    $this.buttons[taskId].enabled = false;
-                    if (onStop)
-                        onStop();
-
-                    if ($this.oneSecondIntervalId) {
-                        clearInterval($this.oneSecondIntervalId);
-                    }
-                }
-                else {
-                    payload = {"started_at": moment().format("YYYY-MM-DD HH:mm:ss"), "action":"start"};
-                    $this.buttons[taskId].setButtonText($this.messages.buttonTimerStarting);
-                    $this.buttons[taskId].enabled = false;
-                    if (onStart)
-                        onStart();
-                }
-
-                $this.syncing = false;
-                $this.apiCall(apiUrl, token, taskId, payload).done(function() {
-                    $this.updateButtonState();
-                    $.when($this.getEntries(taskId)).then(function () {
-                        $.when($this.getTrackedTime()).then(function () {
-                            $this.updateTopMessage();
-                        });
-                    });
-                });
-            })
+        $this.lastTask = args;
+        $this.lastParentTask = null;
+        $(document).trigger('tcTaskChangeDetected', args);
     };
 
     this.onDomModified = function () {
@@ -152,158 +217,117 @@ function TimerBase() {
             if (!$this.canTrack())
                 $this.onTrackingDisabled();
 
+            setTimeout(function() {$this.detectTaskIdChange();});
         }
     };
 
-    this.apiCall = function (apiUrl, token, cardId, payload) {
-        if (this.syncing)
-            return null;
-
-        this.syncing = true;
-
-        payload.api_token = token;
-        payload.service = this.service;
-        payload.external_task_id = cardId;
-
-        return $.ajax({
-            url: apiUrl,
-            data: payload,
-            type: 'POST'
-        }).always(function () {
-            $this.syncing = false;
-        });
-    };
-
     this.updateButtonState = function () {
-        $.when(TokenManager.getToken())
-            .then(function (token) {
-                var cardId = $this.currentTaskId();
-                return $this.apiCall(apiUrl, token, cardId, {action: 'status'});
-            }).done(function (response) {
+        $.when(ApiService.Timer.status()).then(function (response) {
             if (response == null)
                 return;
 
-            $this.isTimerRunning = response.isTimerRunning;
-
             $this.onSyncSuccess(response);
 
-            for (var i in $this.buttons)
-                $this.buttons[i].enabled = true;
+            for (var i in ButtonList)
+                ButtonList[i].enabled = true;
 
-            if ($this.isTimerRunning)
+            if(!response.isTimerRunning) {
+                for (var i in ButtonList)
+                {
+                    ButtonList[i].stop();
+                    ButtonList[i].setButtonText(Messages.buttonTimerStopped);
+                }
+            }
+            else
             {
                 $this.trackedTaskId = response.external_task_id;
-                var startDate = moment(response.start_time);
-                var button = $this.buttons[$this.trackedTaskId];
-                $this.startDate = startDate;
+                $this.startDate = moment(response.start_time);
 
-                for (var i in $this.buttons)
+                if (!ButtonList[$this.trackedTaskId])
                 {
-                    if ($this.trackedTaskId != i)
-                    {
-                        $this.buttons[i].setButtonText($this.messages.buttonTimerStopTrackingAnotherTask);
-                        $this.buttons[i].setButtonTime(0);
-                        $this.buttons[i].hideTimer();
-                    }
+                    var button = new TimerButton($this.trackedTaskId);
+                    button.enabled = true;
+                    button.insertInProgress = false;
+                    button.taskName = response.name;
+                    ButtonList[$this.trackedTaskId] = button;
+                    $this.getEntries($this.trackedTaskId, false, false);
                 }
 
-                if ($this.oneSecondIntervalId) {
-                    clearInterval($this.oneSecondIntervalId);
-                }
-
-                if(button)
+                for (var i in ButtonList)
                 {
-                    button.setButtonText($this.messages.buttonTimerStarted);
-                    $this.oneSecondIntervalId = $this.runTimer(startDate, button);
-                    button.uiElement.children('.time').show();
+                    if ($this.trackedTaskId != i )
+                        ButtonList[i].setButtonText(Messages.buttonTimerStopTrackingAnotherTask).stop();
+                    else
+                        ButtonList[i].start($this.startDate, response.entry_id);
                 }
             }
-            else {
-                for (var i in $this.buttons)
-                {
-                    $this.buttons[i].hideTimer();
-                    $this.buttons[i].setButtonTime(0);
-                    $this.buttons[i].setButtonText($this.messages.buttonTimerStopped);
-                }
-                clearInterval($this.oneSecondIntervalId);
-            }
+
+            $this.isTimerRunning = response.isTimerRunning;
         }).fail(function (reason) {
             $this.onSyncFailure(reason);
 
             TokenManager.getLoggedOutFlag().done(function(loggedOut){
                 if (loggedOut) {
-                    for (var i in $this.buttons)
-                        $this.buttons[i].setButtonText($this.messages.buttonLogIn);
+                    for (var i in ButtonList)
+                        ButtonList[i].setButtonText(Messages.buttonLogIn);
                 } else {
-                    for (var i in $this.buttons)
-                        $this.buttons[i].setButtonText($this.messages.buttonConnectionError);
+                    for (var i in ButtonList)
+                        ButtonList[i].setButtonText(Messages.buttonConnectionError);
                 }
             });
         });
     };
 
-    this.getEntriesStartTime = function () {
-        return moment().format('YYYY-MM-DD');
+    this.onEntriesLoaded = function(event, eventData)
+    {
+        var params = eventData.params;
+        var data   = eventData.data;
+
+        if (params.with_subtasks)
+            return;
+
+        var total = 0;
+        for (i in data)
+            total += parseInt(data[i].duration, 10);
+
+        var taskId = params.external_task_id;
+        $this.updateTopMessage(taskId, total);
     };
 
-    this.getEntries = function(taskId)
+    this.getEntries = function(taskId, forceReload, with_subtasks)
     {
-        return $.Deferred(function (dfd) {
-            $.when(TokenManager.getToken())
-                .then(function (token) {
-                    var today = moment().format('YYYY-MM-DD');
+        with_subtasks = !!with_subtasks;
 
-                    $.ajax({
-                        url: restUrl+'entries/format/json',
-                        data: {
-                            api_token: token,
-                            service: $this.service,
-                            from: $this.getEntriesStartTime(),
-                            to: today,
-                            user_ids: 'me',
-                            external_task_id: taskId
-                        },
-                        type: 'GET'
-                    }).done(function (response) {
-                        var sum = 0;
-                        var todaySum = 0;
-                        if (response.length > 0)
-                        {
-                            for (var i in response)
-                            {
-                                sum += parseInt(response[i]['duration']);
-                                if (response[i]['date'] == today)
-                                    todaySum += parseInt(response[i]['duration']);
-                            }
-                        }
-                        $this.taskDuration[taskId] = sum;
-                        $this.taskDurationToday[taskId] = todaySum;
+        if (!taskId || taskId == "")
+            return;
 
-                        dfd.resolve(sum, todaySum);
-                    }).fail(function () {dfd.reject();});
-                });
+        var params = {
+            from : '2012-01-01',
+            to   : moment().format('YYYY-MM-DD'),
+            user_ids: "me",
+            external_task_id: taskId,
+            with_subtasks: with_subtasks
+        };
+
+        if (storage.entries.hasOwnProperty(taskId) && !forceReload)
+        {
+            $(document).trigger('tcEntriesLoaded', {params: params, data: storage.entries[taskId]});
+            return;
+        }
+
+        $.when(ApiService.Entries.get(params)).then(function (data) {
+            console.log('data', data);
+            if (data.lenght)
+                data.reverse();
+            storage.entries[taskId] = data;
+            $(document).trigger('tcEntriesLoaded', {params: params, data: data});
         });
     };
 
     this.getTrackedTime = function()
     {
-        return $.Deferred(function (dfd) {
-
-            var taskId = $this.currentTaskId();
-
-            if ($this.taskDuration[taskId] !== undefined)
-            {
-                dfd.resolve($this.taskDuration[taskId], $this.taskDurationToday[taskId]);
-                return;
-            }
-
-            $this.taskDuration[taskId] = 0;
-            $this.taskDurationToday[taskId] = 0;
-
-            $.when($this.getEntries(taskId)).then(function(sum, sumToday) {
-                dfd.resolve(sum, sumToday);
-            }).fail(function () {dfd.reject();});
-        });
+        var taskId = $this.currentTaskId();
+        $this.getEntries(taskId);
     };
 
     this.getElapsedTime = function (timeInSeconds)
@@ -324,9 +348,10 @@ function TimerBase() {
     this.URLWatcher = function ()
     {
         var url = document.URL;
-        if (url != $this.lastUrl || $this.buttons.length == 0)
+
+        if (url != $this.lastUrl || ButtonList.length == 0)
         {
-            this.lastUrl = url;
+            $this.lastUrl = url;
 
             var event;
 
@@ -347,21 +372,93 @@ function TimerBase() {
             }
         }
     };
+    this.onParentChangeDetected = function(event, eventData) {
+        console.log('event', event);
+        console.log('eventData', eventData);
 
+        if ($this.timeFetchMethod == $this.timeFetchMethods.FOR_SUBTASKS && eventData.subtasks)
+        {
+            var ids = [];
+            for (i in eventData.subtasks)
+            {
+                var sub = eventData.subtasks[i];
+                ids.push(sub.taskId);
+            }
+
+            if (ids.length)
+                $this.getEntries(ids.join(','), false, true);
+        }
+        else if ($this.timeFetchMethod == $this.timeFetchMethods.FOR_PARENT)
+            $this.getEntries(eventData.externalParentId, false, true);
+    };
+
+    this.onTaskChangeDetected = function(event, eventData) {
+        console.log('event', event);
+        console.log('eventData', eventData);
+
+        if (eventData.externalTaskId)
+            $this.getEntries(eventData.externalTaskId);
+    };
+
+    this.onDatasetChange = function(event, eventData) {
+        console.log('onDatasetChange', eventData);
+        var source = eventData.source;
+        var refType = eventData.refType;
+        var refId = eventData.refId;
+        var data = eventData.data;
+
+        if (source == "timer")
+            return;
+
+        console.log('storage', storage);
+
+        if (refType == 'entry')
+        {
+            var taskId = eventData.parentId;
+            for (i in storage['entries'][taskId])
+            {
+                var entry = storage['entries'][taskId][i];
+                if (entry['id'] == refId)
+                {
+                    $.extend(storage['entries'][taskId][i], data);
+                    console.log('storage', storage);
+                    return;
+                }
+
+            }
+        }
+    };
 
     this.bindEvents = function ($that) {
+        console.log('here');
+
         $this = $that;
-        setInterval($this.updateButtonState, this.pushInterval);
+        setInterval($this.updateButtonState, $this.pushInterval);
         setTimeout($this.updateButtonState, 3000);
+        $(document).on('tcEntriesLoaded',$this.onEntriesLoaded);
+        $(document).on('tcDatasetChange',$this.onDatasetChange);
+        $(document).on('tcTaskChangeDetected',$this.onTaskChangeDetected);
+        $(document).on('tcParentChangeDetected',$this.onParentChangeDetected);
+        $(document).on('tcTimerStarted', $this.onTimerStarted);
+        $(document).on('tcTimerStopped', $this.onTimerStopped);
+        $(document).on('click', '.timecamp-track-button', $this.buttonClick);
+        $(document).on('click', '#timecamp-track-button', $this.buttonClick);
+        $(document).on('click', '#tc-sidebar-start-button', $this.buttonClick);
 
         switch ($this.isWatching)
         {
             case $this.canWatch.DOM:
-                document.addEventListener("DOMNodeInserted", this.onDomModified);
+                document.addEventListener("DOMNodeInserted", function() {
+                    if ($this.DOMChangeTimeout)
+                    {
+                        clearTimeout($this.DOMChangeTimeout)
+                    }
+                    $this.DOMChangeTimeout = setTimeout($this.onDomModified, 100);
+                });
                 break;
             case $this.canWatch.URL:
                 setInterval($this.URLWatcher, 100);
-                document.addEventListener("TCURLChanged", this.onDomModified);
+                document.addEventListener("TCURLChanged", $this.onDomModified);
                 break;
             case $this.canWatch.HISTORY:
                 window.addEventListener("popstate", function(){
@@ -376,17 +473,24 @@ function TimerBase() {
 
         $.when(TokenManager.getToken()).then(function (token)
         {
+            $.when(ApiService.me.get()).then(function (data) {
+                $this.me = data;
+                $(document).trigger('tcMeLoaded', {params: {}, data: data});
+            });
+
             $.ajax({
-                url: restUrl+'can_track/format/json',
+                url: restUrl+'/can_track/format/json',
                 data: {
                     api_token: token,
-                    service: $this.service
+                    service: Service
                 },
                 type: 'GET'
             }).done(function (response) {
                 $this.trackableParents = response['trackable_parents'];
 
-            }).fail(function () {$this.trackableParents = false;});
+            }).fail(function () {
+                $this.trackableParents = false;
+            });
         });
     };
 }
