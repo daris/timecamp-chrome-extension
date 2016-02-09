@@ -13,7 +13,6 @@ function AsanaTimer() {
         var reg = /0\/([0-9]+)\/([0-9]+)/g;
         var MatchRes = reg.exec(url);
 
-        console.log('MatchRes', MatchRes);
         if (MatchRes && MatchRes.length >= 3)
             return MatchRes[2];
 
@@ -25,7 +24,6 @@ function AsanaTimer() {
         var reg = /0\/([0-9]+)/g;
         var MatchRes = reg.exec(url);
 
-        console.log('MatchRes', MatchRes);
         if (MatchRes && MatchRes.length >= 2)
             return MatchRes[1];
 
@@ -205,6 +203,11 @@ function AsanaTimer() {
         var badge = $("#tc-badge");
         if (badge.length > 0)
             badge.remove();
+    };
+
+
+    this.getTrackableId = function () {
+        return null;
     };
 
     this.bindEvents(this);

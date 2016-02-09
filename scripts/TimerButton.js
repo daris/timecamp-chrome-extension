@@ -21,6 +21,7 @@ function TimerButton(taskId, taskName) {
 
         if ($this.isRunning)
             return;
+
         $this.isRunning = true;
         $this.startedAt = startDate;
         $this.runningEntryId = entryId;
@@ -75,7 +76,7 @@ function TimerButton(taskId, taskName) {
 
     this.isEnabled = function ()
     {
-        return !this.insertInProgress && this.enabled;
+        return !this.insertInProgress && this.enabled && !this.denied;
     };
 
     this.isInserted = function ()

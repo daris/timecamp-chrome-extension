@@ -24,7 +24,6 @@
         var reg = /trello\.com\/b\/(\w+)/g;
         var MatchRes = reg.exec(url);
 
-        console.log('MatchRes', MatchRes);
         if (MatchRes)
             return MatchRes[1];
 
@@ -35,7 +34,6 @@
         var subtasks = [];
         var links = $(".list-card-title");
 
-        console.log('links', links);
         if (links.length)
         {
             $.each(links, function(key, el)
@@ -43,10 +41,7 @@
                 var reg = new RegExp("/c/([A-Za-z0-9]+)","g");
                 var href = $(el).attr("href");
 
-                console.log('reg', reg);
-                console.log('href', href);
                 var matchRes = reg.exec(href);
-                console.log('matchRes', matchRes);
                 if (!matchRes)
                     return;
 
@@ -61,8 +56,6 @@
                 subtasks.push(subtask);
             });
         }
-
-        console.log('subtasks', subtasks);
 
         return subtasks;
     };

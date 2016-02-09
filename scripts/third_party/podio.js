@@ -98,8 +98,6 @@ function PodioTimer() {
 
         }
 
-        console.log('subtasks', subtasks);
-
         return subtasks;
     };
 
@@ -147,19 +145,18 @@ function PodioTimer() {
         }
     };
 
-    //this.onTrackingDisabled = function () {
-    //    var button = ButtonList[this.currentTaskId()];
-    //    if (!button || button.denied)
-    //        return;
-    //    button.denied = true;
-    //    button.uiElement.parent().off('click');
-    //
-    //    var notice = $('<div/>', {'style': 'margin-left: 10px;', 'class': 'icon-16 icon-help balloon-visible','title':'Current settings of the integration don\'t allow time tracking for this task. Click the settings icon on the left to change them.'});
-    //    $("#timecamp-track-info").hide().after(notice);
-    //    $("#tc-logo").css({'opacity': '0.5', '-webkit-filter':'saturate(0%)'});
-    //    $("#timecamp-track-button").children('.text').css({'opacity': '0.4'});
-    //
-    //};
+    this.onTrackingDisabled = function () {
+       var button = ButtonList[this.currentTaskId()];
+       if (!button || button.denied)
+           return;
+       button.denied = true;
+
+       var notice = $('<div/>', {'style': 'margin-left: 10px;', 'class': 'icon-16 icon-help balloon-visible','title':'Current settings of the integration don\'t allow time tracking for this task. Click the settings icon on the left to change them.'});
+       $("#timecamp-track-info").hide().after(notice);
+       $("#tc-logo").css({'opacity': '0.5', '-webkit-filter':'saturate(0%)'});
+       $("#timecamp-track-button").children('.text').css({'opacity': '0.4'});
+
+    };
 
     this.onSyncFailure = function () {
         var badge = $("#tc-badge");
@@ -172,9 +169,6 @@ function PodioTimer() {
             return;
         if (taskId != $this.currentTaskId())
             return;
-
-        console.log('taskId', taskId);
-        console.log('duration', duration);
 
         if ($this.startDate && $this.trackedTaskId == $this.currentTaskId())
             duration += moment().diff($this.startDate, 'seconds');
@@ -229,7 +223,7 @@ function PodioTimer() {
         if (addDiv)
         {
             info = $('<div/>', { 'class': 'field text', 'id': 'timecamp-container'});
-            info.append($('<div/>', { 'class': 'label', 'html':'TimeCamp <a href="https://www.timecamp.com/addons/podio/index/'+this.lastParentId+'"><span class="icon-16 icon-16-black-wrench"></span></a>' }));
+            info.append($('<div/>', { 'class': 'label', 'html':'TimeCamp <a href="https://www.timecamp.com/addons/podio/index/'+this.lastTrackableId+'"><span class="icon-16 icon-16-black-wrench"></span></a>' }));
 
             var wrapper = $('<div/>', { 'class': 'value'});
             wrapper.append($('<div/>', { 'id': 'timecamp-track-info', 'text' : 'No data yet', style:'display: inline-block; margin-left: 10px;' }));
@@ -243,7 +237,7 @@ function PodioTimer() {
             var frameLabel = $('<div/>', { 'class': 'frame-label'});
             var frameContent = $('<div/>', { 'class': 'frame-content'});
             var labelContentWrapper = $('<div/>', { 'class': 'label-content-wrapper'});
-            var labelContent = $('<div/>', { 'class': 'label-content', 'html':'TimeCamp <a href="https://www.timecamp.com/addons/podio/index/'+this.lastParentId+'"><span class="icon-16 icon-16-black-wrench"></span></a>'});
+            var labelContent = $('<div/>', { 'class': 'label-content', 'html':'TimeCamp <a href="https://www.timecamp.com/addons/podio/index/'+this.lastTrackableId+'"><span class="icon-16 icon-16-black-wrench"></span></a>'});
             labelContentWrapper.append(labelContent);
             frameLabel.append(labelContentWrapper);
             frameContent.append($('<div/>', { 'class': 'value', 'id': 'timecamp-track-info', 'text' : 'No data yet', 'style':'margin-left: 10px; display: inline-block;' }));
@@ -300,6 +294,59 @@ function PodioTimer() {
 
     };
 
+    this.getTrackableId = function()
+    {
+        var dataBox = $('#bootstrap-data-TaskView');
+        if (dataBox.length > 0)
+        {
+            var content = dataBox.html();
+            if (content === undefined)
+                return null;
+            if (content == this.lastData)
+                return $this.lastTrackableId;
+
+            var data = $.parseJSON(content);
+            var res = ""+data['ref']['data']['app']['app_id'];
+
+            $this.lastData = content;
+            $this.lastTrackableId = res;
+
+            return res;
+        }
+
+        dataBox = $('#bootstrap-data-item');
+        if (dataBox.length > 0)
+        {
+            content = dataBox.html();
+            if (content === undefined)
+                return null;
+            if (content == this.lastData)
+                return this.lastTrackableId;
+
+            data = $.parseJSON(content);
+            res = ""+data['app']['app_id'];
+
+            $this.lastData = content;
+            $this.lastTrackableId = res;
+
+            return res;
+        }
+        dataBox = $('.searchform');
+        dataBox.each(function (key, obj)
+        {
+            var url = $(obj).attr('action');
+            var pattern = /apps\/([0-9]+)+\/search/g;
+            var res = pattern.exec(url);
+
+            if (!res || res.length < 2)
+                return null;
+
+            $this.lastTrackableId = res[1];
+            return res[1];
+        });
+
+        return $this.lastTrackableId;
+    };
 
     this.bindEvents(this);
 }

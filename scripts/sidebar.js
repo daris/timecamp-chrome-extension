@@ -58,27 +58,22 @@ function Sidebar()
 
         var found = false;
         var recentList = $this.pickButton.recent;
-        console.log('recentList1', recentList);
         for (i in recentList)
         {
             var entry = recentList[i];
             if (entry.taskId == taskId)
             {
                 var sub = recentList.splice(i, 1);
-                console.log('recentList2', recentList);
                 recentList.splice(0, 0, sub[0]);
                 found = true;
                 break;
             }
         }
-        console.log('recentList3', recentList);
 
         if (!found)
             recentList.push({taskId: taskId, taskName: taskName});
 
         recentList.slice(0, 4);
-
-        console.log('recentList4', recentList);
 
         $this.pickButton.hasRecent = recentList.length > 0;
         $this.pickButton.recent = recentList;
@@ -86,7 +81,6 @@ function Sidebar()
         var rStorage = {};
         rStorage["recentTasks_"+Service] = recentList;
         chrome.storage.sync.set(rStorage);
-        console.log('rStorage', rStorage);
     }
 
     function clearEntriesBox() {
@@ -431,8 +425,6 @@ function Sidebar()
             storageDefaults["recentTasks_"+Service] = [];
             chrome.storage.sync.get(storageDefaults, function (items) {
                 var recent = items["recentTasks_"+Service];
-                console.log('recent', recent);
-                console.log('items', items);
                 if (!recent)
                     recent = [];
 
@@ -500,6 +492,9 @@ function Sidebar()
     };
 
     this.onTimerTick = function(event, eventData) {
+        if (!$this.isSidebarEnabled)
+            return;
+
         var taskId = eventData.taskId;
         var entryId = eventData.entryId;
         var elapsed = eventData.elapsed;
@@ -695,8 +690,6 @@ function Sidebar()
     }
 
     this.onEntriesLoaded = function(event, eventData) {
-        console.log('event', event);
-        console.log('eventData', eventData);
 
         var params = eventData.params;
         var entries = eventData.data;
@@ -706,9 +699,6 @@ function Sidebar()
             $this.eventStore['onEntriesLoaded'] = eventData;
             return;
         }
-
-        console.log('params.external_task_id', params.external_task_id);
-        console.log('$this.templateData.sidebarButton.taskId', $this.currentTaskId);
 
         if ($this.isRunning && params.external_task_id != $this.currentTaskId)
         {
@@ -775,7 +765,6 @@ function Sidebar()
 
     this.onNothingSelected = function(event)
     {
-        console.log('event', event);
         if ($this.isRunning)
         {
             $this.eventStore['onTaskChange'] = {hasSubtasks: false};
@@ -818,9 +807,6 @@ function Sidebar()
 
     this.onTimerStarted = function(event, eventData)
     {
-        console.log('event', event);
-        console.log('eventData', eventData);
-
         var taskId = eventData['taskId'];
         var taskName = eventData['taskName'];
 
@@ -836,8 +822,6 @@ function Sidebar()
 
     this.onTimerStopped = function (event, eventData)
     {
-        console.log('event', event);
-        console.log('eventData', eventData);
         if ($this.eventStore['onTaskChange'])
         {
             $this.startButton = $this.eventStore['onTaskChange'];
@@ -915,8 +899,6 @@ function Sidebar()
 
     this.toggleEnabled = function()
     {
-        console.log('toggle');
-
         chrome.storage.sync.set({"isSidebarEnabled": !$this.isSidebarEnabled});
     };
 

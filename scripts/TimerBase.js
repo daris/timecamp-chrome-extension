@@ -71,19 +71,18 @@ function TimerBase() {
     };
 
     this.getParentId = function() {
-        console.log('geeeeeee');
         return false;
     };
 
     this.canTrack = function () {
-        var parent = this.getParentId();
-        if (!parent || !this.trackableParents)
+        var trackable = this.getTrackableId();
+        if (!trackable || !this.trackableParents)
             return true;
 
         if (this.trackableParents == 'all')
             return true;
 
-        if (this.trackableParents.indexOf(parent) !== -1)
+        if (this.trackableParents.indexOf(trackable) !== -1)
             return true;
 
         return false;
@@ -95,7 +94,6 @@ function TimerBase() {
 
     this.buttonClick = function (e)
     {
-        console.log('e', e);
         if (e)
             e.stopPropagation();
 
@@ -316,7 +314,6 @@ function TimerBase() {
         }
 
         $.when(ApiService.Entries.get(params)).then(function (data) {
-            console.log('data', data);
             if (data.lenght)
                 data.reverse();
             storage.entries[taskId] = data;
@@ -373,9 +370,6 @@ function TimerBase() {
         }
     };
     this.onParentChangeDetected = function(event, eventData) {
-        console.log('event', event);
-        console.log('eventData', eventData);
-
         if ($this.timeFetchMethod == $this.timeFetchMethods.FOR_SUBTASKS && eventData.subtasks)
         {
             var ids = [];
@@ -393,15 +387,11 @@ function TimerBase() {
     };
 
     this.onTaskChangeDetected = function(event, eventData) {
-        console.log('event', event);
-        console.log('eventData', eventData);
-
         if (eventData.externalTaskId)
             $this.getEntries(eventData.externalTaskId);
     };
 
     this.onDatasetChange = function(event, eventData) {
-        console.log('onDatasetChange', eventData);
         var source = eventData.source;
         var refType = eventData.refType;
         var refId = eventData.refId;
@@ -409,8 +399,6 @@ function TimerBase() {
 
         if (source == "timer")
             return;
-
-        console.log('storage', storage);
 
         if (refType == 'entry')
         {
@@ -421,7 +409,6 @@ function TimerBase() {
                 if (entry['id'] == refId)
                 {
                     $.extend(storage['entries'][taskId][i], data);
-                    console.log('storage', storage);
                     return;
                 }
 
@@ -430,8 +417,6 @@ function TimerBase() {
     };
 
     this.bindEvents = function ($that) {
-        console.log('here');
-
         $this = $that;
         setInterval($this.updateButtonState, $this.pushInterval);
         setTimeout($this.updateButtonState, 3000);

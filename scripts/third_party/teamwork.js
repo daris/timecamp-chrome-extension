@@ -68,8 +68,6 @@ function TeamworkTimer() {
             });
         }
 
-        console.log('subtasks', subtasks);
-
         return subtasks;
     };
 
@@ -201,6 +199,27 @@ function TeamworkTimer() {
         button.uiElement.children().css({'opacity': '0.6'});
         $("#tc-logo").css({'-webkit-filter':'saturate(0%)'});
         $('#TaskContent').find('.taskList').before(notice);
+    };
+
+    this.getTrackableId = function() {
+        var overview = $('#tab_overview');
+        if (!overview.length)
+            return null;
+
+        var link = overview.children('a:first').attr('href');
+        if (link == '' || link === undefined)
+            return null;
+        if (link == this.lastData)
+            return this.lastTrackableId;
+
+        var id = /projects\/([0-9]+)+-.*\/overview/.exec(link);
+
+        if (id.length < 2)
+            return null;
+
+        this.lastData = link;
+        this.lastTrackableId = id[1];
+        return id[1];
     };
 
     this.bindEvents(this);

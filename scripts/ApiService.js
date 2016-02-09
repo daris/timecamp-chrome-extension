@@ -17,7 +17,6 @@ function ApiService() {
         {
             return $.Deferred(function (dfd)
             {
-                console.log('ApiService.ApiToken', ApiService.ApiToken);
                 if (ApiService.ApiToken == null)
                     dfd.reject({message:"not_logged_in"});
             });
@@ -27,7 +26,6 @@ function ApiService() {
         {
             return $.Deferred(function (dfd)
             {
-                console.log('ApiService.ApiToken', ApiService.ApiToken);
                 if (ApiService.ApiToken == null)
                     dfd.reject({message:"not_logged_in"});
             });

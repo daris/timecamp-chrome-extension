@@ -50,7 +50,6 @@ function InsightlyTimer() {
         var reg = /\.insight\.ly\/([A-Za-z]+)/g;
         var MatchRes = reg.exec(url);
 
-        console.log('MatchRes', MatchRes);
         if (MatchRes)
         {
             var parent =MatchRes[1];
@@ -153,8 +152,6 @@ function InsightlyTimer() {
             subtasks = findNonTasks();
         else if(taskListContent.length)
             subtasks = findTasks();
-
-        console.log('subtasks', subtasks);
 
         return subtasks;
     };
@@ -367,6 +364,11 @@ function InsightlyTimer() {
         $("#tc-logo").css({'-webkit-filter':'saturate(0%)'});
         $('#TaskContent').find('.taskList').before(notice);
     };
+
+    this.getTrackableId = function() {
+        return null;
+    };
+
 
     this.bindEvents(this);
 }
