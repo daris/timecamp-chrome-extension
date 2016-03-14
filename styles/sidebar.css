@@ -10,34 +10,30 @@
   font-family: Arial, monospace !important; }
 .timecamp .tc-sidebar {
   all: initial;
+  background: #fff;
+  background: -moz-linear-gradient(left, #fff 96%, #eee 100%);
+  background: -webkit-linear-gradient(left, #fff 96%, #eee 100%);
+  background: linear-gradient(to right, #fff 96%, #eee 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#eeeeee',GradientType=1 );
+  border-right: 1px solid #bbb;
+  color: #333;
   position: fixed;
   height: 100%;
   left: 0;
   width: 280px;
   z-index: 1000;
-  background-color: white;
-  border-right: 2px solid #535353;
-  color: #535353;
   font-size: 12px;
   font-family: proxima-nova, 'Helvetica Neue', Arial, sans-serif;
   line-height: 12px;
-  box-sizing: content-box; }
+  box-sizing: content-box;
+  -webkit-transition: all 200ms;
+  -o-transition: all 200ms;
+  transition: all 200ms; }
   .timecamp .tc-sidebar .fa {
     vertical-align: middle; }
   .timecamp .tc-sidebar .row {
     margin: 0;
     padding: 3px 5px 3px 0; }
-  .timecamp .tc-sidebar.collapsed {
-    left: -230px; }
-    .timecamp .tc-sidebar.collapsed .tc-sidebar-scrollable {
-      overflow: hidden; }
-  .timecamp .tc-sidebar.expanded {
-    left: 0; }
-    .timecamp .tc-sidebar.expanded .chart-icon {
-      display: none; }
-    .timecamp .tc-sidebar.expanded .tc-sidebar-scrollable {
-      overflow-y: auto;
-      overflow-x: hidden; }
   .timecamp .tc-sidebar .tc-charts {
     position: relative; }
   .timecamp .tc-sidebar .chart-icon {
@@ -57,10 +53,15 @@
     background-repeat: no-repeat;
     display: inline-block; }
   .timecamp .tc-sidebar .header {
+    border-bottom: 2px solid #dddddd;
+    color: #bbb;
+    margin-top: 10px;
+    margin-right: -5px;
+    font-size: 12px;
     font-weight: bold;
-    border-bottom: 2px solid #535353;
-    font-size: 14px;
-    margin-right: -5px; }
+    text-transform: uppercase; }
+    .timecamp .tc-sidebar .header .date-header {
+      margin: 0 5px; }
   .timecamp .tc-sidebar .inline {
     display: inline-block; }
   .timecamp .tc-sidebar .right {
@@ -113,27 +114,76 @@
     .timecamp .tc-sidebar .tc-subtask-picker-entry:hover {
       color: #262626;
       text-decoration: none;
-      background-color: #e1e1e1; }
+      background-color: #e5e5e5; }
+  .timecamp .tc-sidebar.collapsed {
+    left: -230px;
+    -webkit-transition: all 200ms;
+    -o-transition: all 200ms;
+    transition: all 200ms; }
+    .timecamp .tc-sidebar.collapsed .tc-sidebar-scrollable {
+      overflow: hidden; }
+    .timecamp .tc-sidebar.collapsed .date-header {
+      float: right; }
+    .timecamp .tc-sidebar.collapsed .billable-header, .timecamp .tc-sidebar.collapsed .hours-header {
+      display: none; }
+    .timecamp .tc-sidebar.collapsed #tc-sidebar-start-button, .timecamp .tc-sidebar.collapsed #tc-sidebar-pick-button {
+      border-color: transparent; }
+    .timecamp .tc-sidebar.collapsed .add-time, .timecamp .tc-sidebar.collapsed .date-header, .timecamp .tc-sidebar.collapsed .duration {
+      margin-right: 0;
+      padding-right: 0 !important;
+      text-align: left;
+      width: 45px; }
+    .timecamp .tc-sidebar.collapsed .row {
+      margin-right: 0;
+      padding-right: 0; }
+    .timecamp .tc-sidebar.collapsed .tc-timer-state-icon {
+      margin-right: -4px; }
+  .timecamp .tc-sidebar.expanded {
+    left: 0; }
+    .timecamp .tc-sidebar.expanded .chart-icon {
+      display: none; }
+    .timecamp .tc-sidebar.expanded .tc-sidebar-scrollable {
+      overflow-y: auto;
+      overflow-x: hidden; }
+    .timecamp .tc-sidebar.expanded .add-time {
+      float: left;
+      opacity: 1;
+      padding-right: 0 !important;
+      text-align: left;
+      width: 45px; }
+      .timecamp .tc-sidebar.expanded .add-time span {
+        display: inline; }
   .timecamp .tc-sidebar .tc-subtask-picker-list-header {
     text-transform: uppercase;
-    border-bottom: 1px solid #535353;
+    border-bottom: 1px solid #bbb;
     font-weight: bold;
     padding-left: 5px;
     padding-top: 5px; }
   .timecamp .tc-sidebar .add-time {
+    border: 0;
     font-size: 10px;
-    font-weight: bold;
-    padding: 5px 5px 5px 0 !important; }
+    padding: 5px !important;
+    opacity: .5; }
+    .timecamp .tc-sidebar .add-time i {
+      vertical-align: top; }
+    .timecamp .tc-sidebar .add-time span {
+      display: none; }
   .timecamp .tc-sidebar .hidden {
     display: none; }
 .timecamp .tc-sidebar-header {
+  background-color: #59be7b;
   z-index: 999999;
   position: fixed;
   top: 0;
-  background-color: white;
   width: 280px;
   float: right;
-  height: 62px; }
+  height: 64px; }
+  .timecamp .tc-sidebar-header #tc-sidebar-start-button {
+    background-color: #59be7b; }
+  .timecamp .tc-sidebar-header.running {
+    background-color: #d9534f; }
+    .timecamp .tc-sidebar-header.running #tc-sidebar-start-button {
+      background-color: #d9534f; }
   .timecamp .tc-sidebar-header .task-name {
     max-width: 200px;
     overflow: hidden;
@@ -169,49 +219,42 @@
   float: right; }
 .timecamp .tc-sidebar-scrollable {
   position: fixed;
-  top: 60px;
+  top: 64px;
   padding-bottom: 15px;
-  height: calc(100% - 142px );
+  height: calc(100% - 146px );
   width: 280px; }
 .timecamp .tc-sidebar-scrollable-inner {
   width: 100%; }
 .timecamp .tc-sidebar-time-details {
   width: 100%; }
-.timecamp #tc-sidebar-start-button {
+.timecamp #tc-sidebar-start-button, .timecamp #tc-sidebar-pick-button {
+  background: #59be7b;
+  border: 2px solid rgba(255, 255, 255, 0.75);
   display: block;
+  margin: 7px;
   text-align: left;
   vertical-align: middle;
   padding: 10px 12px !important;
   font-weight: bold;
   font-size: 15px;
   text-transform: uppercase;
-  width: 246px;
-  margin: 5px auto;
+  width: 238px;
   height: 25px;
   line-height: 25px;
   box-sizing: content-box; }
-.timecamp #tc-sidebar-pick-button {
-  display: block;
-  text-align: left;
-  vertical-align: middle;
-  padding: 10px 12px !important;
-  font-weight: bold;
-  font-size: 15px;
-  text-transform: uppercase;
-  width: 246px;
-  margin: 5px auto;
-  height: 25px;
-  line-height: 25px;
-  box-sizing: content-box; }
+  .timecamp #tc-sidebar-start-button:hover, .timecamp #tc-sidebar-pick-button:hover {
+    border-color: white; }
 .timecamp .tc-timer-state-icon {
   display: inline-block;
   float: right; }
   .timecamp .tc-timer-state-icon .fa {
     line-height: 25px; }
 .timecamp .tc-sidebar-total-time {
+  border-bottom: 2px solid #dddddd;
+  color: #bbb;
+  font-size: 12px;
   font-weight: bold;
   float: right;
-  border-top: 2px solid #535353;
   position: fixed;
   bottom: 50px;
   width: 276px;
@@ -220,16 +263,16 @@
   .timecamp .tc-sidebar-total-time .total-label {
     padding-right: 8px; }
 .timecamp .tc-sidebar-entry {
-  padding: 5px 0;
+  padding: 10px 0;
   cursor: pointer; }
-  .timecamp .tc-sidebar-entry .row:first-child {
+  .timecamp .tc-sidebar-entry:nth-child(even) {
+    background: #f5f5f5; }
+  .timecamp .tc-sidebar-entry > .row:first-child {
     padding-top: 0; }
-  .timecamp .tc-sidebar-entry .row:last-child {
-    padding-bottom: 0; }
   .timecamp .tc-sidebar-entry.active {
-    background-color: #e1e1e1; }
+    background-color: #e5e5e5; }
   .timecamp .tc-sidebar-entry:hover {
-    background-color: #e1e1e1; }
+    background-color: #e5e5e5; }
   .timecamp .tc-sidebar-entry .separator {
     width: 4px; }
   .timecamp .tc-sidebar-entry .billable-checkbox {
@@ -242,6 +285,10 @@
     .timecamp .tc-sidebar-entry .note-input-box textarea {
       width: 100%;
       height: 70px; }
+    .timecamp .tc-sidebar-entry .note-input-box .btn-success {
+      background-color: #59be7b; }
+      .timecamp .tc-sidebar-entry .note-input-box .btn-success:hover {
+        background-color: #40a462; }
   .timecamp .tc-sidebar-entry .time-input {
     width: 15px; }
   .timecamp .tc-sidebar-entry .date-input {
@@ -250,9 +297,9 @@
     width: 98px;
     box-sizing: border-box; }
   .timecamp .tc-sidebar-entry .note-placeholder {
-    padding: 0 5px;
+    color: #bbb;
     font-style: italic;
-    color: #999; }
+    padding: 0 5px; }
 .timecamp .tc-sidebar-entry-single .time-from {
   width: 30px; }
 .timecamp .tc-sidebar-entry-single .time-to {
@@ -260,6 +307,9 @@
 .timecamp .tc-sidebar-entry-single .billable {
   margin-left: 50px;
   width: 13px; }
+.timecamp .tc-sidebar-entry-single .duration {
+  color: #555;
+  font-weight: bold; }
 .timecamp .tc-sidebar-day-header {
   margin-top: 5px; }
   .timecamp .tc-sidebar-day-header .billable-header {

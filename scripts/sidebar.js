@@ -464,6 +464,10 @@ function Sidebar()
         var content = ich.sidebarStartButton(templateData);
         content.data('params',templateData);
         $('.tc-sidebar-button-box').html(content);
+        if($this.isRunning)
+            $this.sidebar.find('.tc-sidebar-header').removeClass('stopped').addClass('running');
+        else
+            $this.sidebar.find('.tc-sidebar-header').removeClass('running').addClass('stopped');
     };
 
     this.renderSidebarPickButton =  function(params) {
@@ -860,7 +864,6 @@ function Sidebar()
 
         $this.expand();
     };
-
     this.expand = function()
     {
         if (!$this.isCollapsed)
