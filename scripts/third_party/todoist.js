@@ -28,18 +28,16 @@
     };
 
     this.getParentId = function() {
-        var url = document.URL;
-        var reg = /trello\.com\/b\/(\w+)/g;
-        var MatchRes = reg.exec(url);
+        var item = $(".current_editor");
 
-        if (MatchRes)
-            return MatchRes[1];
+        var parentId = item.attr("data-project-id");
 
-        return null;
+        return parentId;
     };
 
     this.getSubtasks = function() {
         var subtasks = [];
+        return subtasks;
         var links = $(".list-card-title");
 
         if (links.length)
@@ -108,9 +106,9 @@
     };
 
     this.onSyncFailure = function () {
-        var badge = $("#tc-badge");
-        if (badge.length > 0)
-            badge.remove();
+        // var badge = $("#tc-badge");
+        // if (badge.length > 0)
+        //     badge.remove();
     };
 
     this.updateTopMessage = function (taskId, duration) {
@@ -217,8 +215,8 @@
         var link = $('<a/>', {
             class:'quiet-button',
             text:'Integration settings',
-            href:'https://www.timecamp.com/addons/trello/index/'+this.lastParentId,
-            title:'Synchronize this board to start tracking time.',
+            href:'https://www.timecamp.com/addons/todoist/index/'+this.lastParentId,
+            title:'Synchronize tasks to start tracking time.',
             target:'_blank'}
         );
 
