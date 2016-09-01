@@ -478,4 +478,8 @@ function TimerBase() {
             });
         });
     };
+
+    this.getTrackableId = function () {
+        return null;
+    };
 }
