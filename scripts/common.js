@@ -62,14 +62,15 @@ function zeroFill(number, width) {
 function formatHMS(seconds)
 {
     var duration = moment.duration(seconds, 'seconds');
-    return duration.hours() + ":" + zeroFill(duration.minutes(), 2) + ":" + zeroFill(duration.seconds(), 2);
+    return (duration.hours() + (duration.days() * 24)) + ":" + zeroFill(duration.minutes(), 2) + ":" + zeroFill(duration.seconds(), 2);
 }
 
 function formatHMSObj(seconds)
 {
     var duration = moment.duration(seconds, 'seconds');
+
     return {
-        hours: duration.hours(),
+        hours: duration.hours() + (duration.days() * 24),
         minutes: zeroFill(duration.minutes(), 2),
         seconds: zeroFill(duration.seconds(), 2)
     };

@@ -331,7 +331,7 @@ function TimerBase() {
     {
         var duration = moment.duration(timeInSeconds, 'seconds');
         var time = {
-            hours : Math.round(duration.hours()),
+            hours : Math.round(duration.hours() + (duration.days() * 24)),
             minutes : Math.round(duration.minutes()),
             seconds : Math.round(duration.seconds())
         };
