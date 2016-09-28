@@ -325,7 +325,7 @@ function InsightlyTimer() {
         this.infoInsertingInProgress = true;
         console.log('Inserting info...');
 
-        var container = $(".entity-detail").find(".property-table");
+        var container = $(".entity-detail").find(".property-table").first();
 
 
         var tr = $('<tr/>');
