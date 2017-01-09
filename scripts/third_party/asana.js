@@ -75,7 +75,7 @@ function AsanaTimer() {
             return true;
         }
 
-        return $('#right_pane').find('.toolbar-section.left').children().eq(1).length == 0;
+        return false;
     };
 
     this.insertButtonIntoPage = function () {
@@ -120,8 +120,8 @@ function AsanaTimer() {
         button.append($('<span/>', {'class': 'time'}).text("00:00").hide());
 
 
-        var buttonList = $('#right_pane').find('.toolbar-section.left').children().eq(1);
-        div1.insertAfter(buttonList);
+        var heartButton = $('.SingleTaskPaneToolbar').find('.HeartButton');
+        div1.insertBefore(heartButton);
         buttonObj.insertInProgress = false;
         buttonObj.uiElement = button;
 
